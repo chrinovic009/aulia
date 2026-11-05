@@ -3,9 +3,9 @@ import Container from "./Container.astro"
 ---
 
 <div class="relative" id="home">
-    <div aria-hidden="true" class="absolute inset-0 grid grid-cols-2 -space-x-52 opacity-40 dark:opacity-20">
-        <div class="blur-[106px] h-56 bg-gradient-to-br from-primary to-amber-200 dark:from-amber-800"></div>
-        <div class="blur-[106px] h-32 bg-gradient-to-r from-amber-300 to-yellow-100 dark:to-amber-700"></div>
+    <div aria-hidden="true" class="pointer-events-none absolute inset-0 opacity-40 dark:opacity-20">
+        <div class="absolute left-[10%] top-12 h-56 w-56 rounded-full bg-gradient-to-br from-primary to-amber-200 blur-[106px] dark:from-amber-800"></div>
+        <div class="absolute right-[10%] top-28 h-40 w-40 rounded-full bg-gradient-to-r from-amber-300 to-yellow-100 blur-[106px] dark:to-amber-700"></div>
     </div>
     <Container>
         <div class="relative pt-36 ml-auto">
