@@ -1,0 +1,397 @@
+---
+interface Props {
+    mode: "login" | "signup";
+}
+
+const { mode } = Astro.props;
+const isSignup = mode === "signup";
+const heading = isSignup ? "Créer un compte" : "Bienvenue";
+const description = isSignup
+    ? "Rejoignez Aulia en quelques instants"
+    : "Connectez-vous à votre compte";
+---
+
+<main class="auth-screen">
+    <div class="auth-ambient" aria-hidden="true"></div>
+    <div class="auth-content">
+        <a href="/#home" class="auth-brand" aria-label="Retour à l’accueil Aulia">
+            <img src="/images/icone-aulia.png" alt="" width="512" height="512" />
+        </a>
+
+        <section class="auth-card" aria-labelledby="auth-heading">
+            <header class="auth-heading">
+                <h1 id="auth-heading">{heading}</h1>
+                <p>{description}</p>
+            </header>
+
+            <form id="auth-form">
+                {isSignup && (
+                    <div class="auth-field">
+                        <label for="name">Nom complet</label>
+                        <input id="name" name="name" type="text" autocomplete="name" placeholder="Votre nom" required />
+                    </div>
+                )}
+                <div class="auth-field">
+                    <label for="email">Adresse e-mail</label>
+                    <input id="email" name="email" type="email" autocomplete="email" placeholder="nom@exemple.com" required />
+                </div>
+                <div class="auth-field auth-password-field">
+                    <label for="password">Mot de passe</label>
+                    <input
+                        id="password"
+                        name="password"
+                        type="password"
+                        autocomplete={isSignup ? "new-password" : "current-password"}
+                        placeholder="8 caractères minimum"
+                        minlength="8"
+                        required
+                    />
+                    <button class="auth-submit" type="submit" aria-label={isSignup ? "Créer mon compte" : "Se connecter"}>
+                        <svg viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M5 12h14M13 5l7 7-7 7" />
+                        </svg>
+                    </button>
+                </div>
+            </form>
+
+            {!isSignup && (
+                <button class="auth-forgot" type="button" data-action="forgot">
+                    Mot de passe oublié ?
+                </button>
+            )}
+
+            <p class="auth-status" id="auth-status" role="status" aria-live="polite"></p>
+
+            <div class="auth-divider"><span>ou continuer avec</span></div>
+            <div class="auth-providers" aria-label="Autres options de connexion">
+                <button class="auth-provider" type="button" data-provider="Google" aria-label="Continuer avec Google">G</button>
+                <button class="auth-provider auth-apple" type="button" data-provider="Apple" aria-label="Continuer avec Apple">
+                    <svg viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M16.4 12.8c0-2 1.6-3 1.7-3.1a3.7 3.7 0 0 0-2.9-1.6c-1.2-.1-2.4.7-3 .7-.7 0-1.7-.7-2.7-.7a4 4 0 0 0-3.4 2.1c-1.5 2.6-.4 6.4 1 8.5.7 1 1.5 2.1 2.5 2 1 0 1.4-.6 2.7-.6s1.7.6 2.8.6c1.1 0 1.8-1 2.5-2 .8-1.1 1.1-2.2 1.1-2.3-.1 0-2.3-.9-2.3-3.6ZM14.4 6.8a3.7 3.7 0 0 0 .9-2.6 3.8 3.8 0 0 0-2.4 1.2 3.5 3.5 0 0 0-.9 2.5 3.2 3.2 0 0 0 2.4-1.1Z" />
+                    </svg>
+                </button>
+            </div>
+
+            <p class="auth-switch">
+                {isSignup ? "Vous avez déjà un compte ?" : "Vous n’avez pas encore de compte ?"}
+                <a href={isSignup ? "/connexion" : "/inscription"}>
+                    {isSignup ? "Se connecter" : "S’inscrire"}
+                </a>
+            </p>
+        </section>
+    </div>
+</main>
+
+<script>
+    const form = document.querySelector<HTMLFormElement>("#auth-form");
+    const status = document.querySelector<HTMLElement>("#auth-status");
+
+    form?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        if (form.reportValidity() && status) {
+            status.textContent = "L’authentification n’est pas encore configurée. Aucune donnée n’a été envoyée.";
+        }
+    });
+
+    document.querySelector<HTMLButtonElement>('[data-action="forgot"]')?.addEventListener("click", () => {
+        if (status) {
+            status.textContent = "La réinitialisation du mot de passe sera disponible lorsque l’authentification sera configurée.";
+        }
+    });
+
+    document.querySelectorAll<HTMLButtonElement>("[data-provider]").forEach((button) => {
+        button.addEventListener("click", () => {
+            if (status) {
+                status.textContent = `La connexion avec ${button.dataset.provider} n’est pas encore configurée.`;
+            }
+        });
+    });
+</script>
+
+<style>
+    .auth-screen {
+        position: relative;
+        display: grid;
+        min-height: 100svh;
+        overflow: hidden;
+        place-items: center;
+        padding: 36px 20px;
+        color: #f8f5ec;
+        background:
+            radial-gradient(ellipse at 50% 38%, rgb(116 83 14 / 18%), transparent 42%),
+            #080807;
+        font-family: "Urbanist", sans-serif;
+    }
+
+    .auth-screen::before,
+    .auth-screen::after,
+    .auth-ambient {
+        position: absolute;
+        inset: -35%;
+        pointer-events: none;
+    }
+
+    .auth-screen::before {
+        content: "";
+        transform: rotate(-24deg);
+        background: repeating-linear-gradient(
+            115deg,
+            transparent 0,
+            transparent 21%,
+            rgb(150 114 29 / 7%) 21.2%,
+            rgb(150 114 29 / 7%) 24%,
+            transparent 24.2%,
+            transparent 43%
+        );
+        mask-image: linear-gradient(90deg, transparent, #000 28%, #000 74%, transparent);
+    }
+
+    .auth-screen::after {
+        content: "";
+        inset: 12% 18%;
+        border-radius: 50%;
+        background: radial-gradient(ellipse, rgb(150 114 29 / 11%), transparent 68%);
+        filter: blur(40px);
+    }
+
+    .auth-content {
+        position: relative;
+        z-index: 1;
+        display: flex;
+        width: min(100%, 440px);
+        flex-direction: column;
+        align-items: center;
+        gap: 18px;
+    }
+
+    .auth-brand {
+        display: grid;
+        width: 78px;
+        height: 78px;
+        place-items: center;
+        overflow: hidden;
+        border: 1px solid rgb(214 174 72 / 65%);
+        border-radius: 50%;
+        background: #e9e3d3;
+        box-shadow: 0 0 32px rgb(191 148 42 / 28%);
+    }
+
+    .auth-brand img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    .auth-card {
+        width: 100%;
+        padding: 40px 36px 30px;
+        border: 1px solid rgb(190 148 47 / 52%);
+        border-radius: 34px;
+        background:
+            radial-gradient(ellipse at 50% 0, rgb(150 114 29 / 23%), transparent 37%),
+            linear-gradient(160deg, rgb(30 27 19 / 97%), rgb(12 12 10 / 98%) 48%);
+        box-shadow:
+            0 0 54px rgb(150 114 29 / 19%),
+            inset 0 1px rgb(255 235 180 / 12%);
+        backdrop-filter: blur(16px);
+    }
+
+    .auth-heading {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+
+    .auth-heading h1 {
+        margin: 0;
+        font-size: clamp(2rem, 8vw, 2.6rem);
+        font-weight: 700;
+        letter-spacing: -0.04em;
+    }
+
+    .auth-heading p {
+        margin: 5px 0 0;
+        color: #aaa394;
+        font-size: 0.95rem;
+    }
+
+    #auth-form {
+        display: grid;
+        gap: 16px;
+    }
+
+    .auth-field {
+        position: relative;
+    }
+
+    .auth-field label {
+        position: absolute;
+        z-index: 1;
+        top: 9px;
+        left: 22px;
+        color: #c5b98f;
+        font-size: 0.72rem;
+    }
+
+    .auth-field input {
+        width: 100%;
+        min-height: 60px;
+        padding: 25px 20px 8px;
+        border: 1px solid rgb(231 221 190 / 24%);
+        border-radius: 999px;
+        outline: none;
+        color: #fbf8ef;
+        background: linear-gradient(115deg, rgb(255 255 255 / 9%), rgb(255 255 255 / 3%));
+        box-shadow: inset 0 1px 5px rgb(255 255 255 / 5%);
+        font: inherit;
+        transition: border-color 180ms ease, box-shadow 180ms ease;
+    }
+
+    .auth-field input::placeholder {
+        color: #908b7e;
+        opacity: 1;
+    }
+
+    .auth-field input:focus {
+        border-color: #c5a14a;
+        box-shadow: 0 0 0 3px rgb(150 114 29 / 18%);
+    }
+
+    .auth-password-field input {
+        padding-right: 68px;
+    }
+
+    .auth-submit {
+        position: absolute;
+        top: 7px;
+        right: 7px;
+        display: grid;
+        width: 46px;
+        height: 46px;
+        place-items: center;
+        border: 1px solid rgb(255 236 185 / 56%);
+        border-radius: 50%;
+        color: #17130a;
+        background: linear-gradient(145deg, #f1d580, #a67c22);
+        box-shadow: 0 0 18px rgb(191 148 42 / 42%);
+        cursor: pointer;
+        transition: transform 180ms ease, filter 180ms ease;
+    }
+
+    .auth-submit:hover {
+        transform: scale(1.06);
+        filter: brightness(1.08);
+    }
+
+    .auth-submit svg {
+        width: 24px;
+        fill: none;
+        stroke: currentColor;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: 2;
+    }
+
+    .auth-forgot {
+        display: block;
+        margin: 12px 0 0 auto;
+        padding: 4px 0;
+        border: 0;
+        color: #b7a982;
+        background: transparent;
+        font: inherit;
+        font-size: 0.88rem;
+        cursor: pointer;
+    }
+
+    .auth-forgot:hover,
+    .auth-switch a:hover {
+        color: #f1d580;
+    }
+
+    .auth-status {
+        min-height: 1.25rem;
+        margin: 12px 0 0;
+        color: #e7cc7c;
+        font-size: 0.82rem;
+        line-height: 1.45;
+        text-align: center;
+    }
+
+    .auth-divider {
+        display: flex;
+        align-items: center;
+        gap: 14px;
+        margin: 18px 0;
+        color: #aaa394;
+        font-size: 0.82rem;
+    }
+
+    .auth-divider::before,
+    .auth-divider::after {
+        height: 1px;
+        flex: 1;
+        content: "";
+        background: linear-gradient(90deg, transparent, rgb(213 187 120 / 48%));
+    }
+
+    .auth-divider::after {
+        transform: rotate(180deg);
+    }
+
+    .auth-providers {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .auth-provider {
+        display: grid;
+        width: 54px;
+        height: 36px;
+        place-items: center;
+        border: 1px solid rgb(231 221 190 / 55%);
+        border-radius: 999px;
+        color: #f3eddd;
+        background: rgb(255 255 255 / 3%);
+        font: inherit;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: border-color 180ms ease, background 180ms ease;
+    }
+
+    .auth-provider:hover {
+        border-color: #d3b451;
+        background: rgb(150 114 29 / 15%);
+    }
+
+    .auth-apple svg {
+        width: 17px;
+        fill: currentColor;
+    }
+
+    .auth-switch {
+        margin: 25px 0 0;
+        color: #aaa394;
+        font-size: 0.88rem;
+        text-align: center;
+    }
+
+    .auth-switch a {
+        margin-left: 4px;
+        color: #e5c365;
+        font-weight: 700;
+        text-decoration: none;
+    }
+
+    @media (max-width: 480px) {
+        .auth-screen {
+            padding: 24px 16px;
+        }
+
+        .auth-card {
+            padding: 34px 22px 26px;
+            border-radius: 28px;
+        }
+    }
+</style>
