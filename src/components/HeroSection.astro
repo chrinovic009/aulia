@@ -46,14 +46,14 @@ import Container from "./Container.astro"
                     </div>
                 </div>
             </div>
-            <div class="mt-12 grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6">
-                <div class="p-4 grayscale transition duration-200 hover:opacity-70">
-                    <img src="./images/clients/mwinue-asimame.png" class="h-12 w-auto mx-auto" loading="lazy" alt="client logo" width="" height="" />
-                  </div>
-                <div class="p-4 grayscale transition duration-200 hover:opacity-70">
-                  <img src="./images/clients/aulia-care.png" class="h-12 w-auto mx-auto" loading="lazy" alt="client logo" width="" height="" />
+            <div aria-label="Logos des clients" class="mt-12 flex w-full flex-nowrap justify-start gap-4 overflow-x-auto overscroll-x-contain pb-2 touch-pan-x sm:justify-center sm:gap-8">
+                <div class="flex h-20 w-32 shrink-0 items-center justify-center p-3 grayscale transition duration-200 hover:opacity-70 sm:w-44">
+                    <img src="/images/clients/mwinue-asimame.png" class="max-h-full max-w-full object-contain" loading="lazy" alt="Mwinue Asimame" />
                 </div>
-              </div>
+                <div class="flex h-20 w-32 shrink-0 items-center justify-center p-3 grayscale transition duration-200 hover:opacity-70 sm:w-44">
+                    <img src="/images/clients/aulia-care.png" class="max-h-full max-w-full object-contain" loading="lazy" alt="Aulia Care" />
+                </div>
+            </div>
         </div>
     </Container>
 </div>
