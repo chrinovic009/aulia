@@ -1,0 +1,36 @@
+---
+import { getContent, type Status } from '../data/site.ts';
+import type { Lang } from '../i18n.ts';
+interface Props { status: Status; lang: Lang; }
+const { status, lang } = Astro.props;
+const { statusLabel } = getContent(lang);
+---
+<span class:list={['status', `s-${status}`]}><i aria-hidden="true"></i>{statusLabel[status]}</span>
+
+<style>
+  .status {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+  i {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    border: 1px solid currentColor;
+  }
+  .s-live { color: #9cc79a; }
+  .s-live i { background: currentColor; }
+  .s-dev { color: var(--gold-bright); }
+  .s-dev i { background: currentColor; }
+  .s-design { color: #c9c8c3; }
+  .s-explore { color: var(--muted); }
+  .s-target i { border-style: dashed; }
+  .s-target { color: var(--gold); }
+</style>

@@ -1,0 +1,561 @@
+---
+import Layout from '../layouts/Layout.astro';
+import HeroEmblem from '../components/HeroEmblem.astro';
+import Doctrine from '../components/Doctrine.astro';
+import EcosystemMap from '../components/EcosystemMap.astro';
+import AnimaCore from '../components/AnimaCore.astro';
+import Status from '../components/Status.astro';
+import Arrow from '../components/Arrow.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { getContent } from '../data/site.ts';
+import { path, contactPath, type Lang } from '../i18n.ts';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const { site, entities, anima, research } = getContent(lang);
+
+const T = {
+  en: {
+    tagline: 'Science, intelligence and engineering in service of essential systems.',
+    explore: 'Explore the ecosystem',
+    discover: 'Discover ANIMA',
+    pillars: [
+      ['A parent company', 'The group’s vision, doctrine, governance and intellectual property.'],
+      ['Specialised companies', 'Health, industry, organisations, immersion: each one masters its field.'],
+      ['A transversal intelligence', 'ANIMA, the architecture designed to progressively connect the systems.'],
+    ],
+    docEyebrow: '01 — Doctrine',
+    docTitle: 'Five verbs to guide <em>every decision.</em>',
+    docLead: 'The AULIA doctrine guides the group’s decisions, investments, hiring and strategic choices. We will not trade integrity for growth, security for speed, or truth for image.',
+    ecoEyebrow: '02 — Ecosystem',
+    ecoLead: 'Each AULIA company addresses a specific field, with its own mission, skills and autonomy. Together, they share one ambition: making systems more intelligent, more reliable and better coordinated.',
+    discoverEntity: 'Discover',
+    animaEyebrow: '03 — ANIMA',
+    animaLead: 'ANIMA is the transversal intelligence architecture designed to perceive, understand, anticipate and coordinate the systems of the AULIA ecosystem — and to carry out authorised actions, under human oversight.',
+    animaProgram: 'A long-term research and engineering programme',
+    visionEyebrow: '04 — Vision',
+    visionLead: 'The future of organisations will not rest on standalone software alone, but on systems able to share information, analyse situations and coordinate operations.',
+    chip1: ['Start from the field', 'Real problems, in the Democratic Republic of the Congo, for solutions that are technically sound and economically viable.'],
+    chip2: ['Prove before scaling', 'Build what we can actually deploy, maintain and improve. Each subsidiary will have to earn its place.'],
+    readVision: 'Read our vision',
+    resEyebrow: '05 — Research & Innovation',
+    resTitle: 'Mastering technology, <em>not just using it.</em>',
+    resLead: 'We want to understand the mechanisms that make these technologies possible. These are lines of exploration, not established results.',
+    resLink: 'Research & Innovation',
+    ctaEyebrow: 'Partnerships',
+    ctaText: 'We believe in collaborations that turn knowledge, resources and technology into useful, lasting solutions.',
+    ctaSecondary: 'Request a presentation',
+  },
+  fr: {
+    tagline: "Construire l'intelligence. Transformer les systèmes.",
+    explore: "Explorer l'écosystème",
+    discover: 'Découvrir ANIMA',
+    pillars: [
+      ['Une société mère', 'Vision, doctrine, gouvernance et propriété intellectuelle du groupe.'],
+      ['Des entreprises spécialisées', 'Santé, industrie, organisations, immersion : chacune maîtrise son domaine.'],
+      ['Une intelligence transversale', "ANIMA, l'architecture imaginée pour relier progressivement les systèmes."],
+    ],
+    docEyebrow: '01 — Doctrine',
+    docTitle: 'Cinq verbes pour guider <em>chaque décision.</em>',
+    docLead: "La doctrine AULIA oriente les décisions, les investissements, les recrutements et les choix stratégiques du groupe. Nous ne voulons sacrifier ni l'intégrité à la croissance, ni la sécurité à la rapidité, ni la vérité à l'image.",
+    ecoEyebrow: '02 — Écosystème',
+    ecoLead: 'Chaque entreprise AULIA répond à un domaine spécifique, avec sa mission, ses compétences et son autonomie. Ensemble, elles partagent une ambition : rendre les systèmes plus intelligents, plus fiables et mieux coordonnés.',
+    discoverEntity: 'Découvrir',
+    animaEyebrow: '03 — ANIMA',
+    animaLead: "ANIMA est l'architecture d'intelligence transversale imaginée pour percevoir, comprendre, anticiper et coordonner les systèmes de l'écosystème AULIA — et exécuter des actions autorisées, sous contrôle humain.",
+    animaProgram: "Programme de recherche et d'ingénierie de long terme",
+    visionEyebrow: '04 — Vision',
+    visionLead: "L'avenir des organisations ne dépendra pas seulement de logiciels indépendants, mais de systèmes capables de partager des informations, d'analyser des situations et de coordonner des opérations.",
+    chip1: ['Partir du terrain', 'Des problèmes réels, en République démocratique du Congo, pour des solutions techniquement solides et économiquement viables.'],
+    chip2: ['Prouver avant de grandir', 'Construire ce que nous pouvons réellement déployer, maintenir et améliorer. Chaque filiale devra mériter sa place.'],
+    readVision: 'Lire notre vision',
+    resEyebrow: '05 — Recherche & Innovation',
+    resTitle: "Maîtriser la technologie, <em>pas seulement l'utiliser.</em>",
+    resLead: "Nous voulons comprendre les mécanismes qui rendent ces technologies possibles. Ce sont des axes d'exploration, pas des résultats acquis.",
+    resLink: 'Recherche & Innovation',
+    ctaEyebrow: 'Partenariats',
+    ctaText: 'Nous croyons aux collaborations qui transforment les connaissances, les ressources et les technologies en solutions utiles et durables.',
+    ctaSecondary: 'Demander une présentation',
+  },
+}[lang];
+---
+
+<Layout lang={lang} route="home">
+  <!-- HERO -->
+  <section class="hero" id="home">
+    <div class="blobs" aria-hidden="true"></div>
+    <div class="wrap hero-inner">
+      <div class="hero-visual">
+        <HeroEmblem lang={lang} />
+      </div>
+      <h1 class="display display-xl">Building Intelligence. <span class="gold">Transforming Systems.</span></h1>
+      <p class="hero-fr">{T.tagline}</p>
+      <p class="lead">{site.description}</p>
+      <div class="hero-actions">
+        <a class="btn btn-primary" href={path(lang, 'ecosystem')}>{T.explore}<Arrow /></a>
+        <a class="btn btn-ghost" href={path(lang, 'anima')}>{T.discover}</a>
+      </div>
+      <div class="pillars">
+        {T.pillars.map(([h, p]) => (
+          <div><h2>{h}</h2><p>{p}</p></div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- DOCTRINE -->
+  <section class="section" id="doctrine">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.docEyebrow}</p>
+        <h2 class="display display-l" set:html={T.docTitle} />
+        <p class="lead">{T.docLead}</p>
+      </div>
+      <div class="reveal">
+        <Doctrine lang={lang} />
+      </div>
+    </div>
+  </section>
+
+  <!-- ÉCOSYSTÈME -->
+  <section class="section" id="ecosystem">
+    <div class="wrap">
+      <div class="head center reveal">
+        <p class="eyebrow">{T.ecoEyebrow}</p>
+        <h2 class="display display-l">One vision. <em>Multiple intelligences.</em> Connected systems.</h2>
+        <p class="lead">{T.ecoLead}</p>
+      </div>
+
+      <div class="uni">
+        {entities.map((e) => (
+          <a href={path(lang, 'ecosystem', e.slug)} class="uni-card reveal">
+            <div class="uni-top" aria-hidden="true">
+              <img src="/images/aulia-mark.png" alt="" width="186" height="185" loading="lazy" />
+              <span class="uni-short">{e.short}</span>
+            </div>
+            <div class="uni-body">
+              <Status status={e.status} lang={lang} />
+              <h3>{e.name}</h3>
+              <p class="ent-sector">{e.sector}</p>
+              <p class="ent-sum">{e.summary}</p>
+              <span class="link-arrow">{T.discoverEntity} {e.name}<Arrow /></span>
+            </div>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- ANIMA -->
+  <section class="section anima" id="anima">
+    <div class="wrap">
+      <div class="anima-grid">
+        <div class="reveal">
+          <p class="eyebrow">{T.animaEyebrow}</p>
+          <h2 class="display display-l">The intelligence <em>behind the systems.</em></h2>
+          <p class="lead">{T.animaLead}</p>
+          <div class="anima-status"><Status status={anima.status} lang={lang} /><span>{T.animaProgram}</span></div>
+
+          <ol class="motto">
+            {anima.motto.map((m, i) => (
+              <li>
+                <span class="index">{String(i + 1).padStart(2, '0')}</span>
+                <span class="m-en">{m}</span>
+                <span class="m-fr">{anima.mottoEn[i]}</span>
+              </li>
+            ))}
+          </ol>
+
+          <a class="btn btn-primary" href={path(lang, 'anima')}>{T.discover}<Arrow /></a>
+        </div>
+        <div class="reveal">
+          <AnimaCore lang={lang} />
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VISION -->
+  <section class="section" id="vision">
+    <div class="wrap vision-grid">
+      <div class="reveal">
+        <p class="eyebrow">{T.visionEyebrow}</p>
+        <h2 class="display display-l">Beyond software. <em>Toward intelligent systems.</em></h2>
+        <p class="lead vis-lead">{T.visionLead}</p>
+        <div class="chips">
+          <div class="chip">
+            <span class="chip-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M11.54 22.351l.07.04.028.016a.76.76 0 00.723 0l.028-.015.071-.041a16.975 16.975 0 001.144-.742 19.58 19.58 0 002.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 00-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 002.682 2.282 16.975 16.975 0 001.145.742zM12 13.5a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd" /></svg>
+            </span>
+            <div><h3>{T.chip1[0]}</h3><p>{T.chip1[1]}</p></div>
+          </div>
+          <div class="chip">
+            <span class="chip-ico" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="currentColor"><path fill-rule="evenodd" d="M2.25 13.5a8.25 8.25 0 018.25-8.25.75.75 0 01.75.75v6.75H18a.75.75 0 01.75.75 8.25 8.25 0 01-16.5 0z" clip-rule="evenodd" /><path fill-rule="evenodd" d="M12.75 3a.75.75 0 01.75-.75 8.25 8.25 0 018.25 8.25.75.75 0 01-.75.75h-7.5a.75.75 0 01-.75-.75V3z" clip-rule="evenodd" /></svg>
+            </span>
+            <div><h3>{T.chip2[0]}</h3><p>{T.chip2[1]}</p></div>
+          </div>
+        </div>
+        <a class="link-arrow" href={path(lang, 'vision')}>{T.readVision}<Arrow /></a>
+      </div>
+      <div class="reveal">
+        <EcosystemMap lang={lang} />
+      </div>
+    </div>
+  </section>
+
+  <!-- RECHERCHE -->
+  <section class="section" id="research">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.resEyebrow}</p>
+        <h2 class="display display-l" set:html={T.resTitle} />
+        <p class="lead">{T.resLead}</p>
+      </div>
+      <ul class="axes reveal">
+        {research.map((r, i) => (
+          <li>
+            <span class="index">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{r.title}</h3>
+            <p>{r.text}</p>
+          </li>
+        ))}
+      </ul>
+      <div class="reveal more">
+        <a class="link-arrow" href={path(lang, 'research')}>{T.resLink}<Arrow /></a>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand
+    eyebrow={T.ctaEyebrow}
+    title="Let's build <em>what matters.</em>"
+    text={T.ctaText}
+    href={path(lang, 'partnerships')}
+    label="Build with AULIA"
+    secondary={{ href: contactPath(lang, 'presentation'), label: T.ctaSecondary }}
+  />
+</Layout>
+
+<style>
+  /* Hero — structure du template : centré, halos, piliers */
+  .hero {
+    position: relative;
+    padding-top: 6rem;
+    padding-bottom: 4rem;
+    overflow: hidden;
+  }
+  .hero-inner {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    text-align: center;
+  }
+  .hero-visual {
+    width: min(100%, 250px);
+    margin-bottom: 1.25rem;
+  }
+  .hero h1 {
+    max-width: 15em;
+  }
+  .hero-fr {
+    margin-top: 1.25rem;
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--muted);
+  }
+  .hero .lead {
+    margin: 1.5rem auto 0;
+    max-width: 42rem;
+  }
+  .hero-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem 1.5rem;
+    margin-top: 2.75rem;
+  }
+  .pillars {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    width: 100%;
+    max-width: 56rem;
+    margin-top: 4rem;
+    padding-block: 2rem;
+    border-block: 1px solid #1e2939;
+    text-align: left;
+  }
+  .pillars h2 {
+    font-size: 1.1rem;
+    font-weight: 600;
+  }
+  .pillars p {
+    margin-top: 0.5rem;
+    font-size: 0.95rem;
+    color: var(--faint);
+  }
+
+  .head {
+    display: grid;
+    gap: 1.25rem;
+    max-width: 52rem;
+    margin-bottom: clamp(3rem, 6vw, 4.5rem);
+  }
+  .head.center {
+    margin-inline: auto;
+    justify-items: center;
+    text-align: center;
+  }
+  .head.center .lead {
+    margin-inline: auto;
+  }
+
+  /* Univers technologiques — cartes du template */
+  .uni {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+  }
+  .uni-card {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    overflow: hidden;
+    border-radius: 1.5rem;
+    border: 1px solid var(--line-strong);
+    background: var(--card);
+    transition:
+      transform 0.4s var(--ease),
+      box-shadow 0.4s var(--ease);
+  }
+  .uni-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 24px 48px -24px rgba(0, 0, 0, 0.7);
+  }
+  .uni-top {
+    position: relative;
+    height: 10rem;
+    display: grid;
+    place-items: center;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 120%, rgba(150, 114, 29, 0.45), transparent 60%),
+      linear-gradient(180deg, #243246, #1e2939);
+  }
+  .uni-top img {
+    width: 4.5rem;
+    height: auto;
+    opacity: 0.9;
+    position: relative;
+    z-index: 1;
+  }
+  .uni-short {
+    position: absolute;
+    inset: auto 0 -1.7rem 0;
+    text-align: center;
+    font-size: 4.5rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(255, 210, 48, 0.14);
+  }
+  .uni-body {
+    display: grid;
+    align-content: start;
+    gap: 0.6rem;
+    padding: 1.75rem 1.5rem 2rem;
+  }
+  .uni-body h3 {
+    margin-top: 0.4rem;
+    font-size: 1.4rem;
+    transition: color 0.3s var(--ease);
+  }
+  .uni-card:hover h3 {
+    color: var(--gold-bright);
+  }
+  .ent-sector {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--gold-bright);
+  }
+  .ent-sum {
+    font-size: 0.95rem;
+    color: #d1d5dc;
+  }
+  .uni-body .link-arrow {
+    margin-top: 0.75rem;
+  }
+
+  /* ANIMA */
+  .anima {
+    background: radial-gradient(ellipse 50% 70% at 75% 50%, rgba(150, 114, 29, 0.12), transparent 70%);
+  }
+  .anima-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
+  }
+  .anima-grid h2 {
+    margin-top: 1.25rem;
+  }
+  .anima-grid .lead {
+    margin-top: 1.25rem;
+  }
+  .anima-status {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem 1rem;
+    margin-top: 1.25rem;
+    font-size: 0.85rem;
+    color: var(--faint);
+  }
+  .motto {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 1.5rem;
+    background: var(--card);
+    overflow: hidden;
+  }
+  .motto li {
+    display: grid;
+    grid-template-columns: 3rem 1fr auto;
+    align-items: baseline;
+    padding: 0.85rem 1.5rem;
+  }
+  .motto li + li {
+    border-top: 1px solid var(--line-strong);
+  }
+  .m-en {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  .m-fr {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--gold-bright);
+  }
+
+  /* Vision — structure « Stats » du template */
+  .vision-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: center;
+  }
+  .vision-grid h2 {
+    margin-top: 1.25rem;
+  }
+  .vis-lead {
+    margin-top: 1.5rem;
+  }
+  .chips {
+    margin: 2rem 0;
+    display: grid;
+  }
+  .chip {
+    display: flex;
+    gap: 1rem;
+    padding-block: 1.1rem;
+  }
+  .chip + .chip {
+    border-top: 1px solid #1e2939;
+  }
+  .chip-ico {
+    flex: none;
+    width: 3rem;
+    height: 3rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(120, 53, 15, 0.25);
+    color: var(--secondary);
+  }
+  .chip-ico svg {
+    width: 1.5rem;
+    height: 1.5rem;
+    color: #b8902c;
+  }
+  .chip h3 {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #fcd34d;
+  }
+  .chip p {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  /* Recherche */
+  .axes {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border: 1px solid var(--line-strong);
+    border-radius: 1.5rem;
+    overflow: hidden;
+    gap: 1px;
+    background: var(--line-strong);
+  }
+  .axes li {
+    background: var(--card);
+    padding: 2rem 1.5rem 2.25rem;
+    display: grid;
+    gap: 0.7rem;
+    align-content: start;
+    transition: background 0.3s var(--ease);
+  }
+  .axes li:hover {
+    background: var(--card-hover);
+  }
+  .axes h3 {
+    font-size: 1.15rem;
+    line-height: 1.25;
+  }
+  .axes p {
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  .more {
+    margin-top: 2.5rem;
+  }
+
+  @media (max-width: 1080px) {
+    .uni,
+    .axes {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 960px) {
+    .anima-grid,
+    .vision-grid {
+      grid-template-columns: 1fr;
+    }
+    .pillars {
+      grid-template-columns: 1fr;
+      gap: 1.25rem;
+      text-align: center;
+    }
+  }
+  @media (max-width: 640px) {
+    .hero-visual {
+      width: 240px;
+    }
+    .pillars {
+      display: none;
+    }
+  }
+  @media (max-width: 560px) {
+    .uni,
+    .axes {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

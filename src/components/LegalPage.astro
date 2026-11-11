@@ -1,0 +1,33 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHero from './PageHero.astro';
+import { ui, type Lang, type RouteKey } from '../i18n.ts';
+interface Props { lang: Lang; route: RouteKey; title: string; lead: string; sections: { title: string; text: string; pending?: boolean }[]; }
+const { lang, route, title, lead, sections } = Astro.props;
+---
+<Layout lang={lang} route={route} title={title} description={lead}>
+  <PageHero eyebrow={ui[lang].legalEyebrow} title={title} lead={lead} />
+  <section class="section">
+    <div class="wrap">
+      <ol class="legal">
+        {sections.map((s, i) => (
+          <li>
+            <span class="index">{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <h2>{s.title}</h2>
+              <p class:list={[{ pending: s.pending }]}>{s.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+</Layout>
+<style>
+  .legal { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); max-width: 52rem; }
+  .legal li { display: grid; grid-template-columns: 3rem 1fr; padding: 1.75rem 0; border-bottom: 1px solid var(--line); }
+  .legal .index { padding-top: 0.45rem; }
+  h2 { font-family: var(--font-display); font-size: 1.5rem; margin-bottom: 0.5rem; }
+  p { color: #c9c8c3; }
+  .pending { color: var(--muted); font-style: normal; }
+</style>

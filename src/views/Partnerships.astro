@@ -1,0 +1,237 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHero from '../components/PageHero.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Arrow from '../components/Arrow.astro';
+import { contactPath, type Lang } from '../i18n.ts';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+
+const T = {
+  en: {
+    title: 'Partnerships',
+    meta: 'Building with AULIA: healthcare facilities, industry, organisations, researchers, technology partners and investors.',
+    lead: 'We believe in collaborations that turn knowledge, resources and technology into useful, lasting solutions.',
+    s1: '01 — With whom', s1t: 'Collaborations <em>that start from real needs.</em>',
+    kinds: [
+      { title: 'Healthcare facilities', text: 'Clinics, hospitals, medical centres and laboratories looking to structure their medical information with AULIA Care.', topic: 'care' },
+      { title: 'Industry & mining', text: 'Organisations that want to monitor their equipment better and anticipate failures with AULIA Vigil.', topic: 'vigil' },
+      { title: 'Organisations & operators', text: 'Organisations seeking to master their operations, resources and information flows with AULIA Flow.', topic: 'flow' },
+      { title: 'Research & education', text: 'Universities, laboratories and researchers interested in AI, cognitive systems, industrial computing or immersion.', topic: 'research' },
+      { title: 'Technology partners', text: 'Companies whose technologies, infrastructure or expertise can strengthen the ecosystem.', topic: 'partnership' },
+      { title: 'Investors', text: 'Those who wish to support a long-term build, grounded in evidence rather than promises.', topic: 'investment' },
+    ],
+    getInTouch: 'Get in touch',
+    s2: '02 — Approach', s2t: 'Start small, <em>prove, then grow.</em>',
+    s2l: 'We prefer a modest, successful commitment to an ambitious, fragile promise. Every collaboration begins with understanding the field.',
+    steps: [
+      { title: 'First contact', text: 'You introduce your organisation and what you want to achieve.' },
+      { title: 'Discussion', text: 'We understand your context, your constraints and your priorities.' },
+      { title: 'Scoping', text: 'Together we define a realistic scope, based on what is actually available.' },
+      { title: 'Pilot project', text: 'A first measurable delivery, before any broader commitment.' },
+    ],
+    s3: '03 — Our commitments', s3t: 'What you can <em>expect from us.</em>',
+    commit: [
+      'A clear distinction between what is available, what is in development and what remains an ambition.',
+      'No commitment on features, timelines or prices that have not been validated.',
+      'Protection and control of your data, respecting your rules and responsibilities.',
+      'A long-term relationship: understanding, supporting and evolving the solutions with you.',
+    ],
+    ctaTitle: 'Let’s talk about what we could <em>build together.</em>', ctaLabel: 'Start a partnership',
+  },
+  fr: {
+    title: 'Partenariats',
+    meta: 'Construire avec AULIA : établissements de santé, industries, organisations, chercheurs, partenaires technologiques et investisseurs.',
+    lead: 'Nous croyons aux collaborations qui transforment les connaissances, les ressources et les technologies en solutions utiles et durables.',
+    s1: '01 — Avec qui', s1t: 'Des collaborations <em>qui partent de besoins réels.</em>',
+    kinds: [
+      { title: 'Établissements de santé', text: 'Cliniques, hôpitaux, centres médicaux et laboratoires souhaitant structurer leur information médicale avec AULIA Care.', topic: 'care' },
+      { title: 'Industries & exploitations minières', text: 'Organisations qui veulent mieux surveiller leurs équipements et anticiper les défaillances avec AULIA Vigil.', topic: 'vigil' },
+      { title: 'Organisations & opérateurs', text: "Structures qui cherchent à maîtriser leurs opérations, leurs ressources et leurs flux d'information avec AULIA Flow.", topic: 'flow' },
+      { title: 'Recherche & enseignement', text: "Universités, laboratoires et chercheurs intéressés par l'IA, les systèmes cognitifs, l'informatique industrielle ou l'immersion.", topic: 'research' },
+      { title: 'Partenaires technologiques', text: "Entreprises dont les technologies, l'infrastructure ou l'expertise peuvent renforcer l'écosystème.", topic: 'partnership' },
+      { title: 'Investisseurs', text: 'Acteurs qui souhaitent accompagner une construction de long terme, fondée sur des preuves plutôt que sur des promesses.', topic: 'investment' },
+    ],
+    getInTouch: 'Prendre contact',
+    s2: '02 — Démarche', s2t: 'Commencer petit, <em>prouver, puis grandir.</em>',
+    s2l: 'Nous préférons un engagement modeste et réussi à une promesse ambitieuse et fragile. Chaque collaboration commence par la compréhension du terrain.',
+    steps: [
+      { title: 'Prise de contact', text: 'Vous présentez votre organisation et ce que vous cherchez à accomplir.' },
+      { title: 'Échange', text: 'Nous comprenons votre contexte, vos contraintes et vos priorités.' },
+      { title: 'Cadrage', text: 'Nous définissons ensemble un périmètre réaliste, fondé sur ce qui est réellement disponible.' },
+      { title: 'Projet pilote', text: 'Une première réalisation mesurable, avant tout engagement plus large.' },
+    ],
+    s3: '03 — Nos engagements', s3t: 'Ce que vous pouvez <em>attendre de nous.</em>',
+    commit: [
+      'Une distinction claire entre ce qui est disponible, ce qui est en développement et ce qui reste une ambition.',
+      "Aucun engagement sur des fonctionnalités, des délais ou des prix qui n'aient été validés.",
+      'La protection et la maîtrise de vos données, dans le respect de vos règles et de vos responsabilités.',
+      'Une relation de long terme : comprendre, accompagner et faire évoluer les solutions avec vous.',
+    ],
+    ctaTitle: 'Parlons de ce que nous pourrions <em>construire ensemble.</em>', ctaLabel: 'Initier un partenariat',
+  },
+}[lang];
+---
+
+<Layout lang={lang} route="partnerships" title={T.title} description={T.meta}>
+  <PageHero eyebrow={T.title} title="Let's build <em>what matters.</em>" lead={T.lead} />
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.s1}</p>
+        <h2 class="display display-m" set:html={T.s1t} />
+      </div>
+      <ul class="kinds reveal">
+        {T.kinds.map((k, i) => (
+          <li>
+            <a href={contactPath(lang, k.topic)}>
+              <span class="index">{String(i + 1).padStart(2, '0')}</span>
+              <h3>{k.title}</h3>
+              <p>{k.text}</p>
+              <span class="link-arrow">{T.getInTouch}<Arrow /></span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap two">
+      <div class="reveal">
+        <p class="eyebrow">{T.s2}</p>
+        <h2 class="display display-m" set:html={T.s2t} />
+        <p class="lead side">{T.s2l}</p>
+      </div>
+      <ol class="steps reveal">
+        {T.steps.map((s, i) => (
+          <li><span class="index">{String(i + 1).padStart(2, '0')}</span><div><h3>{s.title}</h3><p>{s.text}</p></div></li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap two">
+      <div class="reveal">
+        <p class="eyebrow">{T.s3}</p>
+        <h2 class="display display-m" set:html={T.s3t} />
+      </div>
+      <ul class="commit reveal">
+        {T.commit.map((c) => <li>{c}</li>)}
+      </ul>
+    </div>
+  </section>
+
+  <CtaBand eyebrow="Build with AULIA" title={T.ctaTitle} href={contactPath(lang, 'partnership')} label={T.ctaLabel} />
+</Layout>
+
+<style>
+  .head {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 52rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+  .kinds {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line-strong);
+    border: 1px solid var(--line-strong);
+    border-radius: 1.5rem;
+    overflow: hidden;
+  }
+  .kinds a {
+    height: 100%;
+    background: var(--card);
+    padding: 2rem 1.75rem;
+    display: grid;
+    gap: 0.8rem;
+    align-content: start;
+    transition: background 0.4s var(--ease);
+  }
+  .kinds a:hover {
+    background: var(--graphite);
+  }
+  h3 {
+    font-family: var(--font-display);
+    font-size: 1.55rem;
+    line-height: 1.2;
+  }
+  .kinds h3 {
+    margin-top: 1.5rem;
+  }
+  .kinds p,
+  .steps p {
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+  .kinds .link-arrow {
+    margin-top: 1rem;
+  }
+  .two {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(2rem, 6vw, 6rem);
+  }
+  .two h2 {
+    margin-top: 1.5rem;
+  }
+  .side {
+    margin-top: 1.5rem;
+  }
+  .steps,
+  .commit {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .steps li {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    padding: 1.6rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .steps li div {
+    display: grid;
+    gap: 0.35rem;
+  }
+  .steps .index {
+    padding-top: 0.5rem;
+  }
+  .commit li {
+    position: relative;
+    padding: 1.2rem 0 1.2rem 2rem;
+    border-bottom: 1px solid var(--line);
+    color: #c9c8c3;
+  }
+  .commit li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 1.85rem;
+    width: 0.9rem;
+    height: 1px;
+    background: var(--gold);
+  }
+  @media (max-width: 960px) {
+    .kinds {
+      grid-template-columns: 1fr 1fr;
+    }
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 600px) {
+    .kinds {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

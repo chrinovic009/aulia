@@ -1,0 +1,587 @@
+---
+import Layout from '../layouts/Layout.astro';
+import AnimaCore from '../components/AnimaCore.astro';
+import Status from '../components/Status.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { getContent } from '../data/site.ts';
+import { path, type Lang } from '../i18n.ts';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const { anima } = getContent(lang);
+const mod = Object.fromEntries(anima.modules.map((m) => [m.id, m]));
+
+const T = {
+  en: {
+    meta: 'ANIMA, the transversal intelligence architecture envisioned by AULIA to perceive, understand, anticipate, coordinate and act across specialised systems.',
+    lead: 'ANIMA is an artificial intelligence architecture designed to understand environments, use knowledge, reason about complex situations, coordinate specialised systems and carry out authorised actions.',
+    state: 'ANIMA is a long-term research and engineering programme. The capabilities described here form a target architecture: they are not yet operational.',
+    s1: '01 — Why ANIMA',
+    big: 'A conversational assistant answers. <em>ANIMA is designed to understand and act</em> within an environment of connected systems.',
+    s1l: 'The goal is not to build a more talkative intelligence, but an operational one: able to observe a situation, connect information that systems handle separately, anticipate, and prepare an appropriate response — within the limits of its permissions.',
+    s2: '02 — Capabilities', s2t: 'Seven capabilities, <em>one coherence.</em>',
+    s3: '03 — Conceptual architecture', s3t: 'Distinct components, <em>framed by governance.</em>', s3l: 'Target architecture. None of these modules is presented as implemented.',
+    archLabel: 'ANIMA conceptual architecture',
+    inputs: 'Inputs', inputsText: 'Text · voice · images · video · sensors',
+    outputs: 'Outputs', outputsText: 'Authorised operations, validated when required',
+    archCaption: 'Any significant action may require human validation. Every operation is logged.',
+    s4: '04 — ANIMA in the ecosystem', s4t: 'Three scenarios <em>to grasp the ambition.</em>', s4l: 'Illustrative scenarios: they describe the target architecture, not operations in production.',
+    scenario: 'Scenario',
+    s5: '05 — Local, sovereign, controlled', s5t: 'An intelligence that belongs <em>to its environment.</em>',
+    s5l: 'We are aiming for an architecture able to run close to the field, including where Internet connectivity is limited. We will start by adapting and specialising existing models, before developing our own when our capabilities allow: progressive mastery, not proclaimed independence.',
+    s6: '06 — Governance',
+    quote: 'ANIMA must know how to recognise its limits, express its uncertainty and ask for human intervention. <em>A useful intelligence is also measured by what it knows not to do.</em>',
+    s6l: 'ANIMA is neither an artificial consciousness nor an autonomous intelligence without limits. It remains governed by principles, evidence and human responsibility.',
+    demo: 'Interactive demonstrations in preparation — they will use only clearly labelled synthetic data.',
+    ctaEyebrow: 'Research & partnerships', ctaTitle: 'Building ANIMA <em>with the right people.</em>',
+    ctaText: 'Researchers, engineers, institutions and field organisations: let’s talk about what we could build together.',
+    ctaSecondary: 'Research & Innovation',
+  },
+  fr: {
+    meta: "ANIMA, l'architecture d'intelligence transversale imaginée par AULIA pour percevoir, comprendre, anticiper, coordonner et agir à travers des systèmes spécialisés.",
+    lead: "ANIMA est une architecture d'intelligence artificielle conçue pour comprendre les environnements, exploiter les connaissances, raisonner sur des situations complexes, coordonner des systèmes spécialisés et exécuter des actions autorisées.",
+    state: "ANIMA est un programme de recherche et d'ingénierie de long terme. Les capacités décrites ici forment une architecture cible : elles ne sont pas encore opérationnelles.",
+    s1: '01 — Pourquoi ANIMA',
+    big: 'Un assistant conversationnel répond. <em>ANIMA est conçue pour comprendre et agir</em> dans un environnement de systèmes connectés.',
+    s1l: "Le but n'est pas de construire une intelligence plus bavarde, mais une intelligence opérationnelle : capable d'observer une situation, de relier des informations que les systèmes traitent séparément, d'anticiper et de préparer une réponse adaptée — dans les limites de ses autorisations.",
+    s2: '02 — Capacités', s2t: 'Sept capacités, <em>une même cohérence.</em>',
+    s3: '03 — Architecture conceptuelle', s3t: 'Des composants distincts, <em>une gouvernance qui les encadre.</em>', s3l: "Architecture cible. Aucun de ces modules n'est présenté comme implémenté.",
+    archLabel: "Architecture conceptuelle d'ANIMA",
+    inputs: 'Entrées', inputsText: 'Texte · voix · images · vidéos · capteurs',
+    outputs: 'Sorties', outputsText: 'Opérations autorisées, validées si nécessaire',
+    archCaption: 'Toute action importante peut exiger une validation humaine. Chaque opération est tracée.',
+    s4: "04 — ANIMA dans l'écosystème", s4t: "Trois scénarios <em>pour comprendre l'ambition.</em>", s4l: "Scénarios illustratifs : ils décrivent l'architecture cible, pas des opérations en production.",
+    scenario: 'Scénario',
+    s5: '05 — Local, souverain, maîtrisé', s5t: 'Une intelligence qui appartient <em>à son environnement.</em>',
+    s5l: "Nous visons une architecture capable de fonctionner au plus près du terrain, y compris là où la connexion Internet est limitée. Nous commencerons par adapter et spécialiser des modèles existants, avant de développer les nôtres lorsque nos capacités le permettront : une maîtrise progressive, pas une indépendance proclamée.",
+    s6: '06 — Gouvernance',
+    quote: "ANIMA doit savoir reconnaître ses limites, exprimer ses incertitudes et demander une intervention humaine. <em>Une intelligence utile se mesure aussi à ce qu'elle sait ne pas faire.</em>",
+    s6l: "ANIMA n'est ni une conscience artificielle ni une intelligence autonome sans limites. Elle reste gouvernée par des principes, des preuves et des responsabilités humaines.",
+    demo: 'Démonstrations interactives en préparation — elles utiliseront exclusivement des données synthétiques, clairement identifiées.',
+    ctaEyebrow: 'Recherche & partenariats', ctaTitle: 'Construire ANIMA <em>avec les bonnes personnes.</em>',
+    ctaText: 'Chercheurs, ingénieurs, institutions et organisations de terrain : parlons de ce que nous pourrions construire ensemble.',
+    ctaSecondary: 'Recherche & Innovation',
+  },
+}[lang];
+---
+
+<Layout lang={lang} route="anima" title="ANIMA" description={T.meta}>
+  <section class="hero">
+    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="wrap hero-grid">
+      <div>
+        <p class="eyebrow">ANIMA</p>
+        <h1 class="display display-l">The intelligence <em>that moves the ecosystem.</em></h1>
+        <p class="lead">{T.lead}</p>
+        <p class="motto">
+          {anima.motto.map((m, i) => <span>{m}{i < anima.motto.length - 1 && <i aria-hidden="true">·</i>}</span>)}
+        </p>
+        <div class="state">
+          <Status status={anima.status} lang={lang} />
+          <p>{T.state}</p>
+        </div>
+      </div>
+      <div class="hero-visual"><AnimaCore lang={lang} /></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap statement reveal">
+      <p class="eyebrow">{T.s1}</p>
+      <p class="big" set:html={T.big} />
+      <p class="lead">{T.s1l}</p>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.s2}</p>
+        <h2 class="display display-m" set:html={T.s2t} />
+      </div>
+      <ol class="caps reveal">
+        {anima.capabilities.map((c, i) => (
+          <li>
+            <span class="index">{String(i + 1).padStart(2, '0')}</span>
+            <h3>{c.name}</h3>
+            <p>{c.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section arch-sec">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.s3}</p>
+        <h2 class="display display-m" set:html={T.s3t} />
+        <p class="lead">{T.s3l}</p>
+      </div>
+
+      <figure class="arch reveal" aria-label={T.archLabel}>
+        <div class="gov">
+          <span class="gov-label">{mod.governance.name} — {mod.governance.role}</span>
+          <div class="flow">
+            <div class="io"><span class="io-t">{T.inputs}</span><span>{T.inputsText}</span></div>
+            <div class="mod"><span class="m-name">{mod.perception.name}</span><span class="m-role">{mod.perception.role}</span></div>
+            <div class="center">
+              <div class="mod aux"><span class="m-name">{mod.memory.name}</span><span class="m-role">{mod.memory.role}</span></div>
+              <div class="mod core"><span class="m-name">{mod.core.name}</span><span class="m-role">{mod.core.role}</span></div>
+              <div class="mod aux"><span class="m-name">{mod.reasoning.name}</span><span class="m-role">{mod.reasoning.role}</span></div>
+            </div>
+            <div class="mod"><span class="m-name">{mod.orchestrator.name}</span><span class="m-role">{mod.orchestrator.role}</span></div>
+            <div class="mod"><span class="m-name">{mod.action.name}</span><span class="m-role">{mod.action.role}</span></div>
+            <div class="io"><span class="io-t">{T.outputs}</span><span>{T.outputsText}</span></div>
+          </div>
+        </div>
+        <figcaption>{T.archCaption}</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.s4}</p>
+        <h2 class="display display-m" set:html={T.s4t} />
+        <p class="lead">{T.s4l}</p>
+      </div>
+      <div class="scenarios">
+        {anima.scenarios.map((s) => (
+          <article class="scenario reveal">
+            <header>
+              <span class="sc-id">{T.scenario} {s.id}</span>
+              <span class="sc-sys">ANIMA + {s.systems.join(' + ')}</span>
+            </header>
+            <h3>{s.title}</h3>
+            <p class="ctx">{s.context}</p>
+            <ol>
+              {s.steps.map((st, i) => (
+                <li><span class="index">{String(i + 1).padStart(2, '0')}</span>{st}</li>
+              ))}
+            </ol>
+            <p class="guard">{s.guard}</p>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap two">
+      <div class="reveal">
+        <p class="eyebrow">{T.s5}</p>
+        <h2 class="display display-m" set:html={T.s5t} />
+        <p class="lead side">{T.s5l}</p>
+      </div>
+      <ul class="sov reveal">
+        {anima.sovereignty.map((s) => (
+          <li><h3>{s.title}</h3><p>{s.text}</p></li>
+        ))}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section gov-sec">
+    <div class="wrap reveal">
+      <p class="eyebrow">{T.s6}</p>
+      <blockquote set:html={T.quote} />
+      <p class="lead">{T.s6l}</p>
+      <div class="demo">
+        <span class="btn btn-ghost" aria-disabled="true">Experience ANIMA</span>
+        <span class="muted">{T.demo}</span>
+      </div>
+    </div>
+  </section>
+
+  <CtaBand
+    eyebrow={T.ctaEyebrow}
+    title={T.ctaTitle}
+    text={T.ctaText}
+    href={path(lang, 'partnerships')}
+    label="Build with AULIA"
+    secondary={{ href: path(lang, 'research'), label: T.ctaSecondary }}
+  />
+</Layout>
+
+<style>
+  .hero {
+    position: relative;
+    padding-top: clamp(9rem, 16vw, 11rem);
+    padding-bottom: clamp(4rem, 8vw, 6rem);
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .hero-bg {
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 45% 60% at 75% 45%, rgba(198, 164, 92, 0.1), transparent 70%),
+      var(--graphite);
+  }
+  .hero-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: center;
+  }
+  h1 {
+    margin-top: 1.5rem;
+  }
+  .hero .lead {
+    margin-top: 1.5rem;
+  }
+  .motto {
+    margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 0.9rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .motto i {
+    font-style: normal;
+    margin-left: 0.9rem;
+    color: var(--faint);
+  }
+  .state {
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    display: grid;
+    gap: 0.6rem;
+    max-width: 34rem;
+  }
+  .state p {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+
+  .statement {
+    display: grid;
+    gap: 2rem;
+  }
+  .statement > * {
+    max-width: 60rem;
+  }
+  .big {
+    font-family: var(--font-display);
+    font-size: clamp(2rem, 4vw, 3.3rem);
+    line-height: 1.15;
+  }
+  .big em {
+    color: var(--gold-bright);
+  }
+  .head {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 52rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+  .caps {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line-strong);
+    border: 1px solid var(--line-strong);
+    border-radius: 1.5rem;
+    overflow: hidden;
+  }
+  .caps li {
+    background: var(--card);
+    padding: 2rem 1.5rem 2.25rem;
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+  }
+  .caps li:last-child {
+    grid-column: span 2;
+  }
+  .caps h3 {
+    font-family: var(--font-display);
+    font-size: 1.7rem;
+  }
+  .caps p {
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+
+  .arch-sec {
+    background: var(--graphite);
+  }
+  .arch {
+    margin: 0;
+  }
+  .gov {
+    position: relative;
+    border: 1px dashed var(--gold-dim);
+    padding: 3.25rem clamp(1rem, 2.5vw, 2rem) clamp(1.5rem, 3vw, 2.5rem);
+  }
+  .gov-label {
+    position: absolute;
+    top: -0.65rem;
+    left: 1.5rem;
+    padding: 0 0.75rem;
+    background: var(--graphite);
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .flow {
+    display: grid;
+    grid-template-columns: 0.8fr 1fr 1.3fr 1fr 1fr 0.8fr;
+    gap: 1.75rem;
+    align-items: center;
+  }
+  .flow > * {
+    position: relative;
+  }
+  .flow > *:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -1.6rem;
+    top: 50%;
+    width: 1.45rem;
+    height: 1px;
+    background: linear-gradient(90deg, var(--line-strong), var(--gold));
+  }
+  .io {
+    display: grid;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .io-t {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+  .mod {
+    border: 1px solid var(--line-strong);
+    background: var(--card);
+    padding: 1.1rem 1rem;
+    display: grid;
+    gap: 0.35rem;
+  }
+  .m-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+  }
+  .m-role {
+    font-size: 0.75rem;
+    line-height: 1.45;
+    color: var(--muted);
+  }
+  .center {
+    display: grid;
+    gap: 0.6rem;
+  }
+  .core {
+    border-color: var(--gold);
+    background: radial-gradient(ellipse at center, rgba(198, 164, 92, 0.2), var(--card) 75%);
+    padding-block: 1.6rem;
+  }
+  .core .m-name {
+    color: var(--gold-bright);
+  }
+  .aux {
+    padding-block: 0.7rem;
+  }
+  .arch figcaption {
+    margin-top: 1.25rem;
+    font-size: 0.8rem;
+    color: var(--faint);
+  }
+
+  .scenarios {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--line-strong);
+    border: 1px solid var(--line-strong);
+    border-radius: 1.5rem;
+    overflow: hidden;
+  }
+  .scenario {
+    background: var(--card);
+    padding: 2rem 1.75rem;
+    display: grid;
+    gap: 1rem;
+    align-content: start;
+  }
+  .scenario header {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .sc-id {
+    color: var(--faint);
+  }
+  .sc-sys {
+    color: var(--gold);
+  }
+  .scenario h3 {
+    margin-top: 1rem;
+    font-family: var(--font-display);
+    font-size: 1.65rem;
+    line-height: 1.15;
+  }
+  .ctx {
+    color: #c9c8c3;
+    font-size: 0.93rem;
+  }
+  .scenario ol {
+    list-style: none;
+    margin: 0.5rem 0;
+    padding: 0;
+    border-left: 1px solid var(--gold-dim);
+  }
+  .scenario li {
+    display: grid;
+    grid-template-columns: 2.4rem 1fr;
+    padding: 0.5rem 0 0.5rem 1rem;
+    font-size: 0.88rem;
+    color: #bdbcb7;
+  }
+  .guard {
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid var(--line);
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+
+  .two {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
+    gap: clamp(2rem, 6vw, 6rem);
+  }
+  .two h2 {
+    margin-top: 1.5rem;
+  }
+  .lead.side {
+    margin-top: 1.5rem;
+  }
+  .sov {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    border-top: 1px solid var(--line);
+  }
+  .sov li {
+    padding: 1.6rem 1.25rem 1.6rem 0;
+    border-bottom: 1px solid var(--line);
+    display: grid;
+    gap: 0.4rem;
+    align-content: start;
+  }
+  .sov li:nth-child(even) {
+    padding-left: 1.25rem;
+    border-left: 1px solid var(--line);
+  }
+  .sov h3 {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+  }
+  .sov p {
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+
+  .gov-sec .wrap {
+    display: grid;
+    gap: 2rem;
+  }
+  .gov-sec .wrap > * {
+    max-width: 62rem;
+  }
+  blockquote {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.7rem, 3.2vw, 2.6rem);
+    line-height: 1.22;
+  }
+  blockquote em {
+    color: var(--gold-bright);
+  }
+  .demo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+    font-size: 0.85rem;
+  }
+  .demo .muted {
+    max-width: 30rem;
+  }
+
+  @media (max-width: 1080px) {
+    .flow {
+      grid-template-columns: 1fr;
+      gap: 1.6rem;
+    }
+    .flow > *:not(:last-child)::after {
+      right: auto;
+      left: 50%;
+      top: auto;
+      bottom: -1.45rem;
+      width: 1px;
+      height: 1.3rem;
+      background: linear-gradient(180deg, var(--line-strong), var(--gold));
+    }
+    .io {
+      text-align: center;
+    }
+    .center {
+      grid-template-columns: 1fr 1.2fr 1fr;
+      align-items: center;
+    }
+    .caps {
+      grid-template-columns: 1fr 1fr;
+    }
+    .caps li:last-child {
+      grid-column: auto;
+    }
+    .scenarios {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 900px) {
+    .hero-grid,
+    .two {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .caps,
+    .sov {
+      grid-template-columns: 1fr;
+    }
+    .sov li:nth-child(even) {
+      padding-left: 0;
+      border-left: 0;
+    }
+    .center {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

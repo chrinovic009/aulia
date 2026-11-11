@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Arrow from '../components/Arrow.astro';
+---
+<Layout lang="en" title="Page not found">
+  <section class="nf">
+    <div class="wrap">
+      <p class="eyebrow">Error 404</p>
+      <h1 class="display display-l">This page <em>does not exist.</em></h1>
+      <p class="lead">It may have been moved, or never existed. <span lang="fr">— Cette page n'existe pas ou a été déplacée.</span></p>
+      <div class="actions">
+        <a class="btn btn-primary" href="/">Back to home<Arrow /></a>
+        <a class="btn btn-ghost" href="/fr" lang="fr">Accueil en français</a>
+      </div>
+    </div>
+  </section>
+</Layout>
+<style>
+  .nf { min-height: 80vh; display: grid; align-items: center; padding-top: 8rem; }
+  .nf .wrap { display: grid; gap: 1.5rem; justify-items: start; }
+  .actions { display: flex; flex-wrap: wrap; gap: 1rem; }
+</style>

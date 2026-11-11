@@ -1,0 +1,452 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHero from '../components/PageHero.astro';
+import Doctrine from '../components/Doctrine.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { getContent } from '../data/site.ts';
+import { path, contactPath, type Lang } from '../i18n.ts';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const { purpose, name } = getContent(lang);
+
+const T = {
+  en: {
+    meta: 'What AULIA is, why it exists, how it thinks and what it sets out to build.',
+    eyebrow: 'Our vision',
+    title: 'Building an institution, <em>not just companies.</em>',
+    lead: 'AULIA is a parent company that designs, holds, develops and supports specialised technology companies — autonomous in their fields, united by one doctrine.',
+    s1: '01 — Overview',
+    s1t: 'An entrepreneurial architecture <em>under construction.</em>',
+    s1p: [
+      'Most companies identify a problem, build a product and look for a market. AULIA starts from a different question: how do you build an organisation capable of designing, developing and growing several companies that durably transform the way essential systems work?',
+      'Rather than concentrating every skill in a single company, AULIA creates autonomous entities, each able to master its field, develop its own technologies and meet precise needs: health, industry, operations management, immersive technologies, and then other essential sectors.',
+      'Today, AULIA is a structured vision and a set of projects at different levels of maturity. It is not yet the group we intend to build, and we do not try to give that impression.',
+    ],
+    s2: '02 — The name',
+    s2t: 'The incorruptible value that brings light <em>through a soul that acts.</em>',
+    s3: '03 — Purpose, mission, vision',
+    pmv: ['Purpose', 'Mission', 'Vision'],
+    s4: '04 — Doctrine',
+    s4t: 'Understand. Anticipate. Create. <em>Protect. Transform.</em>',
+    s4l: 'A doctrine that guides decisions, investments, hiring and strategic direction.',
+    s5: '05 — Values',
+    s5t: 'What we refuse <em>to sacrifice.</em>',
+    principles: [
+      { title: 'Integrity before growth', text: 'Economic performance is essential, but it must never become our only compass.' },
+      { title: 'Security before speed', text: 'Protecting people, data and systems is part of the design, not a finishing touch.' },
+      { title: 'Truth before image', text: 'We always distinguish between what exists, what is being built and what remains an ambition.' },
+      { title: 'Proof before promise', text: 'Technologies that are modest in their promises and exceptional in their execution.' },
+    ],
+    s6: '06 — Development philosophy',
+    s6t: 'Prove <em>before scaling.</em>',
+    s6l: 'We start with the projects we can actually build, sell, deploy, maintain and improve — not necessarily the most spectacular ones.',
+    phases: [
+      { n: '01', title: 'Build the first foundation', text: 'Demonstrate, with AULIA Care, our ability to create a useful solution, win over facilities, gain customers and generate revenue.' },
+      { n: '02', title: 'Prove industrial value', text: 'Advance AULIA Vigil and AULIA Flow from real field needs, particularly in industry and mining.' },
+      { n: '03', title: 'Develop scientific mastery', text: 'Progressively build our own skills, architectures and intelligent systems, including ANIMA.' },
+      { n: '04', title: 'Expand the ecosystem', text: 'Create new companies as new needs emerge, each one having to earn its place in the group.' },
+    ],
+    s7: '07 — Governance',
+    s7t: 'A structure designed <em>to last.</em>',
+    s7l: 'We do not want to build something that depends forever on a single person. The parent company must be able to:',
+    holding: [
+      'Hold and protect its technologies and intellectual property.',
+      'Create new companies as new needs emerge.',
+      'Develop strategic partnerships.',
+      'Pool certain resources without removing the subsidiaries’ autonomy.',
+      'Build governance capable of outliving its founders.',
+      'Preserve a shared identity and doctrine across generations.',
+    ],
+    govNote: 'The composition of the governance bodies will be published here once it has been formally approved.',
+    s8: '08 — Ambition',
+    quote: 'We must not try to make AULIA look big already. We must accumulate enough proof that, one day, its greatness becomes <em>hard to dispute.</em>',
+    s8l: 'Great institutions are not necessarily born great. They become great through the quality of their foundations, their decisions and their ability to last.',
+    ctaEyebrow: 'Ecosystem',
+    ctaTitle: 'Discover <em>the group’s companies.</em>',
+    ctaLabel: 'Explore the ecosystem',
+    ctaSecondary: 'Request a presentation',
+  },
+  fr: {
+    meta: "Ce qu'est AULIA, pourquoi elle existe, comment elle pense et ce qu'elle cherche à construire.",
+    eyebrow: 'Notre vision',
+    title: 'Construire une institution, <em>pas seulement des entreprises.</em>',
+    lead: 'AULIA est une société mère qui conçoit, détient, développe et accompagne des entreprises technologiques spécialisées, autonomes dans leur domaine, unies par une même doctrine.',
+    s1: '01 — Présentation',
+    s1t: 'Une architecture entrepreneuriale <em>en construction.</em>',
+    s1p: [
+      "La plupart des entreprises identifient un problème, construisent un produit et cherchent à le commercialiser. AULIA part d'une autre question : comment construire une organisation capable de concevoir, développer et faire grandir plusieurs entreprises qui transforment durablement le fonctionnement des systèmes essentiels ?",
+      "Plutôt que de concentrer toutes les compétences dans une seule entreprise, AULIA crée des entités autonomes, chacune capable de maîtriser son domaine, de développer ses propres technologies et de répondre à des besoins précis : la santé, l'industrie, l'organisation des opérations, les technologies immersives, puis d'autres secteurs essentiels.",
+      "AULIA est aujourd'hui une vision structurée et un ensemble de projets à différents niveaux de maturité. Ce n'est pas encore le groupe que nous voulons bâtir, et nous ne cherchons pas à en donner l'impression.",
+    ],
+    s2: '02 — Le nom',
+    s2t: 'La valeur incorruptible qui apporte la lumière <em>à travers une âme qui agit.</em>',
+    s3: "03 — Raison d'être, mission, vision",
+    pmv: ["Raison d'être", 'Mission', 'Vision'],
+    s4: '04 — Doctrine',
+    s4t: 'Comprendre. Anticiper. Créer. <em>Protéger. Transformer.</em>',
+    s4l: 'Une doctrine qui guide les décisions, les investissements, les recrutements et les orientations stratégiques.',
+    s5: '05 — Valeurs',
+    s5t: 'Ce que nous refusons <em>de sacrifier.</em>',
+    principles: [
+      { title: "L'intégrité avant la croissance", text: 'La performance économique est indispensable, mais elle ne doit pas devenir notre unique boussole.' },
+      { title: 'La sécurité avant la rapidité', text: 'Protéger les personnes, les données et les systèmes fait partie de la conception, pas de la finition.' },
+      { title: "La vérité avant l'image", text: 'Nous distinguons toujours ce qui existe, ce qui se construit et ce qui reste une ambition.' },
+      { title: 'La preuve avant la promesse', text: 'Des technologies modestes dans leurs promesses, exceptionnelles dans leur exécution.' },
+    ],
+    s6: '06 — Philosophie de développement',
+    s6t: 'Prouver <em>avant de grandir.</em>',
+    s6l: 'Nous commençons par les projets que nous pouvons réellement construire, vendre, déployer, maintenir et améliorer — pas nécessairement par les plus spectaculaires.',
+    phases: [
+      { n: '01', title: 'Construire le premier socle', text: 'Démontrer, avec AULIA Care, notre capacité à créer une solution utile, convaincre des établissements, obtenir des clients et générer des revenus.' },
+      { n: '02', title: 'Prouver la valeur industrielle', text: 'Faire progresser AULIA Vigil et AULIA Flow à partir de besoins réels du terrain, notamment industriels et miniers.' },
+      { n: '03', title: 'Développer la maîtrise scientifique', text: 'Bâtir progressivement nos propres compétences, architectures et systèmes intelligents, dont ANIMA.' },
+      { n: '04', title: "Élargir l'écosystème", text: 'Créer de nouvelles entreprises lorsque de nouveaux besoins apparaissent, chacune devant mériter sa place dans le groupe.' },
+    ],
+    s7: '07 — Gouvernance',
+    s7t: 'Une structure pensée <em>pour durer.</em>',
+    s7l: "Nous ne voulons pas construire quelque chose qui dépende éternellement d'une seule personne. La société mère doit pouvoir :",
+    holding: [
+      'Détenir et protéger ses technologies et sa propriété intellectuelle.',
+      'Créer de nouvelles entreprises lorsque de nouveaux besoins apparaissent.',
+      'Développer des partenariats stratégiques.',
+      "Mutualiser certaines ressources sans supprimer l'autonomie des filiales.",
+      'Construire une gouvernance capable de survivre à ses fondateurs.',
+      'Préserver une identité et une doctrine communes à travers les générations.',
+    ],
+    govNote: "La composition des organes de gouvernance sera publiée ici lorsqu'elle aura été formellement validée.",
+    s8: '08 — Ambition',
+    quote: "Nous ne devons pas chercher à donner l'impression qu'AULIA est déjà grande. Nous devons accumuler suffisamment de preuves pour qu'un jour, sa grandeur devienne <em>difficile à contester.</em>",
+    s8l: 'Les grandes institutions ne naissent pas nécessairement grandes. Elles le deviennent par la qualité de leurs fondations, de leurs décisions et de leur capacité à durer.',
+    ctaEyebrow: 'Écosystème',
+    ctaTitle: 'Découvrir <em>les entreprises du groupe.</em>',
+    ctaLabel: "Explorer l'écosystème",
+    ctaSecondary: 'Demander une présentation',
+  },
+}[lang];
+---
+
+<Layout lang={lang} route="vision" title={T.eyebrow} description={T.meta}>
+  <PageHero eyebrow={T.eyebrow} title={T.title} lead={T.lead} />
+
+  <section class="section">
+    <div class="wrap two">
+      <div class="reveal">
+        <p class="eyebrow">{T.s1}</p>
+        <h2 class="display display-m" set:html={T.s1t} />
+      </div>
+      <div class="prose reveal">
+        {T.s1p.map((p) => <p>{p}</p>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.s2}</p>
+        <h2 class="display display-m" set:html={T.s2t} />
+      </div>
+      <ol class="name reveal">
+        {name.map((n) => (
+          <li>
+            <span class="letters">{n.letters}</span>
+            <span class="latin">{n.latin}</span>
+            <h3>{n.title}</h3>
+            <p>{n.text}</p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.s3}</p>
+      </div>
+      <dl class="pmv reveal">
+        <div><dt>{T.pmv[0]}</dt><dd>{purpose.raison}</dd></div>
+        <div><dt>{T.pmv[1]}</dt><dd>{purpose.mission}</dd></div>
+        <div><dt>{T.pmv[2]}</dt><dd>{purpose.vision}</dd></div>
+      </dl>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.s4}</p>
+        <h2 class="display display-m" set:html={T.s4t} />
+        <p class="lead">{T.s4l}</p>
+      </div>
+      <div class="reveal"><Doctrine lang={lang} /></div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.s5}</p>
+        <h2 class="display display-m" set:html={T.s5t} />
+      </div>
+      <ul class="grid4 reveal">
+        {T.principles.map((p) => <li><h3>{p.title}</h3><p>{p.text}</p></li>)}
+      </ul>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap two">
+      <div class="reveal">
+        <p class="eyebrow">{T.s6}</p>
+        <h2 class="display display-m" set:html={T.s6t} />
+        <p class="lead side">{T.s6l}</p>
+      </div>
+      <ol class="phases reveal">
+        {T.phases.map((p) => (
+          <li><span class="index">{p.n}</span><div><h3>{p.title}</h3><p>{p.text}</p></div></li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap two">
+      <div class="reveal">
+        <p class="eyebrow">{T.s7}</p>
+        <h2 class="display display-m" set:html={T.s7t} />
+        <p class="lead side">{T.s7l}</p>
+      </div>
+      <div class="reveal">
+        <ul class="checks">
+          {T.holding.map((h) => <li>{h}</li>)}
+        </ul>
+        <p class="note">{T.govNote}</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section ambition">
+    <div class="wrap reveal">
+      <p class="eyebrow">{T.s8}</p>
+      <blockquote set:html={T.quote} />
+      <p class="lead">{T.s8l}</p>
+    </div>
+  </section>
+
+  <CtaBand
+    eyebrow={T.ctaEyebrow}
+    title={T.ctaTitle}
+    href={path(lang, 'ecosystem')}
+    label={T.ctaLabel}
+    secondary={{ href: contactPath(lang, 'presentation'), label: T.ctaSecondary }}
+  />
+</Layout>
+
+<style>
+  .two {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+    gap: clamp(2rem, 6vw, 6rem);
+  }
+  .two h2 {
+    margin-top: 1.5rem;
+  }
+  .side {
+    margin-top: 1.5rem;
+  }
+  .head {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 52rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+  .name {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--line);
+  }
+  .name li {
+    padding: 2.5rem 2rem 2.5rem 0;
+    display: grid;
+    gap: 0.6rem;
+    align-content: start;
+  }
+  .name li + li {
+    padding-left: 2rem;
+    border-left: 1px solid var(--line);
+  }
+  .letters {
+    font-family: var(--font-display);
+    font-size: clamp(4rem, 8vw, 6.5rem);
+    line-height: 0.9;
+    color: var(--gold-bright);
+  }
+  .latin {
+    font-family: var(--font-display);
+    font-style: normal;
+    font-size: 1.15rem;
+    color: var(--muted);
+  }
+  .name h3 {
+    margin-top: 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+  }
+  .name p {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .pmv {
+    margin: 0;
+    border-top: 1px solid var(--line);
+  }
+  .pmv div {
+    display: grid;
+    grid-template-columns: 14rem 1fr;
+    gap: 2rem;
+    padding: 2.25rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .pmv dt {
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--gold);
+    padding-top: 0.6rem;
+  }
+  .pmv dd {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.3rem, 2vw, 1.7rem);
+    line-height: 1.4;
+    color: #e4e2db;
+  }
+  .grid4 {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid var(--line);
+  }
+  .grid4 li {
+    padding: 2rem 1.5rem 2rem 0;
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+  }
+  .grid4 li + li {
+    padding-left: 1.5rem;
+    border-left: 1px solid var(--line);
+  }
+  .grid4 h3,
+  .phases h3 {
+    font-family: var(--font-display);
+    font-size: 1.45rem;
+    line-height: 1.2;
+  }
+  .grid4 p,
+  .phases p {
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .phases {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .phases li {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    padding: 1.75rem 0;
+    border-bottom: 1px solid var(--line);
+  }
+  .phases li div {
+    display: grid;
+    gap: 0.4rem;
+  }
+  .phases .index {
+    padding-top: 0.5rem;
+  }
+  .checks {
+    list-style: none;
+    margin: 0 0 2rem;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .checks li {
+    position: relative;
+    padding: 1rem 0 1rem 2rem;
+    border-bottom: 1px solid var(--line);
+    color: #c9c8c3;
+  }
+  .checks li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 1.65rem;
+    width: 0.9rem;
+    height: 1px;
+    background: var(--gold);
+  }
+  .ambition {
+    background: var(--graphite);
+  }
+  .ambition .wrap {
+    display: grid;
+    gap: 2rem;
+  }
+  .ambition .wrap > * {
+    max-width: 62rem;
+  }
+  blockquote {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: clamp(1.8rem, 3.6vw, 3rem);
+    line-height: 1.2;
+  }
+  blockquote em {
+    color: var(--gold-bright);
+  }
+
+  @media (max-width: 960px) {
+    .two {
+      grid-template-columns: 1fr;
+    }
+    .grid4 {
+      grid-template-columns: 1fr 1fr;
+    }
+    .grid4 li:nth-child(3) {
+      padding-left: 0;
+      border-left: 0;
+    }
+    .grid4 li:nth-child(n + 3) {
+      border-top: 1px solid var(--line);
+    }
+  }
+  @media (max-width: 720px) {
+    .name,
+    .grid4 {
+      grid-template-columns: 1fr;
+    }
+    .name li + li,
+    .grid4 li + li {
+      padding-left: 0;
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+    .pmv div {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+  }
+</style>

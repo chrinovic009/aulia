@@ -1,0 +1,359 @@
+---
+import { getContent } from '../data/site.ts';
+import { ui, path, type Lang } from '../i18n.ts';
+import Arrow from './Arrow.astro';
+
+interface Props {
+  interactive?: boolean;
+  lang: Lang;
+}
+const { interactive = false, lang } = Astro.props;
+const { entities, statusLabel } = getContent(lang);
+const t = ui[lang];
+
+const pos: Record<string, { x: number; y: number }> = {
+  care: { x: 300, y: 70 },
+  vigil: { x: 530, y: 300 },
+  flow: { x: 300, y: 530 },
+  vr: { x: 70, y: 300 },
+};
+const nodes = entities.map((e) => ({ ...e, ...pos[e.slug] }));
+---
+
+<div class:list={['eco', { interactive }]} data-eco>
+  <div class="map">
+    <svg viewBox="0 0 600 600" aria-hidden="true">
+      <defs>
+        <radialGradient id="eco-glow" cx="0.5" cy="0.5" r="0.5">
+          <stop offset="0" stop-color="#c6a45c" stop-opacity="0.18" />
+          <stop offset="1" stop-color="#c6a45c" stop-opacity="0" />
+        </radialGradient>
+      </defs>
+      <circle cx="300" cy="300" r="230" class="orbit" />
+      <circle cx="300" cy="300" r="170" fill="url(#eco-glow)" />
+      <circle cx="300" cy="300" r="128" class="anima-ring" />
+      {nodes.map((n) => (
+        <g class="link" data-link={n.slug}>
+          <line x1="300" y1="300" x2={n.x} y2={n.y} class="own" />
+          <circle r="2.2" class="pulse">
+            <animateMotion dur="5s" repeatCount="indefinite" path={`M300 300 L${n.x} ${n.y}`} />
+          </circle>
+        </g>
+      ))}
+      <text x="404" y="196" class="ring-label">ANIMA</text>
+    </svg>
+
+    <div class="node center" style="left:50%;top:50%">
+      <img src="/images/aulia-mark.png" alt="" width="186" height="185" />
+      <span class="center-name">AULIA</span>
+    </div>
+
+    {nodes.map((n) => {
+      const style = `left:${(n.x / 600) * 100}%;top:${(n.y / 600) * 100}%`;
+      return interactive ? (
+        <button type="button" class="node ent" style={style} data-select={n.slug} aria-pressed="false">
+          <span class="name">{n.short}</span>
+          <span class="st">{statusLabel[n.status]}</span>
+        </button>
+      ) : (
+        <a class="node ent" style={style} href={path(lang, 'ecosystem', n.slug)}>
+          <span class="name">{n.short}</span>
+          <span class="st">{statusLabel[n.status]}</span>
+        </a>
+      );
+    })}
+
+    {interactive && (
+      <button type="button" class="anima-hit" data-select="anima" aria-pressed="false" aria-label={t.animaRingLabel} />
+    )}
+  </div>
+
+  <ul class="legend">
+    <li><i class="l-own"></i>{t.belonging}</li>
+    <li><i class="l-target"></i>{t.animaLayer}</li>
+  </ul>
+
+  {interactive && (
+    <div class="panel" aria-live="polite">
+      <div class="pane on" data-pane="default">
+        <p class="eyebrow">{t.groupStructure}</p>
+        <h3 class="display display-m">{t.mapDefaultTitle}</h3>
+        <p class="muted">{t.mapDefaultText}</p>
+      </div>
+      {nodes.map((n) => (
+        <div class="pane" data-pane={n.slug}>
+          <p class="eyebrow">{n.sector}</p>
+          <h3 class="display display-m">{n.name}</h3>
+          <p class="muted">{n.summary}</p>
+          <dl>
+            <div><dt>{t.status}</dt><dd>{statusLabel[n.status]}</dd></div>
+            <div><dt>{t.systems}</dt><dd>{n.capabilities.map((c) => c.title).join(' · ')}</dd></div>
+            <div><dt>{t.relation}</dt><dd>{n.ecosystem}</dd></div>
+            <div><dt>{t.withAnima}</dt><dd>{n.animaLink}</dd></div>
+          </dl>
+          <a class="link-arrow" href={path(lang, 'ecosystem', n.slug)}>{t.see} {n.name}<Arrow /></a>
+        </div>
+      ))}
+      <div class="pane" data-pane="anima">
+        <p class="eyebrow">{t.transversal}</p>
+        <h3 class="display display-m">{t.animaNotSubsidiary}</h3>
+        <p class="muted">{t.animaNotSubsidiaryText}</p>
+        <a class="link-arrow" href={path(lang, 'anima')}>{t.discoverAnima}<Arrow /></a>
+      </div>
+    </div>
+  )}
+</div>
+
+<style>
+  .eco {
+    display: grid;
+    gap: 2rem;
+  }
+  .eco.interactive {
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    grid-template-areas: 'map panel' 'legend panel';
+    column-gap: clamp(2rem, 6vw, 6rem);
+    align-items: start;
+  }
+  .interactive .map {
+    grid-area: map;
+  }
+  .interactive .legend {
+    grid-area: legend;
+  }
+  .map {
+    position: relative;
+    width: 100%;
+    max-width: 560px;
+    margin-inline: auto;
+    aspect-ratio: 1;
+  }
+  svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .orbit {
+    fill: none;
+    stroke: var(--line);
+  }
+  .anima-ring {
+    fill: none;
+    stroke: var(--gold);
+    stroke-width: 1;
+    stroke-dasharray: 3 6;
+    opacity: 0.75;
+    transform-origin: 300px 300px;
+    animation: spin 120s linear infinite;
+  }
+  .ring-label {
+    fill: var(--gold);
+    font-family: var(--font-sans);
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.3em;
+    text-anchor: start;
+  }
+  .own {
+    stroke: var(--line-strong);
+    stroke-width: 1;
+    transition: stroke 0.4s var(--ease);
+  }
+  .pulse {
+    fill: var(--gold-bright);
+    opacity: 0.8;
+  }
+  .link.hot .own {
+    stroke: var(--gold);
+  }
+
+  .node {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    display: grid;
+    justify-items: center;
+    align-content: center;
+    text-align: center;
+  }
+  .center {
+    width: 25%;
+    gap: 0.4rem;
+  }
+  .center img {
+    width: 62%;
+    height: auto;
+  }
+  .center-name {
+    font-size: 0.66rem;
+    font-weight: 600;
+    letter-spacing: 0.32em;
+    color: var(--ivory);
+    padding-left: 0.32em;
+  }
+  .ent {
+    width: 23%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    border: 1px solid var(--line-strong);
+    background: var(--card);
+    color: var(--ivory);
+    font: inherit;
+    cursor: pointer;
+    gap: 0.3rem;
+    transition:
+      border-color 0.4s var(--ease),
+      background 0.4s var(--ease),
+      transform 0.4s var(--ease);
+  }
+  .ent:hover,
+  .ent[aria-pressed='true'] {
+    border-color: var(--gold-bright);
+    background: var(--card-hover);
+    transform: translate(-50%, -50%) scale(1.05);
+  }
+  .name {
+    font-size: clamp(0.72rem, 1.5vw, 0.9rem);
+    font-weight: 600;
+    letter-spacing: 0.22em;
+    padding-left: 0.22em;
+  }
+  .st {
+    font-size: clamp(0.46rem, 0.85vw, 0.56rem);
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .anima-hit {
+    position: absolute;
+    left: 50%;
+    top: 26.5%;
+    transform: translate(-50%, -50%);
+    width: 18%;
+    height: 7%;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+
+  .legend {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem 2rem;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+  .legend li {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .legend i {
+    width: 1.75rem;
+    height: 0;
+    border-top: 1px solid var(--line-strong);
+  }
+  .legend .l-target {
+    border-top: 1px dashed var(--gold);
+  }
+
+  .panel {
+    grid-area: panel;
+    position: relative;
+    border-top: 1px solid var(--line);
+    padding-top: 2rem;
+    min-height: 26rem;
+  }
+  .pane {
+    display: none;
+    gap: 1.25rem;
+  }
+  .pane.on {
+    display: grid;
+    animation: in 0.5s var(--ease);
+  }
+  dl {
+    margin: 0.5rem 0;
+    display: grid;
+    gap: 0;
+  }
+  dl div {
+    display: grid;
+    grid-template-columns: 9rem 1fr;
+    gap: 1rem;
+    padding: 0.9rem 0;
+    border-top: 1px solid var(--line);
+    font-size: 0.88rem;
+  }
+  dt {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--faint);
+    padding-top: 0.2rem;
+  }
+  dd {
+    margin: 0;
+    color: #c9c8c3;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes in {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+
+  @media (max-width: 960px) {
+    .eco.interactive {
+      grid-template-columns: 1fr;
+      grid-template-areas: 'map' 'legend' 'panel';
+    }
+    .panel {
+      min-height: 0;
+    }
+  }
+  @media (max-width: 520px) {
+    dl div {
+      grid-template-columns: 1fr;
+      gap: 0.3rem;
+    }
+    .ent {
+      width: 25%;
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .pulse {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  document.querySelectorAll('[data-eco]').forEach((root) => {
+    const buttons = [...root.querySelectorAll('[data-select]')];
+    if (!buttons.length) return;
+    const panes = [...root.querySelectorAll('[data-pane]')];
+    const links = [...root.querySelectorAll('[data-link]')];
+    let current = 'default';
+    const select = (id) => {
+      current = current === id ? 'default' : id;
+      buttons.forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.select === current)));
+      panes.forEach((p) => p.classList.toggle('on', p.dataset.pane === current));
+      links.forEach((l) => l.classList.toggle('hot', l.dataset.link === current));
+    };
+    buttons.forEach((b) => b.addEventListener('click', () => select(b.dataset.select)));
+  });
+</script>

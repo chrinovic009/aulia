@@ -1,0 +1,322 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHero from '../components/PageHero.astro';
+import { getContent } from '../data/site.ts';
+import { path, type Lang } from '../i18n.ts';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const { site } = getContent(lang);
+
+const T = {
+  en: {
+    title: 'Contact',
+    meta: 'Request a presentation, start a partnership or ask the AULIA group a question.',
+    hero: 'Get in touch <em>with AULIA.</em>',
+    lead: 'Tell us about your organisation and your need. We will answer with what is actually available and what is in preparation.',
+    before: 'Before you write',
+    tips: [
+      ['Your context.', 'Type of organisation, approximate size, current organisation.'],
+      ['Your main difficulty.', 'What costs you time, information or continuity.'],
+      ['Your objective.', 'What you would like to see change.'],
+    ],
+    direct: 'Or directly:',
+    subjects: [
+      ['presentation', 'Presentation of the AULIA group'],
+      ['care', 'AULIA Care — health'],
+      ['vigil', 'AULIA Vigil — industry'],
+      ['flow', 'AULIA Flow — organisations'],
+      ['vr', 'AULIA VR — immersion'],
+      ['anima', 'ANIMA'],
+      ['partnership', 'Partnership'],
+      ['research', 'Research & scientific collaboration'],
+      ['investment', 'Investment'],
+      ['other', 'Other request'],
+    ],
+    name: 'Full name *', org: 'Organisation', email: 'Work email *', phone: 'Phone', subject: 'Subject *', message: 'Your message *',
+    consentA: 'I agree that the information entered may be used by AULIA to respond to my request, in accordance with the',
+    consentB: 'privacy policy',
+    send: 'Send request',
+    msgInvalid: 'Please complete the required fields and accept the privacy policy.',
+    msgNoEndpoint: 'The form is not yet connected to our receiving service. Your message has not been sent; please try again soon.',
+    msgSending: 'Sending…',
+    msgOk: 'Thank you. Your request has been sent to the AULIA team.',
+    msgErr: 'Sending failed. Check your connection and try again.',
+  },
+  fr: {
+    title: 'Contact',
+    meta: 'Demander une présentation, initier un partenariat ou poser une question au groupe AULIA.',
+    hero: 'Entrer en relation <em>avec AULIA.</em>',
+    lead: 'Présentez-nous votre organisation et votre besoin. Nous vous répondrons avec ce qui est réellement disponible et ce qui est en préparation.',
+    before: "Avant d'écrire",
+    tips: [
+      ['Votre contexte.', "Type d'organisation, taille approximative, organisation actuelle."],
+      ['Votre difficulté principale.', "Ce qui vous fait perdre du temps, de l'information ou de la continuité."],
+      ['Votre objectif.', 'Ce que vous aimeriez voir changer.'],
+    ],
+    direct: 'Ou directement :',
+    subjects: [
+      ['presentation', 'Présentation du groupe AULIA'],
+      ['care', 'AULIA Care — santé'],
+      ['vigil', 'AULIA Vigil — industrie'],
+      ['flow', 'AULIA Flow — organisations'],
+      ['vr', 'AULIA VR — immersion'],
+      ['anima', 'ANIMA'],
+      ['partnership', 'Partenariat'],
+      ['research', 'Recherche & collaboration scientifique'],
+      ['investment', 'Investissement'],
+      ['other', 'Autre demande'],
+    ],
+    name: 'Nom complet *', org: 'Organisation', email: 'E-mail professionnel *', phone: 'Téléphone', subject: 'Objet *', message: 'Votre message *',
+    consentA: "J'accepte que les informations saisies soient utilisées par AULIA pour répondre à ma demande, conformément à la",
+    consentB: 'politique de confidentialité',
+    send: 'Envoyer la demande',
+    msgInvalid: "Merci de compléter les champs obligatoires et d'accepter la politique de confidentialité.",
+    msgNoEndpoint: "Le formulaire n'est pas encore raccordé à notre service de réception. Votre message n'a pas été envoyé ; merci de réessayer prochainement.",
+    msgSending: 'Envoi en cours…',
+    msgOk: "Merci. Votre demande a bien été transmise à l'équipe AULIA.",
+    msgErr: "L'envoi a échoué. Vérifiez votre connexion et réessayez.",
+  },
+}[lang];
+---
+
+<Layout lang={lang} route="contact" title={T.title} description={T.meta}>
+  <PageHero eyebrow={T.title} title={T.hero} lead={T.lead} />
+
+  <section class="section">
+    <div class="wrap grid">
+      <aside class="reveal">
+        <p class="eyebrow">{T.before}</p>
+        <ul class="tips">
+          {T.tips.map(([a, b]) => <li><strong>{a}</strong> {b}</li>)}
+        </ul>
+        {site.contactEmail && (
+          <p class="direct">{T.direct} <a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></p>
+        )}
+      </aside>
+
+      <form
+        class="form reveal"
+        data-form
+        data-endpoint={site.contactEndpoint}
+        data-msg-invalid={T.msgInvalid}
+        data-msg-noendpoint={T.msgNoEndpoint}
+        data-msg-sending={T.msgSending}
+        data-msg-ok={T.msgOk}
+        data-msg-err={T.msgErr}
+        novalidate
+      >
+        <input type="hidden" name="langue" value={lang} />
+        <div class="row">
+          <label><span>{T.name}</span><input name="nom" type="text" autocomplete="name" required /></label>
+          <label><span>{T.org}</span><input name="organisation" type="text" autocomplete="organization" /></label>
+        </div>
+        <div class="row">
+          <label><span>{T.email}</span><input name="email" type="email" autocomplete="email" required /></label>
+          <label><span>{T.phone}</span><input name="telephone" type="tel" autocomplete="tel" /></label>
+        </div>
+        <label>
+          <span>{T.subject}</span>
+          <select name="sujet" required data-subject>
+            {T.subjects.map(([v, l]) => <option value={v}>{l}</option>)}
+          </select>
+        </label>
+        <label>
+          <span>{T.message}</span>
+          <textarea name="message" rows="6" required></textarea>
+        </label>
+        <label class="consent">
+          <input type="checkbox" name="consentement" required />
+          <span>{T.consentA} <a href={path(lang, 'privacy')}>{T.consentB}</a>.</span>
+        </label>
+        <div class="actions">
+          <button class="btn btn-primary" type="submit">{T.send}</button>
+          <p class="status" role="status" aria-live="polite" data-status></p>
+        </div>
+      </form>
+    </div>
+  </section>
+</Layout>
+
+<style>
+  .grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    align-items: start;
+  }
+  .tips {
+    list-style: none;
+    margin: 1.75rem 0 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+  .tips li {
+    padding: 1.1rem 0;
+    border-bottom: 1px solid var(--line);
+    color: var(--muted);
+    font-size: 0.92rem;
+  }
+  .tips strong {
+    display: block;
+    color: var(--ivory);
+    font-weight: 600;
+    margin-bottom: 0.2rem;
+  }
+  .direct {
+    margin-top: 1.5rem;
+    color: var(--muted);
+  }
+  .direct a {
+    color: var(--gold-bright);
+  }
+  .form {
+    display: grid;
+    gap: 1.5rem;
+  }
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+  }
+  label {
+    display: grid;
+    gap: 0.55rem;
+  }
+  label > span {
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  input,
+  select,
+  textarea {
+    width: 100%;
+    font: inherit;
+    font-size: 1rem;
+    color: var(--ivory);
+    background: var(--graphite);
+    border: 1px solid var(--line-strong);
+    border-radius: 2px;
+    padding: 0.9rem 1rem;
+    transition: border-color 0.3s var(--ease);
+  }
+  select {
+    appearance: none;
+    background-image: linear-gradient(45deg, transparent 50%, var(--gold) 50%), linear-gradient(135deg, var(--gold) 50%, transparent 50%);
+    background-position:
+      calc(100% - 20px) 50%,
+      calc(100% - 15px) 50%;
+    background-size: 5px 5px;
+    background-repeat: no-repeat;
+  }
+  textarea {
+    resize: vertical;
+    min-height: 9rem;
+  }
+  input:focus,
+  select:focus,
+  textarea:focus {
+    outline: none;
+    border-color: var(--gold);
+  }
+  .invalid {
+    border-color: #c96f5c;
+  }
+  .consent {
+    grid-template-columns: auto 1fr;
+    align-items: start;
+    gap: 0.9rem;
+  }
+  .consent input {
+    width: 1.1rem;
+    height: 1.1rem;
+    margin-top: 0.2rem;
+    accent-color: var(--gold);
+    padding: 0;
+  }
+  .consent span {
+    font-size: 0.85rem;
+    letter-spacing: 0;
+    text-transform: none;
+    font-weight: 400;
+    color: var(--muted);
+  }
+  .consent a {
+    color: var(--gold);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 1rem 1.5rem;
+  }
+  .status {
+    font-size: 0.88rem;
+    color: var(--muted);
+    max-width: 30rem;
+  }
+  .status.ok {
+    color: #9cc79a;
+  }
+  .status.err {
+    color: #e0a090;
+  }
+  @media (max-width: 900px) {
+    .grid {
+      grid-template-columns: 1fr;
+    }
+  }
+  @media (max-width: 560px) {
+    .row {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>
+<script>
+  const form = document.querySelector('[data-form]');
+  const status = form?.querySelector('[data-status]');
+  const subject = form?.querySelector('[data-subject]');
+  const msg = (k) => form?.getAttribute('data-msg-' + k) || '';
+
+  // Pré-sélection de l'objet depuis l'URL (?topic=care, ?topic=partnership…)
+  const wanted = new URLSearchParams(location.search).get('topic');
+  if (wanted && subject && [...subject.options].some((o) => o.value === wanted)) subject.value = wanted;
+
+  const setStatus = (text, kind = '') => {
+    if (!status) return;
+    status.textContent = text;
+    status.className = 'status ' + kind;
+  };
+
+  form?.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    let valid = true;
+    form.querySelectorAll('input, select, textarea').forEach((f) => {
+      const ok = f.checkValidity();
+      f.classList.toggle('invalid', !ok);
+      if (!ok) valid = false;
+    });
+    if (!valid) return setStatus(msg('invalid'), 'err');
+    const endpoint = form.dataset.endpoint;
+    // Aucun service de réception raccordé : on le dit, on ne simule pas d'envoi.
+    if (!endpoint) return setStatus(msg('noendpoint'), 'err');
+    const btn = form.querySelector('button[type="submit"]');
+    btn?.setAttribute('disabled', '');
+    setStatus(msg('sending'));
+    try {
+      const res = await fetch(endpoint, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
+      if (!res.ok) throw new Error(String(res.status));
+      form.reset();
+      setStatus(msg('ok'), 'ok');
+    } catch (_) {
+      setStatus(msg('err'), 'err');
+    } finally {
+      btn?.removeAttribute('disabled');
+    }
+  });
+</script>

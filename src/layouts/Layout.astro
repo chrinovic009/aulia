@@ -1,38 +1,120 @@
 ---
-import { AstroFont } from 'astro-font';
-import AppFooter from "../components/AppFooter.astro";
-import AppHeader from "../components/AppHeader.astro";
-import "./../tailus.css"
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import { getContent } from '../data/site.ts';
+import { ui, path, langs, type Lang, type RouteKey } from '../i18n.ts';
+import '../styles/global.css';
+
+interface Props {
+  lang: Lang;
+  /** Page courante (sert au sélecteur de langue et aux balises hreflang). */
+  route?: RouteKey;
+  /** Sous-chemin éventuel, ex. le slug d'une filiale. */
+  sub?: string;
+  title?: string;
+  description?: string;
+  image?: string;
+}
+
+const { lang, route, sub, title, image = '/og-image.jpg' } = Astro.props;
+const { site } = getContent(lang);
+const t = ui[lang];
+const description = Astro.props.description ?? site.description;
+const other: Lang = lang === 'en' ? 'fr' : 'en';
+const hrefFor = (l: Lang) => (route ? path(l, route, sub) : path(l, 'home'));
+const altHref = hrefFor(other);
+const abs = (p: string) => (Astro.site ? new URL(p, Astro.site).href : p);
+const fullTitle = title ? `${title} — AULIA` : `AULIA — ${site.signature}`;
+const canonical = Astro.site && route ? abs(hrefFor(lang)) : undefined;
+const ogImage = abs(image);
 ---
 
-<!DOCTYPE html>
-<html lang="fr" class="dark">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width" />
-        <meta name="theme-color" content="#11100d" />
-        <link rel="icon" type="image/png" href="/images/icone-aulia.png" />
-        <meta name="generator" content={Astro.generator} />
-        <meta name="description" content="Template built with tailwindcss using Tailus blocks v2" />
-        <title>Aulia</title>
+<!doctype html>
+<html lang={lang} class="no-js">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{fullTitle}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#11100d" />
+    {canonical && <link rel="canonical" href={canonical} />}
+    {route && langs.map((l) => <link rel="alternate" hreflang={l} href={abs(hrefFor(l))} />)}
+    {route && <link rel="alternate" hreflang="x-default" href={abs(hrefFor('en'))} />}
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 
-        <AstroFont
-            config={[
-                {
-                    src: [],
-                    name: "Urbanist",
-                    preload: true,
-                    display: "swap",
-                    selector: "html",
-                    fallback: "sans-serif",
-                    googleFontsURL: 'https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700&display=swap',
-                },
-            ]}
-        />
-    </head>
-    <body class="bg-[#11100d]">
-        <AppHeader />
-        <slot />
-        <AppFooter />
-    </body>
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="AULIA" />
+    <meta property="og:title" content={fullTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:image" content={ogImage} />
+    <meta property="og:locale" content={t.locale} />
+    <meta property="og:locale:alternate" content={ui[other].locale} />
+    {canonical && <meta property="og:url" content={canonical} />}
+    <meta name="twitter:card" content="summary_large_image" />
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Urbanist:wght@300;400;500;600;700;800&display=swap"
+    />
+
+    <script is:inline type="application/ld+json" set:html={JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'Organization',
+      name: 'AULIA',
+      slogan: site.signature,
+      description: site.description,
+      ...(Astro.site ? { url: Astro.site.href, logo: new URL('/images/aulia-logo.png', Astro.site).href } : {}),
+    })} />
+    <script is:inline>document.documentElement.classList.remove('no-js');</script>
+    <!-- Préférence de langue : si le visiteur a choisi une langue, on l'y ramène. -->
+    <script is:inline define:vars={{ lang, altHref }}>
+      try {
+        var pref = localStorage.getItem('aulia-lang');
+        if (pref && pref !== lang && (pref === 'en' || pref === 'fr')) location.replace(altHref + location.search + location.hash);
+      } catch (e) {}
+    </script>
+  </head>
+  <body>
+    <a class="skip-link" href="#contenu">{t.skip}</a>
+    <Header lang={lang} altHref={altHref} />
+    <main id="contenu">
+      <slot />
+    </main>
+    <Footer lang={lang} />
+
+    <script>
+      // Mémorise le choix de langue quand le visiteur utilise le sélecteur.
+      document.querySelectorAll('[data-set-lang]').forEach((a) =>
+        a.addEventListener('click', () => {
+          try {
+            localStorage.setItem('aulia-lang', a.getAttribute('data-set-lang') || 'en');
+          } catch (_) {}
+        }),
+      );
+      // Préserve l'objet pré-sélectionné du formulaire lors du changement de langue.
+      if (location.search) document.querySelectorAll('[data-set-lang]').forEach((a) => (a.href += location.search));
+
+      // Révélation discrète des sections au défilement.
+      const items = document.querySelectorAll('.reveal');
+      if ('IntersectionObserver' in window) {
+        const io = new IntersectionObserver(
+          (entries) => {
+            for (const e of entries) {
+              if (e.isIntersecting) {
+                e.target.classList.add('is-visible');
+                io.unobserve(e.target);
+              }
+            }
+          },
+          { rootMargin: '0px 0px -8% 0px', threshold: 0.08 },
+        );
+        items.forEach((el) => io.observe(el));
+      } else {
+        items.forEach((el) => el.classList.add('is-visible'));
+      }
+    </script>
+  </body>
 </html>

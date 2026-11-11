@@ -1,0 +1,196 @@
+---
+import Layout from '../layouts/Layout.astro';
+import PageHero from '../components/PageHero.astro';
+import EcosystemMap from '../components/EcosystemMap.astro';
+import Status from '../components/Status.astro';
+import Arrow from '../components/Arrow.astro';
+import CtaBand from '../components/CtaBand.astro';
+import { getContent } from '../data/site.ts';
+import { path, type Lang } from '../i18n.ts';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const { entities } = getContent(lang);
+
+const T = {
+  en: {
+    title: 'Ecosystem',
+    meta: 'The structure of the AULIA group: a parent company, specialised companies and a transversal intelligence layer, ANIMA.',
+    lead: 'AULIA is the central entity. Around it, specialised companies. Between them, in time, a transversal intelligence layer.',
+    roles: [
+      { title: 'AULIA, the parent company', text: 'Strategic vision, doctrine, governance, intellectual property, creation of new companies, coordination of resources and partnerships.' },
+      { title: 'Specialised companies', text: 'Each has its own mission, skills, products and operational autonomy. None is a mere department.' },
+      { title: 'ANIMA, a transversal layer', text: 'An intelligence architecture designed to progressively connect the systems. It is not a subsidiary, and its connections currently belong to the target architecture.' },
+    ],
+    companies: 'The companies',
+    companiesTitle: 'Each subsidiary will have to <em>earn its place.</em>',
+    companiesLead: 'The status shown for each entity reflects its actual level of maturity.',
+    discover: 'Discover',
+    ctaTitle: 'The intelligence <em>that connects the systems.</em>',
+    ctaLabel: 'Discover ANIMA',
+  },
+  fr: {
+    title: 'Écosystème',
+    meta: "La structure du groupe AULIA : une société mère, des entreprises spécialisées et une couche d'intelligence transversale, ANIMA.",
+    lead: "AULIA est l'entité centrale. Autour d'elle, des entreprises spécialisées. Entre elles, à terme, une couche d'intelligence transversale.",
+    roles: [
+      { title: 'AULIA, la société mère', text: 'Vision stratégique, doctrine, gouvernance, propriété intellectuelle, création de nouvelles entreprises, coordination des ressources et partenariats.' },
+      { title: 'Des entreprises spécialisées', text: "Chacune possède sa mission, ses compétences, ses produits et son autonomie opérationnelle. Aucune n'est un simple département." },
+      { title: 'ANIMA, couche transversale', text: "Une architecture d'intelligence imaginée pour relier progressivement les systèmes. Ce n'est pas une filiale, et ses connexions relèvent aujourd'hui de l'architecture cible." },
+    ],
+    companies: 'Les entreprises',
+    companiesTitle: 'Chaque filiale devra <em>mériter sa place.</em>',
+    companiesLead: 'Le statut indiqué pour chaque entité reflète son niveau de maturité réel.',
+    discover: 'Découvrir',
+    ctaTitle: "L'intelligence <em>qui relie les systèmes.</em>",
+    ctaLabel: 'Découvrir ANIMA',
+  },
+}[lang];
+---
+
+<Layout lang={lang} route="ecosystem" title={T.title} description={T.meta}>
+  <PageHero eyebrow={T.title} title="One vision. <em>Multiple intelligences.</em> Connected systems." lead={T.lead} />
+
+  <section class="section">
+    <div class="wrap">
+      <ol class="roles reveal">
+        {T.roles.map((r, i) => (
+          <li><span class="index">{String(i + 1).padStart(2, '0')}</span><h2>{r.title}</h2><p>{r.text}</p></li>
+        ))}
+      </ol>
+      <div class="reveal map-wrap">
+        <EcosystemMap interactive lang={lang} />
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="wrap">
+      <div class="head reveal">
+        <p class="eyebrow">{T.companies}</p>
+        <h2 class="display display-m" set:html={T.companiesTitle} />
+        <p class="lead">{T.companiesLead}</p>
+      </div>
+      <div class="cards">
+        {entities.map((e, i) => (
+          <a class="card reveal" href={path(lang, 'ecosystem', e.slug)}>
+            <div class="card-top"><span class="index">{String(i + 1).padStart(2, '0')}</span><Status status={e.status} lang={lang} /></div>
+            <h3>{e.name}</h3>
+            <p class="sector">{e.sector}</p>
+            <p class="sum">{e.tagline}</p>
+            <span class="link-arrow">{T.discover}<Arrow /></span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <CtaBand eyebrow="ANIMA" title={T.ctaTitle} href={path(lang, 'anima')} label={T.ctaLabel} />
+</Layout>
+
+<style>
+  .roles {
+    list-style: none;
+    margin: 0 0 clamp(4rem, 8vw, 6rem);
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid var(--line);
+  }
+  .roles li {
+    padding: 2rem 2rem 2rem 0;
+    display: grid;
+    gap: 0.75rem;
+    align-content: start;
+  }
+  .roles li + li {
+    padding-left: 2rem;
+    border-left: 1px solid var(--line);
+  }
+  .roles h2 {
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    line-height: 1.15;
+  }
+  .roles p {
+    color: var(--muted);
+    font-size: 0.93rem;
+  }
+  .head {
+    display: grid;
+    gap: 1.5rem;
+    max-width: 52rem;
+    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+  }
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    background: var(--line-strong);
+    border: 1px solid var(--line-strong);
+    border-radius: 1.5rem;
+    overflow: hidden;
+  }
+  .card {
+    background: var(--card);
+    padding: 2rem 1.75rem;
+    display: grid;
+    gap: 0.9rem;
+    align-content: start;
+    min-height: 22rem;
+    transition: background 0.4s var(--ease);
+  }
+  .card:hover {
+    background: var(--graphite);
+  }
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+  }
+  .card h3 {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    line-height: 1.1;
+  }
+  .sector {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .sum {
+    color: var(--muted);
+    font-size: 0.93rem;
+    flex: 1;
+  }
+  .card .link-arrow {
+    margin-top: auto;
+    padding-top: 1.5rem;
+  }
+  @media (max-width: 1080px) {
+    .cards {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+  @media (max-width: 860px) {
+    .roles {
+      grid-template-columns: 1fr;
+    }
+    .roles li + li {
+      padding-left: 0;
+      border-left: 0;
+      border-top: 1px solid var(--line);
+    }
+  }
+  @media (max-width: 560px) {
+    .cards {
+      grid-template-columns: 1fr;
+    }
+    .card {
+      min-height: 0;
+    }
+  }
+</style>

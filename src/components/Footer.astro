@@ -1,0 +1,144 @@
+---
+import { getContent } from '../data/site.ts';
+import { ui, path, contactPath, type Lang } from '../i18n.ts';
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const t = ui[lang];
+const { nav, entities, site } = getContent(lang);
+const year = new Date().getFullYear();
+---
+
+<footer class="footer">
+  <div class="wrap">
+    <div class="top">
+      <div class="intro">
+        <img src="/images/aulia-logo.png" alt="AULIA" width="591" height="179" loading="lazy" />
+        <p>{t.footerIntro}</p>
+        <p class="doctrine">{t.doctrine}</p>
+      </div>
+
+      <div class="cols">
+        <div>
+          <h2>{t.footerGroup}</h2>
+          <ul>
+            <li><a href={path(lang, 'home')}>{t.home}</a></li>
+            {nav.map((l) => <li><a href={path(lang, l.key)}>{l.label}</a></li>)}
+          </ul>
+        </div>
+        <div>
+          <h2>{t.footerEcosystem}</h2>
+          <ul>
+            {entities.map((e) => <li><a href={path(lang, 'ecosystem', e.slug)}>{e.name}</a></li>)}
+            <li><a href={path(lang, 'anima')}>ANIMA</a></li>
+          </ul>
+        </div>
+        <div>
+          <h2>{t.footerContact}</h2>
+          <ul>
+            <li><a href={path(lang, 'contact')}>{t.writeUs}</a></li>
+            <li><a href={contactPath(lang, 'presentation')}>{t.requestPresentation}</a></li>
+            <li><a href={path(lang, 'partnerships')}>{t.startPartnership}</a></li>
+            {site.contactEmail && <li><a href={`mailto:${site.contactEmail}`}>{site.contactEmail}</a></li>}
+            {site.socials.map((s) => <li><a href={s.href} rel="noopener" target="_blank">{s.label}</a></li>)}
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <div class="bottom">
+      <p>© {year} AULIA. {t.rights}</p>
+      <p class="legal">
+        <a href={path(lang, 'legal')}>{t.legal}</a>
+        <a href={path(lang, 'privacy')}>{t.privacy}</a>
+      </p>
+    </div>
+  </div>
+</footer>
+
+<style>
+  .footer {
+    border-top: 1px solid var(--line);
+    background: linear-gradient(180deg, var(--black), var(--graphite));
+    padding-block: 5rem 2rem;
+    font-size: 0.9rem;
+  }
+  .top {
+    display: grid;
+    grid-template-columns: 1.1fr 1.4fr;
+    gap: 4rem;
+  }
+  .intro img {
+    height: 2.6rem;
+    width: auto;
+    margin-bottom: 1.5rem;
+  }
+  .intro p {
+    color: var(--muted);
+    max-width: 26rem;
+  }
+  .intro .doctrine {
+    margin-top: 1.5rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--gold);
+  }
+  .cols {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+  }
+  h2 {
+    font-family: var(--font-sans);
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 1.1rem;
+  }
+  ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+  }
+  a {
+    color: #c9c8c3;
+    transition: color 0.3s var(--ease);
+  }
+  a:hover {
+    color: var(--gold-bright);
+  }
+  .bottom {
+    margin-top: 4rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    color: var(--faint);
+    font-size: 0.8rem;
+  }
+  .legal {
+    display: flex;
+    gap: 1.5rem;
+  }
+  .legal a {
+    color: var(--faint);
+  }
+  @media (max-width: 900px) {
+    .top {
+      grid-template-columns: 1fr;
+      gap: 3rem;
+    }
+  }
+  @media (max-width: 560px) {
+    .cols {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+</style>

@@ -1,0 +1,269 @@
+---
+import { getContent } from '../data/site.ts';
+import { ui, path, routes, type Lang, type RouteKey } from '../i18n.ts';
+
+interface Props {
+  lang: Lang;
+  /** Chemin équivalent de la page courante dans l'autre langue. */
+  altHref: string;
+}
+const { lang, altHref } = Astro.props;
+const t = ui[lang];
+const { nav } = getContent(lang);
+const other: Lang = lang === 'en' ? 'fr' : 'en';
+const here = Astro.url.pathname.replace(/\/$/, '') || '/';
+const isActive = (key: RouteKey) => {
+  const p = routes[key][lang];
+  return here === p || here.startsWith(p + '/');
+};
+---
+
+<header class="site-header" data-header>
+  <div class="bar wrap">
+    <a href={path(lang, 'home')} class="brand" aria-label="AULIA">
+      <img src="/images/aulia-logo.png" alt="AULIA" width="591" height="179" />
+    </a>
+
+    <nav class="links" aria-label={t.mainNav}>
+      {nav.map((l) => (
+        <a href={path(lang, l.key)} class:list={[{ active: isActive(l.key) }]} aria-current={isActive(l.key) ? 'page' : undefined}>
+          {l.label}
+        </a>
+      ))}
+    </nav>
+
+    <a href={altHref} class="lang" hreflang={other} lang={other} data-set-lang={other} title={t.switchLabel} aria-label={t.switchLabel}>
+      <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="10" cy="10" r="7.5" /><path d="M2.5 10h15M10 2.5c2 2.2 3 4.7 3 7.5s-1 5.3-3 7.5c-2-2.2-3-4.7-3-7.5s1-5.3 3-7.5z" /></svg>
+      <span>{other.toUpperCase()}</span>
+    </a>
+
+    <a href={path(lang, 'contact')} class="contact-btn">{t.contact}</a>
+
+    <button class="menu-btn" type="button" aria-expanded="false" aria-controls="mobile-menu" data-menu-btn>
+      <span class="sr">{t.menu}</span>
+      <span class="bars" aria-hidden="true"><i></i><i></i></span>
+    </button>
+  </div>
+
+  <div class="mobile" id="mobile-menu" data-menu hidden>
+    <nav class="wrap" aria-label={t.mobileNav}>
+      <a href={path(lang, 'home')} class:list={[{ active: here === routes.home[lang] }]}><span class="index">00</span>{t.home}</a>
+      {nav.map((l, i) => (
+        <a href={path(lang, l.key)} class:list={[{ active: isActive(l.key) }]}>
+          <span class="index">{String(i + 1).padStart(2, '0')}</span>{l.label}
+        </a>
+      ))}
+      <a href={path(lang, 'contact')} class:list={[{ active: isActive('contact') }]}>
+        <span class="index">{String(nav.length + 1).padStart(2, '0')}</span>{t.contact}
+      </a>
+      <a href={altHref} class="m-lang" hreflang={other} lang={other} data-set-lang={other}>
+        <span class="index">{other.toUpperCase()}</span>{t.switchTo}
+      </a>
+    </nav>
+  </div>
+</header>
+
+<style>
+  .site-header {
+    position: fixed;
+    inset: 0 0 auto 0;
+    z-index: 50;
+    transition:
+      background 0.4s var(--ease),
+      border-color 0.4s var(--ease),
+      backdrop-filter 0.4s var(--ease);
+    border-bottom: 1px solid transparent;
+  }
+  .site-header.scrolled,
+  .site-header.open {
+    background: rgba(17, 16, 13, 0.86);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
+    border-bottom-color: var(--line);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    height: 5rem;
+  }
+  .brand img {
+    height: 2.6rem;
+    width: auto;
+  }
+  .links {
+    display: flex;
+    gap: 2rem;
+    margin-left: auto;
+  }
+  .links a {
+    position: relative;
+    font-size: 0.875rem;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    color: #d1d5dc;
+    padding-block: 0.4rem;
+    transition: color 0.3s var(--ease);
+  }
+  .links a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 1px;
+    background: var(--gold-bright);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s var(--ease);
+  }
+  .links a:hover,
+  .links a.active {
+    color: var(--ivory);
+  }
+  .links a.active::after,
+  .links a:hover::after {
+    transform: scaleX(1);
+  }
+  .contact-btn {
+    font-size: 0.875rem;
+    font-weight: 600;
+    padding: 0.55rem 1.1rem;
+    background: var(--primary);
+    color: #fff;
+    border-radius: 999px;
+    transition: transform 0.3s var(--ease);
+  }
+  .contact-btn:hover {
+    transform: scale(1.05);
+  }
+  .lang {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.8rem;
+    border: 1px solid #364153;
+    border-radius: 999px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    color: #d1d5dc;
+    transition:
+      border-color 0.3s var(--ease),
+      color 0.3s var(--ease);
+  }
+  .lang svg {
+    width: 1rem;
+    height: 1rem;
+  }
+  .lang:hover {
+    border-color: var(--gold-bright);
+    color: #fff;
+  }
+  .m-lang {
+    color: var(--gold-bright);
+  }
+  .menu-btn {
+    display: none;
+    margin-left: auto;
+    width: 2.75rem;
+    height: 2.75rem;
+    background: none;
+    border: 0;
+    cursor: pointer;
+    color: var(--ivory);
+  }
+  .bars {
+    display: grid;
+    gap: 7px;
+    justify-items: end;
+  }
+  .bars i {
+    display: block;
+    height: 1px;
+    width: 22px;
+    background: currentColor;
+    transition: transform 0.35s var(--ease);
+  }
+  .bars i:last-child {
+    width: 14px;
+  }
+  .open .bars i:first-child {
+    transform: translateY(4px) rotate(45deg);
+  }
+  .open .bars i:last-child {
+    width: 22px;
+    transform: translateY(-4px) rotate(-45deg);
+  }
+  .sr {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+  .mobile {
+    height: calc(100dvh - 5rem);
+    overflow-y: auto;
+    padding-block: 2rem 3rem;
+  }
+  .mobile nav {
+    display: grid;
+  }
+  .mobile a {
+    display: flex;
+    align-items: baseline;
+    gap: 1.25rem;
+    padding-block: 1.05rem;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: 1.6rem;
+    line-height: 1.1;
+  }
+  .mobile a.active {
+    color: var(--gold-bright);
+  }
+
+  @media (max-width: 1080px) {
+    .links,
+    .contact-btn {
+      display: none;
+    }
+    .lang {
+      margin-left: auto;
+    }
+    .menu-btn {
+      display: inline-grid;
+      place-items: center;
+      margin-left: 0.5rem;
+    }
+  }
+  @media (min-width: 1081px) {
+    .mobile {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  const header = document.querySelector('[data-header]');
+  const btn = document.querySelector('[data-menu-btn]');
+  const menu = document.querySelector('[data-menu]');
+
+  const onScroll = () => header?.classList.toggle('scrolled', window.scrollY > 24);
+  onScroll();
+  window.addEventListener('scroll', onScroll, { passive: true });
+
+  btn?.addEventListener('click', () => {
+    const open = btn.getAttribute('aria-expanded') !== 'true';
+    btn.setAttribute('aria-expanded', String(open));
+    header?.classList.toggle('open', open);
+    if (menu) menu.hidden = !open;
+    document.body.style.overflow = open ? 'hidden' : '';
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && btn?.getAttribute('aria-expanded') === 'true') btn.click();
+  });
+</script>

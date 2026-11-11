@@ -1,0 +1,10 @@
+---
+import Entity from '../../views/Entity.astro';
+import { getContent } from '../../data/site.ts';
+
+export function getStaticPaths() {
+  return getContent('en').entities.map((e) => ({ params: { slug: e.slug } }));
+}
+const { slug } = Astro.params;
+---
+<Entity lang="en" slug={slug as string} />
