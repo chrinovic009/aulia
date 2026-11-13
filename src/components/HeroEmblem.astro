@@ -295,6 +295,8 @@ const f = (n: number) => n.toFixed(1);
   } catch (_) {
     /* stockage indisponible : l'animation joue normalement */
   }
-  if (el && (seen || reduced)) el.classList.add('done');
+  // L'écran de chargement joue déjà la construction de l'emblème : on affiche l'état final.
+  const preloading = document.documentElement.classList.contains('preloading');
+  if (el && (seen || reduced || preloading)) el.classList.add('done');
   el?.querySelector('[data-skip]')?.addEventListener('click', () => el.classList.add('done'));
 </script>

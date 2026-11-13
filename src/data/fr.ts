@@ -13,7 +13,7 @@ const statusLabel = {
 
 const site = {
   name: 'AULIA',
-  signature: 'Building Intelligence. Transforming Systems.',
+  signature: "Construire l'intelligence. Transformer les systèmes.",
   tagline: "Construire l'intelligence. Transformer les systèmes.",
   description:
     "AULIA conçoit et développe des entreprises technologiques spécialisées qui mettent la science, l'intelligence et l'innovation au service des organisations et des systèmes essentiels.",
@@ -286,13 +286,13 @@ const anima = {
     { name: 'Action', text: 'Exécuter des opérations autorisées, dans le respect des permissions, des validations et des règles de sécurité.' },
   ],
   modules: [
-    { id: 'core', name: 'ANIMA Core', role: 'Noyau de coordination' },
+    { id: 'core', name: 'Noyau ANIMA', role: 'Noyau de coordination' },
     { id: 'perception', name: 'Perception', role: 'Réception et interprétation des informations' },
-    { id: 'memory', name: 'Memory', role: 'Connaissances et mémoire' },
-    { id: 'reasoning', name: 'Reasoning', role: 'Analyse, raisonnement, planification' },
-    { id: 'orchestrator', name: 'Orchestrator', role: 'Coordination des systèmes et agents' },
-    { id: 'action', name: 'Action Engine', role: 'Exécution contrôlée des opérations' },
-    { id: 'governance', name: 'Governance', role: 'Sécurité, autorisations, traçabilité' },
+    { id: 'memory', name: 'Mémoire', role: 'Connaissances et mémoire' },
+    { id: 'reasoning', name: 'Raisonnement', role: 'Analyse, raisonnement, planification' },
+    { id: 'orchestrator', name: 'Orchestrateur', role: 'Coordination des systèmes et agents' },
+    { id: 'action', name: "Moteur d'action", role: 'Exécution contrôlée des opérations' },
+    { id: 'governance', name: 'Gouvernance', role: 'Sécurité, autorisations, traçabilité' },
   ],
   scenarios: [
     {

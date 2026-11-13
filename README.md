@@ -14,40 +14,37 @@ npm run dev      # http://localhost:4321
 npm run build    # génère le site statique dans dist/
 ```
 
+## Langues
+
+- **Anglais par défaut** à la racine (`/`, `/vision`, `/ecosystem`…), **français** sous `/fr` (`/fr/vision`, `/fr/ecosysteme`…).
+- Le bouton EN/FR de l'en-tête mène à la page équivalente dans l'autre langue ; le choix est mémorisé
+  dans le navigateur du visiteur (clé `aulia-lang`) et respecté lors des visites suivantes.
+- Balises `hreflang` générées automatiquement pour le référencement.
+
 ## Structure
 
 ```
 src/
-  data/site.ts          ← TOUT le contenu éditorial (textes, filiales, statuts, ANIMA, contact)
-  styles/global.css     ← système de design : couleurs, typographie, boutons
-  layouts/Layout.astro  ← <head>, SEO, Open Graph, en-tête, pied de page
-  components/           ← Header, Footer, HeroEmblem (animation), EcosystemMap, AnimaCore, Doctrine…
-  pages/
-    index.astro               Accueil
-    vision.astro              Notre vision
-    ecosysteme/index.astro    Écosystème (carte interactive)
-    ecosysteme/[slug].astro   Pages des filiales (générées depuis site.ts)
-    anima.astro               ANIMA
-    recherche.astro           Recherche & Innovation
-    partenariats.astro        Partenariats
-    contact.astro             Contact (formulaire)
-    mentions-legales.astro, confidentialite.astro, 404.astro
-public/images/          ← logo, emblème, logotype
+  i18n.ts               ← langues, correspondance des URL EN/FR, textes d'interface communs
+  data/
+    en.ts / fr.ts       ← contenu institutionnel (filiales, statuts, ANIMA, doctrine…) — même structure
+    config.ts           ← formulaire de contact, e-mail, réseaux (commun aux deux langues)
+    types.ts, site.ts
+  views/                ← une vue par page, avec ses textes EN et FR en tête de fichier
+  pages/                ← routes anglaises ; pages/fr/ ← routes françaises (simples renvois vers views/)
+  components/, layouts/, styles/global.css
 ```
 
 ## Modifier le contenu
 
-Tout se passe dans `src/data/site.ts` :
-
+- **Textes des filiales, d'ANIMA, de la doctrine** : `src/data/en.ts` et `src/data/fr.ts` (modifier les deux).
+- **Textes propres à une page** : en tête du fichier correspondant dans `src/views/` (blocs `en` et `fr`).
 - **Statut d'une filiale ou d'une capacité** : `live`, `dev`, `design`, `explore`, `target`.
-  N'utiliser `live` (« Disponible ») qu'avec une preuve réelle.
-- **Ajouter une filiale** : ajouter une entrée dans `entities` — sa page, sa place dans la carte
-  et le pied de page sont générés automatiquement (prévoir sa position dans `EcosystemMap.astro`).
-- **Formulaire de contact** : renseigner `site.contactEndpoint` (URL d'un service qui reçoit un POST,
-  par ex. Formspree, une fonction serverless ou le futur backend). Tant qu'il est vide, le site
-  indique honnêtement que le formulaire n'est pas encore raccordé.
-- **E-mail et réseaux** : `site.contactEmail` et `site.socials` (n'ajouter que des comptes réels).
-- **Mentions légales** : compléter `src/pages/mentions-legales.astro` et `confidentialite.astro`.
+  N'utiliser `live` qu'avec une preuve réelle.
+- **Formulaire de contact** : renseigner `CONTACT_ENDPOINT` dans `src/data/config.ts`. Tant qu'il est vide,
+  le site indique honnêtement que le formulaire n'est pas encore raccordé.
+- **E-mail et réseaux** : `CONTACT_EMAIL` et `SOCIALS` dans `src/data/config.ts`.
+- **Mentions légales** : `src/views/Legal.astro` et `src/views/Privacy.astro`.
 
 ## Principes (cahier de vision)
 
@@ -65,3 +62,13 @@ les URL canoniques, Open Graph et données structurées l'utiliseront automatiqu
 
 - Le logo officiel en **vecteur (SVG)** : l'emblème animé de l'accueil est une reconstruction
   vectorielle du logo PNG actuel et doit être remplacé par le tracé officiel.
+
+## Introduction ANIMA (chargement)
+
+- Moteur : `public/scripts/anima-intro.js` — WebGL procédural (shaders GLSL, particules calculées sur le GPU),
+  sans dépendance, chargé uniquement quand l'introduction est jouée (une fois par session).
+- Amorce, transition vers le site et cas d'échec : `src/components/Preloader.astro`.
+- Réglages (durées des phases, densités desktop/mobile) : objet `CONFIG` en tête de `anima-intro.js`.
+- Garanties : bouton et touche Échap pour passer, « réduire les animations » respecté, repli si WebGL
+  est indisponible, qualité adaptée automatiquement aux appareils lents, site jamais bloqué (sécurité à 25 s).
+- Pour revoir l'introduction : ouvrir un nouvel onglet (ou vider `sessionStorage` → clé `aulia-intro`).

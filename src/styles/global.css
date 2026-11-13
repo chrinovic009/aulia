@@ -370,3 +370,7 @@ h4 {
   height: 1.5rem;
   color: var(--secondary);
 }
+
+em {
+  font-style: normal;
+}

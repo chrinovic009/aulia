@@ -1,6 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import PageHero from '../components/PageHero.astro';
+import Tiles from '../components/Tiles.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Icon from '../components/Icon.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { getContent } from '../data/site.ts';
 import { path, contactPath, type Lang } from '../i18n.ts';
@@ -8,105 +11,83 @@ import { path, contactPath, type Lang } from '../i18n.ts';
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
 const { research } = getContent(lang);
+const researchIcons = ['cpu', 'atom', 'cog', 'factory', 'server', 'box', 'link', 'user'];
 
 const T = {
   en: {
     title: 'Research & Innovation',
     meta: 'AULIA’s research directions: artificial intelligence, cognitive systems, industrial computing, distributed systems and immersive technologies.',
     hero: 'Mastering technology, <em>not just using it.</em>',
-    lead: 'We do not want to remain forever dependent on technologies designed by others. Our ambition is to build, over time, a genuine scientific capability.',
-    s1: '01 — Foundations', s1t: 'Understanding the mechanisms <em>that make technology possible.</em>',
-    note: 'This ambition demands time, researchers, resources and a great deal of rigour. We do not claim to have reached that level yet.',
-    foundations: ['The mathematics behind models', 'Linear algebra and vector spaces', 'Probability and statistics', 'Neuroscience and cognitive mechanisms', 'Computer architectures', 'Autonomous and distributed systems', 'Human-machine interaction'],
-    s2: '02 — Lines of exploration', s2t: 'Where science <em>can transform systems.</em>', s2l: 'These are directions of work, not established results.',
-    s3: '03 — Method', s3t: 'Rigour <em>before visibility.</em>',
+    lead: 'Building, over time, a genuine scientific capability — rather than depending on technologies designed elsewhere.',
+    fEyebrow: 'Foundations', fTitle: 'What we want <em>to master.</em>',
+    foundations: ['Mathematics of models', 'Linear algebra', 'Probability & statistics', 'Neuroscience', 'Computer architectures', 'Distributed systems', 'Human-machine interaction'],
+    honest: 'An ambition that takes time and rigour. We do not claim to be there yet.',
+    aEyebrow: 'Lines of exploration', aTitle: 'Where science <em>can transform systems.</em>',
+    mEyebrow: 'Method', mTitle: 'Rigour <em>before visibility.</em>',
     method: [
-      { title: 'Start from the field', text: 'Every line of research must answer a need observed in our environments: health, industry, mining, organisations.' },
-      { title: 'Validate before announcing', text: 'A capability is presented as achieved only once it has been tested, documented and validated.' },
-      { title: 'Make it explainable', text: 'An intelligent system’s results must be justifiable, and its uncertainties made visible.' },
-      { title: 'Master progressively', text: 'Adapt and specialise existing models, then develop our own when our scientific and financial capacity allows.' },
+      { icon: 'pin', title: 'Start from the field', text: 'Real needs first' },
+      { icon: 'badge', title: 'Validate, then announce', text: 'Tested and documented' },
+      { icon: 'eye', title: 'Explainable', text: 'Visible uncertainty' },
+      { icon: 'steps', title: 'Progressive mastery', text: 'Adapt, then build our own' },
     ],
-    s4: '04 — Publications & work', s4t: 'Results will be published <em>once they are established.</em>',
-    empty: 'No publications yet.', emptyText: 'This space will host the group’s validated work, technical notes and results.',
+    pEyebrow: 'Publications', empty: 'No publications yet — validated results will be shared here.',
     ctaEyebrow: 'Collaborate', ctaTitle: 'Researchers, engineers, institutions: <em>let’s build together.</em>', ctaLabel: 'Propose a collaboration', ctaSecondary: 'Discover ANIMA',
   },
   fr: {
     title: 'Recherche & Innovation',
     meta: "Les axes de recherche d'AULIA : intelligence artificielle, systèmes cognitifs, informatique industrielle, systèmes distribués et technologies immersives.",
     hero: "Maîtriser la technologie, <em>pas seulement l'utiliser.</em>",
-    lead: "Nous ne voulons pas être éternellement dépendants de technologies conçues par d'autres. Notre ambition est de construire, avec le temps, une véritable capacité scientifique.",
-    s1: '01 — Fondations', s1t: 'Comprendre les mécanismes <em>qui rendent la technologie possible.</em>',
-    note: "C'est une ambition qui demande du temps, des chercheurs, des ressources et énormément de rigueur. Nous ne prétendons pas avoir déjà atteint ce niveau.",
-    foundations: ['Les mathématiques qui fondent les modèles', "L'algèbre linéaire et les espaces vectoriels", 'Les probabilités et les statistiques', 'Les neurosciences et les mécanismes cognitifs', 'Les architectures informatiques', 'Les systèmes autonomes et distribués', "Les interactions entre l'humain et la machine"],
-    s2: "02 — Axes d'exploration", s2t: 'Là où la science <em>peut transformer les systèmes.</em>', s2l: 'Ce sont des directions de travail, pas des résultats acquis.',
-    s3: '03 — Méthode', s3t: 'Rigueur <em>avant visibilité.</em>',
+    lead: "Construire, avec le temps, une véritable capacité scientifique — plutôt que dépendre de technologies conçues ailleurs.",
+    fEyebrow: 'Fondations', fTitle: 'Ce que nous voulons <em>maîtriser.</em>',
+    foundations: ['Mathématiques des modèles', 'Algèbre linéaire', 'Probabilités & statistiques', 'Neurosciences', 'Architectures informatiques', 'Systèmes distribués', 'Interaction humain-machine'],
+    honest: "Une ambition qui demande du temps et de la rigueur. Nous ne prétendons pas y être déjà.",
+    aEyebrow: "Axes d'exploration", aTitle: 'Là où la science <em>peut transformer les systèmes.</em>',
+    mEyebrow: 'Méthode', mTitle: 'La rigueur <em>avant la visibilité.</em>',
     method: [
-      { title: 'Partir du terrain', text: 'Chaque axe de recherche doit répondre à un besoin observé dans nos environnements : santé, industrie, mines, organisations.' },
-      { title: "Valider avant d'annoncer", text: "Une capacité n'est présentée comme acquise que lorsqu'elle a été testée, documentée et validée." },
-      { title: 'Rendre explicable', text: "Les résultats d'un système intelligent doivent pouvoir être justifiés, et ses incertitudes rendues visibles." },
-      { title: 'Maîtriser progressivement', text: 'Adapter et spécialiser des modèles existants, puis développer nos propres modèles lorsque nos capacités scientifiques et financières le permettront.' },
+      { icon: 'pin', title: 'Partir du terrain', text: "Les besoins réels d'abord" },
+      { icon: 'badge', title: 'Valider, puis annoncer', text: 'Testé et documenté' },
+      { icon: 'eye', title: 'Explicable', text: 'Incertitudes visibles' },
+      { icon: 'steps', title: 'Maîtrise progressive', text: 'Adapter, puis construire les nôtres' },
     ],
-    s4: '04 — Publications & travaux', s4t: "Les résultats seront publiés <em>lorsqu'ils seront établis.</em>",
-    empty: 'Aucune publication pour le moment.', emptyText: 'Cet espace accueillera les travaux, notes techniques et résultats validés du groupe.',
+    pEyebrow: 'Publications', empty: 'Aucune publication pour le moment — les résultats validés seront partagés ici.',
     ctaEyebrow: 'Collaborer', ctaTitle: 'Chercheurs, ingénieurs, institutions : <em>construisons ensemble.</em>', ctaLabel: 'Proposer une collaboration', ctaSecondary: 'Découvrir ANIMA',
   },
 }[lang];
+const axes = research.map((r, i) => ({ icon: researchIcons[i], title: r.title }));
 ---
 
 <Layout lang={lang} route="research" title={T.title} description={T.meta}>
   <PageHero eyebrow={T.title} title={T.hero} lead={T.lead} />
 
   <section class="section">
-    <div class="wrap two">
-      <div class="reveal">
-        <p class="eyebrow">{T.s1}</p>
-        <h2 class="display display-m" set:html={T.s1t} />
-        <p class="note">{T.note}</p>
-      </div>
-      <ol class="found reveal">
-        {T.foundations.map((f, i) => (
-          <li><span class="index">{String(i + 1).padStart(2, '0')}</span>{f}</li>
-        ))}
-      </ol>
+    <div class="wrap">
+      <SectionHead eyebrow={T.fEyebrow} title={T.fTitle} center />
+      <ul class="chips reveal">
+        {T.foundations.map((f) => <li><Icon name="spark" size={16} />{f}</li>)}
+      </ul>
+      <p class="honest reveal">{T.honest}</p>
     </div>
   </section>
 
   <section class="section">
     <div class="wrap">
-      <div class="head reveal">
-        <p class="eyebrow">{T.s2}</p>
-        <h2 class="display display-m" set:html={T.s2t} />
-        <p class="lead">{T.s2l}</p>
-      </div>
-      <ul class="axes reveal">
-        {research.map((r, i) => (
-          <li><span class="index">{String(i + 1).padStart(2, '0')}</span><h3>{r.title}</h3><p>{r.text}</p></li>
-        ))}
-      </ul>
+      <SectionHead eyebrow={T.aEyebrow} title={T.aTitle} center />
+      <Tiles items={axes} cols={4} lang={lang} center compact />
     </div>
   </section>
 
   <section class="section">
     <div class="wrap">
-      <div class="head reveal">
-        <p class="eyebrow">{T.s3}</p>
-        <h2 class="display display-m" set:html={T.s3t} />
-      </div>
-      <ul class="method reveal">
-        {T.method.map((m) => <li><h3>{m.title}</h3><p>{m.text}</p></li>)}
-      </ul>
+      <SectionHead eyebrow={T.mEyebrow} title={T.mTitle} center />
+      <Tiles items={T.method} cols={4} lang={lang} center />
     </div>
   </section>
 
   <section class="section">
-    <div class="wrap two">
-      <div class="reveal">
-        <p class="eyebrow">{T.s4}</p>
-        <h2 class="display display-m" set:html={T.s4t} />
-      </div>
+    <div class="wrap">
       <div class="empty reveal">
-        <p>{T.empty}</p>
-        <p class="muted">{T.emptyText}</p>
+        <Icon name="book" size={28} />
+        <div><p class="eyebrow">{T.pEyebrow}</p><p>{T.empty}</p></div>
       </div>
     </div>
   </section>
@@ -121,92 +102,51 @@ const T = {
 </Layout>
 
 <style>
-  .two {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-    gap: clamp(2rem, 6vw, 6rem);
-  }
-  .two h2 {
-    margin-top: 1.5rem;
-  }
-  .two .note {
-    margin-top: 2rem;
-  }
-  .head {
-    display: grid;
-    gap: 1.5rem;
-    max-width: 52rem;
-    margin-bottom: clamp(2.5rem, 5vw, 4rem);
-  }
-  .found {
+  .chips {
     list-style: none;
-    margin: 0;
+    margin: 0 auto;
     padding: 0;
-    border-top: 1px solid var(--line);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.75rem;
+    max-width: 56rem;
   }
-  .found li {
-    display: grid;
-    grid-template-columns: 3rem 1fr;
-    align-items: baseline;
-    padding: 1.15rem 0;
-    border-bottom: 1px solid var(--line);
-    font-family: var(--font-display);
-    font-size: 1.4rem;
-  }
-  .axes,
-  .method {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--line-strong);
+  .chips li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.2rem;
+    border-radius: 999px;
     border: 1px solid var(--line-strong);
-    border-radius: 1.5rem;
-    overflow: hidden;
-  }
-  .axes li,
-  .method li {
     background: var(--card);
-    padding: 2rem 1.5rem;
-    display: grid;
-    gap: 0.7rem;
-    align-content: start;
+    font-weight: 600;
   }
-  h3 {
-    font-family: var(--font-display);
-    font-size: 1.45rem;
-    line-height: 1.2;
+  .chips :global(svg) {
+    color: var(--gold-bright);
   }
-  .axes p,
-  .method p {
+  .honest {
+    margin-top: 2rem;
+    text-align: center;
     font-size: 0.9rem;
-    color: var(--muted);
+    color: var(--faint);
   }
   .empty {
+    display: flex;
+    gap: 1.25rem;
+    align-items: center;
+    max-width: 44rem;
+    margin: 0 auto;
+    padding: 1.75rem;
+    border-radius: 1.5rem;
     border: 1px dashed var(--line-strong);
-    padding: 2.5rem 2rem;
-    display: grid;
-    gap: 0.5rem;
-    align-content: center;
-    font-size: 1.05rem;
+    color: var(--muted);
   }
-  @media (max-width: 1080px) {
-    .axes,
-    .method {
-      grid-template-columns: 1fr 1fr;
-    }
+  .empty > :global(svg) {
+    flex: none;
+    color: var(--gold-bright);
   }
-  @media (max-width: 860px) {
-    .two {
-      grid-template-columns: 1fr;
-    }
-  }
-  @media (max-width: 560px) {
-    .axes,
-    .method {
-      grid-template-columns: 1fr;
-    }
+  .empty p:last-child {
+    margin-top: 0.5rem;
   }
 </style>

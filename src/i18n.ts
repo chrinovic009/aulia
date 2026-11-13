@@ -84,6 +84,9 @@ export const ui = {
     coreCaption: 'Target architecture — conceptual representation, not operational.',
     doctrineLabel: 'AULIA doctrine',
     legalEyebrow: 'Legal information',
+    loading: 'AULIA introduction',
+    skipIntro: 'Skip intro',
+    verbs: ['Understand', 'Anticipate', 'Create', 'Protect', 'Transform'],
   },
   fr: {
     locale: 'fr_FR',
@@ -133,5 +136,8 @@ export const ui = {
     coreCaption: 'Architecture cible — représentation conceptuelle, non opérationnelle.',
     doctrineLabel: 'Doctrine AULIA',
     legalEyebrow: 'Informations légales',
+    loading: 'Introduction AULIA',
+    skipIntro: 'Passer l’introduction',
+    verbs: ['Comprendre', 'Anticiper', 'Créer', 'Protéger', 'Transformer'],
   },
 } as const;

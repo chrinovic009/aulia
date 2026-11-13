@@ -1,6 +1,7 @@
 ---
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import Preloader from '../components/Preloader.astro';
 import { getContent } from '../data/site.ts';
 import { ui, path, langs, type Lang, type RouteKey } from '../i18n.ts';
 import '../styles/global.css';
@@ -74,10 +75,17 @@ const ogImage = abs(image);
       try {
         var pref = localStorage.getItem('aulia-lang');
         if (pref && pref !== lang && (pref === 'en' || pref === 'fr')) location.replace(altHref + location.search + location.hash);
+        // Écran de chargement : une fois par session.
+        else if (!sessionStorage.getItem('aulia-intro')) {
+          document.documentElement.classList.add('preloading');
+          // Sécurité : l'introduction ne peut jamais bloquer l'accès au site.
+          setTimeout(function () { document.documentElement.classList.remove('preloading', 'preloaded'); }, 25000);
+        }
       } catch (e) {}
     </script>
   </head>
   <body>
+    <Preloader lang={lang} />
     <a class="skip-link" href="#contenu">{t.skip}</a>
     <Header lang={lang} altHref={altHref} />
     <main id="contenu">

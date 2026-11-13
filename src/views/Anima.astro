@@ -1,7 +1,9 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import AnimaCore from '../components/AnimaCore.astro';
 import Status from '../components/Status.astro';
+import Icon from '../components/Icon.astro';
+import Tiles from '../components/Tiles.astro';
+import SectionHead from '../components/SectionHead.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { getContent } from '../data/site.ts';
 import { path, type Lang } from '../i18n.ts';
@@ -14,183 +16,283 @@ const mod = Object.fromEntries(anima.modules.map((m) => [m.id, m]));
 const T = {
   en: {
     meta: 'ANIMA, the transversal intelligence architecture envisioned by AULIA to perceive, understand, anticipate, coordinate and act across specialised systems.',
-    lead: 'ANIMA is an artificial intelligence architecture designed to understand environments, use knowledge, reason about complex situations, coordinate specialised systems and carry out authorised actions.',
-    state: 'ANIMA is a long-term research and engineering programme. The capabilities described here form a target architecture: they are not yet operational.',
-    s1: '01 — Why ANIMA',
-    big: 'A conversational assistant answers. <em>ANIMA is designed to understand and act</em> within an environment of connected systems.',
-    s1l: 'The goal is not to build a more talkative intelligence, but an operational one: able to observe a situation, connect information that systems handle separately, anticipate, and prepare an appropriate response — within the limits of its permissions.',
-    s2: '02 — Capabilities', s2t: 'Seven capabilities, <em>one coherence.</em>',
-    s3: '03 — Conceptual architecture', s3t: 'Distinct components, <em>framed by governance.</em>', s3l: 'Target architecture. None of these modules is presented as implemented.',
-    archLabel: 'ANIMA conceptual architecture',
-    inputs: 'Inputs', inputsText: 'Text · voice · images · video · sensors',
-    outputs: 'Outputs', outputsText: 'Authorised operations, validated when required',
-    archCaption: 'Any significant action may require human validation. Every operation is logged.',
-    s4: '04 — ANIMA in the ecosystem', s4t: 'Three scenarios <em>to grasp the ambition.</em>', s4l: 'Illustrative scenarios: they describe the target architecture, not operations in production.',
-    scenario: 'Scenario',
-    s5: '05 — Local, sovereign, controlled', s5t: 'An intelligence that belongs <em>to its environment.</em>',
-    s5l: 'We are aiming for an architecture able to run close to the field, including where Internet connectivity is limited. We will start by adapting and specialising existing models, before developing our own when our capabilities allow: progressive mastery, not proclaimed independence.',
-    s6: '06 — Governance',
-    quote: 'ANIMA must know how to recognise its limits, express its uncertainty and ask for human intervention. <em>A useful intelligence is also measured by what it knows not to do.</em>',
-    s6l: 'ANIMA is neither an artificial consciousness nor an autonomous intelligence without limits. It remains governed by principles, evidence and human responsibility.',
-    demo: 'Interactive demonstrations in preparation — they will use only clearly labelled synthetic data.',
+    h1: 'The intelligence <em>that moves the ecosystem.</em>',
+    lead: 'Perceive, understand, anticipate, coordinate and act — under human control.',
+    state: 'Long-term research programme',
+    cycleEyebrow: 'How it thinks', cycleTitle: 'From perception <em>to action.</em>',
+    stages: ['Receives text, voice, images, video and sensor data.', 'Interprets in context, drawing on memory.', 'Detects trends and risks ahead.', 'Coordinates the specialised systems.', 'Acts within its permissions, under validation.'],
+    inputs: 'Inputs', systems: 'Systems', memory: 'Memory', validation: 'Validation', forecast: 'Forecast',
+    capEyebrow: 'Capabilities', capTitle: 'Seven capabilities, <em>one core.</em>',
+    archEyebrow: 'Architecture', archTitle: 'One pipeline, <em>framed by governance.</em>',
+    archNote: 'Target architecture — no module is presented as implemented.',
+    scEyebrow: 'Scenarios', scTitle: 'What it could <em>look like.</em>', scNote: 'Illustrative scenarios — not operations in production.',
+    replay: 'Replay', scenario: 'Scenario',
+    sovEyebrow: 'Sovereignty', sovTitle: 'Local, sovereign, <em>controlled.</em>',
+    quote: 'A useful intelligence is also measured by <em>what it knows not to do.</em>',
+    demo: 'Experience ANIMA', demoNote: 'Interactive demonstrations in preparation — synthetic data only.',
     ctaEyebrow: 'Research & partnerships', ctaTitle: 'Building ANIMA <em>with the right people.</em>',
-    ctaText: 'Researchers, engineers, institutions and field organisations: let’s talk about what we could build together.',
-    ctaSecondary: 'Research & Innovation',
+    ctaLabel: 'Build with AULIA', ctaSecondary: 'Research & Innovation',
   },
   fr: {
     meta: "ANIMA, l'architecture d'intelligence transversale imaginée par AULIA pour percevoir, comprendre, anticiper, coordonner et agir à travers des systèmes spécialisés.",
-    lead: "ANIMA est une architecture d'intelligence artificielle conçue pour comprendre les environnements, exploiter les connaissances, raisonner sur des situations complexes, coordonner des systèmes spécialisés et exécuter des actions autorisées.",
-    state: "ANIMA est un programme de recherche et d'ingénierie de long terme. Les capacités décrites ici forment une architecture cible : elles ne sont pas encore opérationnelles.",
-    s1: '01 — Pourquoi ANIMA',
-    big: 'Un assistant conversationnel répond. <em>ANIMA est conçue pour comprendre et agir</em> dans un environnement de systèmes connectés.',
-    s1l: "Le but n'est pas de construire une intelligence plus bavarde, mais une intelligence opérationnelle : capable d'observer une situation, de relier des informations que les systèmes traitent séparément, d'anticiper et de préparer une réponse adaptée — dans les limites de ses autorisations.",
-    s2: '02 — Capacités', s2t: 'Sept capacités, <em>une même cohérence.</em>',
-    s3: '03 — Architecture conceptuelle', s3t: 'Des composants distincts, <em>une gouvernance qui les encadre.</em>', s3l: "Architecture cible. Aucun de ces modules n'est présenté comme implémenté.",
-    archLabel: "Architecture conceptuelle d'ANIMA",
-    inputs: 'Entrées', inputsText: 'Texte · voix · images · vidéos · capteurs',
-    outputs: 'Sorties', outputsText: 'Opérations autorisées, validées si nécessaire',
-    archCaption: 'Toute action importante peut exiger une validation humaine. Chaque opération est tracée.',
-    s4: "04 — ANIMA dans l'écosystème", s4t: "Trois scénarios <em>pour comprendre l'ambition.</em>", s4l: "Scénarios illustratifs : ils décrivent l'architecture cible, pas des opérations en production.",
-    scenario: 'Scénario',
-    s5: '05 — Local, souverain, maîtrisé', s5t: 'Une intelligence qui appartient <em>à son environnement.</em>',
-    s5l: "Nous visons une architecture capable de fonctionner au plus près du terrain, y compris là où la connexion Internet est limitée. Nous commencerons par adapter et spécialiser des modèles existants, avant de développer les nôtres lorsque nos capacités le permettront : une maîtrise progressive, pas une indépendance proclamée.",
-    s6: '06 — Gouvernance',
-    quote: "ANIMA doit savoir reconnaître ses limites, exprimer ses incertitudes et demander une intervention humaine. <em>Une intelligence utile se mesure aussi à ce qu'elle sait ne pas faire.</em>",
-    s6l: "ANIMA n'est ni une conscience artificielle ni une intelligence autonome sans limites. Elle reste gouvernée par des principes, des preuves et des responsabilités humaines.",
-    demo: 'Démonstrations interactives en préparation — elles utiliseront exclusivement des données synthétiques, clairement identifiées.',
+    h1: "L'intelligence <em>qui anime l'écosystème.</em>",
+    lead: 'Percevoir, comprendre, anticiper, coordonner et agir — sous contrôle humain.',
+    state: 'Programme de recherche de long terme',
+    cycleEyebrow: 'Comment elle pense', cycleTitle: "De la perception <em>à l'action.</em>",
+    stages: ['Reçoit texte, voix, images, vidéo et capteurs.', 'Interprète en contexte, en s’appuyant sur la mémoire.', 'Détecte les tendances et les risques à venir.', 'Coordonne les systèmes spécialisés.', 'Agit dans ses autorisations, sous validation.'],
+    inputs: 'Entrées', systems: 'Systèmes', memory: 'Mémoire', validation: 'Validation', forecast: 'Prévision',
+    capEyebrow: 'Capacités', capTitle: 'Sept capacités, <em>un seul noyau.</em>',
+    archEyebrow: 'Architecture', archTitle: 'Une chaîne, <em>encadrée par la gouvernance.</em>',
+    archNote: "Architecture cible — aucun module n'est présenté comme implémenté.",
+    scEyebrow: 'Scénarios', scTitle: 'À quoi cela <em>pourrait ressembler.</em>', scNote: 'Scénarios illustratifs — pas des opérations en production.',
+    replay: 'Rejouer', scenario: 'Scénario',
+    sovEyebrow: 'Souveraineté', sovTitle: 'Local, souverain, <em>maîtrisé.</em>',
+    quote: "Une intelligence utile se mesure aussi à <em>ce qu'elle sait ne pas faire.</em>",
+    demo: 'Expérience ANIMA', demoNote: 'Démonstrations interactives en préparation — données synthétiques uniquement.',
     ctaEyebrow: 'Recherche & partenariats', ctaTitle: 'Construire ANIMA <em>avec les bonnes personnes.</em>',
-    ctaText: 'Chercheurs, ingénieurs, institutions et organisations de terrain : parlons de ce que nous pourrions construire ensemble.',
-    ctaSecondary: 'Recherche & Innovation',
+    ctaLabel: 'Construire avec AULIA', ctaSecondary: 'Recherche & Innovation',
   },
 }[lang];
+
+const mottoIcons = ['wave', 'message', 'trend', 'network', 'bolt'];
+const capIcons = ['wave', 'message', 'database', 'branch', 'trend', 'network', 'bolt'];
+const sovIcons = ['lock', 'server', 'offline', 'language', 'key', 'checklist'];
+const scIcons: Record<string, string[]> = {
+  A: ['mic', 'search', 'file', 'alert', 'user'],
+  B: ['camera', 'search', 'box', 'eye', 'send'],
+  C: ['trend', 'chart', 'database', 'transform', 'check'],
+};
+const sov = anima.sovereignty.map((s, i) => ({ icon: sovIcons[i], title: s.title, text: s.text }));
+
+// Schéma du cycle (viewBox 900 × 460)
+const inputs = [
+  { icon: 'mic', y: 70 }, { icon: 'camera', y: 150 }, { icon: 'file', y: 230 }, { icon: 'activity', y: 310 }, { icon: 'message', y: 390 },
+];
+const systems = [{ n: 'CARE', y: 120 }, { n: 'VIGIL', y: 190 }, { n: 'FLOW', y: 260 }, { n: 'VR', y: 330 }];
+
+// Orbite des capacités
+const orbit = anima.capabilities.map((c, i) => {
+  const a = ((i * 360) / anima.capabilities.length - 90) * (Math.PI / 180);
+  return { ...c, icon: capIcons[i], x: 50 + 41 * Math.cos(a), y: 50 + 41 * Math.sin(a) };
+});
 ---
 
 <Layout lang={lang} route="anima" title="ANIMA" description={T.meta}>
+  <!-- HERO : orbe interactive -->
   <section class="hero">
-    <div class="hero-bg" aria-hidden="true"></div>
+    <div class="blobs" aria-hidden="true"></div>
     <div class="wrap hero-grid">
-      <div>
+      <div class="hero-text">
         <p class="eyebrow">ANIMA</p>
-        <h1 class="display display-l">The intelligence <em>that moves the ecosystem.</em></h1>
+        <h1 class="display display-l" set:html={T.h1} />
         <p class="lead">{T.lead}</p>
-        <p class="motto">
-          {anima.motto.map((m, i) => <span>{m}{i < anima.motto.length - 1 && <i aria-hidden="true">·</i>}</span>)}
-        </p>
-        <div class="state">
-          <Status status={anima.status} lang={lang} />
-          <p>{T.state}</p>
+        <ul class="pills">
+          {anima.motto.map((m, i) => <li><Icon name={mottoIcons[i]} size={16} />{m}</li>)}
+        </ul>
+        <div class="state"><Status status={anima.status} lang={lang} /><span>{T.state}</span></div>
+      </div>
+      <div class="orb-wrap" data-orb aria-hidden="true">
+        <div class="orb" data-orb-inner>
+          <span class="ring rg1"></span>
+          <span class="ring rg2"></span>
+          <span class="ring rg3"></span>
+          <span class="spin sp1"><i></i></span>
+          <span class="spin sp2"><i></i></span>
+          <span class="spin sp3"><i></i></span>
+          <span class="orb-core"><span class="core-light"></span></span>
+          <span class="orb-label">ANIMA</span>
         </div>
       </div>
-      <div class="hero-visual"><AnimaCore lang={lang} /></div>
     </div>
   </section>
 
-  <section class="section">
-    <div class="wrap statement reveal">
-      <p class="eyebrow">{T.s1}</p>
-      <p class="big" set:html={T.big} />
-      <p class="lead">{T.s1l}</p>
-    </div>
-  </section>
-
+  <!-- CYCLE interactif -->
   <section class="section">
     <div class="wrap">
-      <div class="head reveal">
-        <p class="eyebrow">{T.s2}</p>
-        <h2 class="display display-m" set:html={T.s2t} />
+      <SectionHead eyebrow={T.cycleEyebrow} title={T.cycleTitle} center />
+      <div class="cycle reveal" data-cycle data-stage="0" data-texts={JSON.stringify(T.stages)}>
+        <div class="cy-steps" role="tablist">
+          {anima.motto.map((m, i) => (
+            <button type="button" role="tab" class="cy-step" data-step={i} aria-selected={i === 0 ? 'true' : 'false'}>
+              <span class="cy-ico"><Icon name={mottoIcons[i]} size={18} /></span>{m}
+            </button>
+          ))}
+        </div>
+        <div class="cy-bar"><i data-cy-bar></i></div>
+
+        <div class="cy-scroll"><svg class="cy-svg" viewBox="0 0 900 460" role="img" aria-label={anima.motto.join(' → ')}>
+          <defs>
+            <radialGradient id="cy-core" cx="0.5" cy="0.4" r="0.6">
+              <stop offset="0" stop-color="#ffe9a8" />
+              <stop offset="0.45" stop-color="#c6a45c" />
+              <stop offset="1" stop-color="#3a2a0b" />
+            </radialGradient>
+            <radialGradient id="cy-halo" cx="0.5" cy="0.5" r="0.5">
+              <stop offset="0" stop-color="#ffd230" stop-opacity="0.35" />
+              <stop offset="1" stop-color="#ffd230" stop-opacity="0" />
+            </radialGradient>
+          </defs>
+
+          <text x="90" y="30" class="cy-cap" text-anchor="middle">{T.inputs}</text>
+          <text x="790" y="80" class="cy-cap" text-anchor="middle">{T.systems}</text>
+
+          <!-- fils d'entrée -->
+          {inputs.map((n) => <path class="wire w-in" d={`M116 ${n.y} C 260 ${n.y}, 300 230, 394 230`} />)}
+          <!-- fils de sortie -->
+          {systems.map((s) => <path class="wire w-out" d={`M506 230 C 600 230, 640 ${s.y}, 735 ${s.y}`} />)}
+          <path class="wire w-mem" d="M450 174 L450 92" />
+          <path class="wire w-gov" d="M450 286 L450 368" />
+
+          <!-- entrées -->
+          {inputs.map((n) => (
+            <g class="node n-in">
+              <circle cx="90" cy={n.y} r="26" />
+              <g transform={`translate(78 ${n.y - 12})`}><Icon name={n.icon} size={24} /></g>
+            </g>
+          ))}
+
+          <!-- mémoire -->
+          <g class="node n-mem">
+            <circle cx="450" cy="66" r="26" />
+            <g transform="translate(438 54)"><Icon name="database" size={24} /></g>
+            <text x="492" y="71" class="cy-lbl">{T.memory}</text>
+          </g>
+
+          <!-- validation humaine / gouvernance -->
+          <g class="node n-gov">
+            <circle cx="450" cy="394" r="26" />
+            <g transform="translate(438 382)"><Icon name="shield-check" size={24} /></g>
+            <text x="492" y="399" class="cy-lbl">{T.validation}</text>
+          </g>
+
+          <!-- prévision -->
+          <g class="trend">
+            <rect x="560" y="18" width="170" height="70" rx="14" />
+            <text x="576" y="40" class="cy-lbl small">{T.forecast}</text>
+            <polyline points="578,74 600,66 622,70 644,56 666,58 688,44 712,36" pathLength="1" />
+          </g>
+
+          <!-- systèmes -->
+          {systems.map((s) => (
+            <g class="node n-sys">
+              <rect x="735" y={s.y - 20} width="112" height="40" rx="20" />
+              <text x="791" y={s.y + 5} text-anchor="middle">{s.n}</text>
+              <g class="tick"><circle cx="847" cy={s.y - 20} r="9" /><path d={`M842 ${s.y - 20} l3 3 l6 -6`} /></g>
+            </g>
+          ))}
+
+          <!-- noyau -->
+          <circle cx="450" cy="230" r="120" fill="url(#cy-halo)" class="halo" />
+          <circle cx="450" cy="230" r="78" class="core-ring cr1" />
+          <circle cx="450" cy="230" r="66" class="core-ring cr2" />
+          <circle cx="450" cy="230" r="54" class="core-ball" fill="url(#cy-core)" />
+          <text x="450" y="236" text-anchor="middle" class="core-txt">ANIMA</text>
+        </svg></div>
+
+        <p class="cy-caption" data-cy-caption aria-live="polite">{T.stages[0]}</p>
       </div>
-      <ol class="caps reveal">
-        {anima.capabilities.map((c, i) => (
-          <li>
-            <span class="index">{String(i + 1).padStart(2, '0')}</span>
-            <h3>{c.name}</h3>
-            <p>{c.text}</p>
-          </li>
-        ))}
-      </ol>
     </div>
   </section>
 
-  <section class="section arch-sec">
+  <!-- ORBITE des capacités -->
+  <section class="section">
     <div class="wrap">
-      <div class="head reveal">
-        <p class="eyebrow">{T.s3}</p>
-        <h2 class="display display-m" set:html={T.s3t} />
-        <p class="lead">{T.s3l}</p>
-      </div>
-
-      <figure class="arch reveal" aria-label={T.archLabel}>
-        <div class="gov">
-          <span class="gov-label">{mod.governance.name} — {mod.governance.role}</span>
-          <div class="flow">
-            <div class="io"><span class="io-t">{T.inputs}</span><span>{T.inputsText}</span></div>
-            <div class="mod"><span class="m-name">{mod.perception.name}</span><span class="m-role">{mod.perception.role}</span></div>
-            <div class="center">
-              <div class="mod aux"><span class="m-name">{mod.memory.name}</span><span class="m-role">{mod.memory.role}</span></div>
-              <div class="mod core"><span class="m-name">{mod.core.name}</span><span class="m-role">{mod.core.role}</span></div>
-              <div class="mod aux"><span class="m-name">{mod.reasoning.name}</span><span class="m-role">{mod.reasoning.role}</span></div>
+      <SectionHead eyebrow={T.capEyebrow} title={T.capTitle} center />
+      <div class="orbit reveal" data-orbit>
+        <span class="o-ring" aria-hidden="true"></span>
+        <div class="o-center">
+          {orbit.map((c, i) => (
+            <div class:list={['o-card', { on: i === 0 }]} data-card={i}>
+              <span class="o-big"><Icon name={c.icon} size={30} /></span>
+              <h3>{c.name}</h3>
+              <p>{c.text}</p>
             </div>
-            <div class="mod"><span class="m-name">{mod.orchestrator.name}</span><span class="m-role">{mod.orchestrator.role}</span></div>
-            <div class="mod"><span class="m-name">{mod.action.name}</span><span class="m-role">{mod.action.role}</span></div>
-            <div class="io"><span class="io-t">{T.outputs}</span><span>{T.outputsText}</span></div>
-          </div>
+          ))}
         </div>
-        <figcaption>{T.archCaption}</figcaption>
-      </figure>
+        {orbit.map((c, i) => (
+          <button
+            type="button"
+            class:list={['o-node', { on: i === 0 }]}
+            style={`left:${c.x.toFixed(2)}%;top:${c.y.toFixed(2)}%`}
+            data-node={i}
+            aria-label={c.name}
+          >
+            <span class="o-ico"><Icon name={c.icon} size={22} /></span>
+            <span class="o-name">{c.name}</span>
+          </button>
+        ))}
+      </div>
     </div>
   </section>
 
+  <!-- ARCHITECTURE -->
   <section class="section">
     <div class="wrap">
-      <div class="head reveal">
-        <p class="eyebrow">{T.s4}</p>
-        <h2 class="display display-m" set:html={T.s4t} />
-        <p class="lead">{T.s4l}</p>
+      <SectionHead eyebrow={T.archEyebrow} title={T.archTitle} lead={T.archNote} center />
+      <div class="pipe reveal">
+        <span class="pipe-label"><Icon name="shield-check" size={14} />{mod.governance.name} — {mod.governance.role}</span>
+        <div class="pipe-track" aria-hidden="true"><i></i></div>
+        <ol class="pipe-row">
+          <li class="pm"><span class="pm-ico"><Icon name="wave" size={22} /></span><b>{mod.perception.name}</b><small>{mod.perception.role}</small></li>
+          <li class="pm stack">
+            <div><span class="pm-ico sm"><Icon name="database" size={18} /></span><b>{mod.memory.name}</b></div>
+            <div><span class="pm-ico sm"><Icon name="branch" size={18} /></span><b>{mod.reasoning.name}</b></div>
+          </li>
+          <li class="pm core"><span class="pm-ico"><Icon name="network" size={24} /></span><b>{mod.core.name}</b><small>{mod.core.role}</small></li>
+          <li class="pm"><span class="pm-ico"><Icon name="branch" size={22} /></span><b>{mod.orchestrator.name}</b><small>{mod.orchestrator.role}</small></li>
+          <li class="pm"><span class="pm-ico"><Icon name="bolt" size={22} /></span><b>{mod.action.name}</b><small>{mod.action.role}</small></li>
+        </ol>
       </div>
-      <div class="scenarios">
-        {anima.scenarios.map((s) => (
-          <article class="scenario reveal">
-            <header>
-              <span class="sc-id">{T.scenario} {s.id}</span>
-              <span class="sc-sys">ANIMA + {s.systems.join(' + ')}</span>
-            </header>
-            <h3>{s.title}</h3>
-            <p class="ctx">{s.context}</p>
-            <ol>
-              {s.steps.map((st, i) => (
-                <li><span class="index">{String(i + 1).padStart(2, '0')}</span>{st}</li>
+    </div>
+  </section>
+
+  <!-- SCÉNARIOS -->
+  <section class="section">
+    <div class="wrap">
+      <SectionHead eyebrow={T.scEyebrow} title={T.scTitle} lead={T.scNote} center />
+      <div class="scen reveal" data-scen>
+        <div class="sc-tabs" role="tablist">
+          {anima.scenarios.map((s, i) => (
+            <button type="button" role="tab" class="sc-tab" data-tab={i} aria-selected={i === 0 ? 'true' : 'false'}>
+              <span class="sc-letter">{s.id}</span>
+              <span class="sc-t">{s.title}</span>
+            </button>
+          ))}
+        </div>
+        {anima.scenarios.map((s, i) => (
+          <div class:list={['sc-panel', { on: i === 0 }]} data-panel={i}>
+            <p class="sc-ctx"><span class="sc-sys">ANIMA + {s.systems.join(' + ')}</span>{s.context}</p>
+            <ol class="sc-flow" style={`--n:${s.steps.length}`}>
+              {s.steps.map((st, j) => (
+                <li style={`--j:${j}`}>
+                  <span class="sc-node"><Icon name={scIcons[s.id][j]} size={22} /></span>
+                  <span class="sc-step">{st}</span>
+                </li>
               ))}
             </ol>
-            <p class="guard">{s.guard}</p>
-          </article>
+            <p class="sc-guard"><Icon name="shield" size={16} />{s.guard}</p>
+          </div>
         ))}
+        <button type="button" class="sc-replay" data-replay><Icon name="transform" size={16} />{T.replay}</button>
       </div>
     </div>
   </section>
 
+  <!-- SOUVERAINETÉ -->
   <section class="section">
-    <div class="wrap two">
-      <div class="reveal">
-        <p class="eyebrow">{T.s5}</p>
-        <h2 class="display display-m" set:html={T.s5t} />
-        <p class="lead side">{T.s5l}</p>
-      </div>
-      <ul class="sov reveal">
-        {anima.sovereignty.map((s) => (
-          <li><h3>{s.title}</h3><p>{s.text}</p></li>
-        ))}
-      </ul>
+    <div class="wrap">
+      <SectionHead eyebrow={T.sovEyebrow} title={T.sovTitle} center />
+      <Tiles items={sov} cols={3} lang={lang} compact />
     </div>
   </section>
 
-  <section class="section gov-sec">
+  <!-- CITATION -->
+  <section class="section quote-sec">
     <div class="wrap reveal">
-      <p class="eyebrow">{T.s6}</p>
       <blockquote set:html={T.quote} />
-      <p class="lead">{T.s6l}</p>
       <div class="demo">
-        <span class="btn btn-ghost" aria-disabled="true">Experience ANIMA</span>
-        <span class="muted">{T.demo}</span>
+        <span class="btn btn-ghost" aria-disabled="true"><Icon name="play" size={16} />{T.demo}</span>
+        <span class="muted">{T.demoNote}</span>
       </div>
     </div>
   </section>
@@ -198,390 +300,1056 @@ const T = {
   <CtaBand
     eyebrow={T.ctaEyebrow}
     title={T.ctaTitle}
-    text={T.ctaText}
     href={path(lang, 'partnerships')}
-    label="Build with AULIA"
+    label={T.ctaLabel}
     secondary={{ href: path(lang, 'research'), label: T.ctaSecondary }}
   />
 </Layout>
 
 <style>
+  /* ---------- Hero ---------- */
   .hero {
     position: relative;
-    padding-top: clamp(9rem, 16vw, 11rem);
-    padding-bottom: clamp(4rem, 8vw, 6rem);
-    border-bottom: 1px solid var(--line);
+    min-height: 92svh;
+    display: grid;
+    align-items: center;
+    padding-top: 7rem;
+    padding-bottom: 4rem;
     overflow: hidden;
-  }
-  .hero-bg {
-    position: absolute;
-    inset: 0;
-    background:
-      radial-gradient(ellipse 45% 60% at 75% 45%, rgba(198, 164, 92, 0.1), transparent 70%),
-      var(--graphite);
   }
   .hero-grid {
     position: relative;
     display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
-    gap: clamp(2rem, 5vw, 5rem);
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: clamp(2rem, 5vw, 4rem);
     align-items: center;
   }
-  h1 {
-    margin-top: 1.5rem;
+  .hero h1 {
+    margin-top: 1.25rem;
   }
   .hero .lead {
-    margin-top: 1.5rem;
+    margin-top: 1.25rem;
   }
-  .motto {
-    margin-top: 2rem;
+  .pills {
+    list-style: none;
+    margin: 1.75rem 0 0;
+    padding: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.4rem 0.9rem;
-    font-size: 0.72rem;
-    font-weight: 600;
-    letter-spacing: 0.22em;
-    text-transform: uppercase;
-    color: var(--gold);
+    gap: 0.5rem;
   }
-  .motto i {
-    font-style: normal;
-    margin-left: 0.9rem;
-    color: var(--faint);
+  .pills li {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    padding: 0.4rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: var(--card);
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+  .pills :global(svg) {
+    color: var(--gold-bright);
   }
   .state {
-    margin-top: 2rem;
-    padding-top: 1.5rem;
-    border-top: 1px solid var(--line);
-    display: grid;
-    gap: 0.6rem;
-    max-width: 34rem;
+    margin-top: 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+    align-items: center;
+    font-size: 0.85rem;
+    color: var(--faint);
   }
-  .state p {
+
+  /* Orbe */
+  .orb-wrap {
+    perspective: 900px;
+    display: grid;
+    place-items: center;
+  }
+  .orb {
+    position: relative;
+    width: min(100%, 460px);
+    aspect-ratio: 1;
+    transform-style: preserve-3d;
+    transition: transform 0.6s var(--ease);
+  }
+  .ring {
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 210, 48, 0.25);
+  }
+  .rg1 {
+    border-style: dashed;
+    animation: spin 40s linear infinite;
+  }
+  .rg2 {
+    inset: 12%;
+    border-color: rgba(255, 255, 255, 0.08);
+    animation: spin 26s linear infinite reverse;
+  }
+  .rg3 {
+    inset: 24%;
+    border: 1px dotted rgba(255, 210, 48, 0.4);
+    animation: spin 18s linear infinite;
+  }
+  .spin {
+    position: absolute;
+    inset: 6%;
+    border-radius: 50%;
+    animation: spin 9s linear infinite;
+  }
+  .spin i {
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    width: 10px;
+    height: 10px;
+    margin-left: -5px;
+    border-radius: 50%;
+    background: #ffd230;
+    box-shadow: 0 0 18px 4px rgba(255, 210, 48, 0.7);
+  }
+  .sp2 {
+    inset: 18%;
+    animation-duration: 6s;
+    animation-direction: reverse;
+  }
+  .sp2 i {
+    background: #fff;
+    width: 6px;
+    height: 6px;
+    margin-left: -3px;
+    top: -3px;
+    box-shadow: 0 0 12px 3px rgba(255, 255, 255, 0.6);
+  }
+  .sp3 {
+    inset: 30%;
+    animation-duration: 4s;
+  }
+  .sp3 i {
+    width: 7px;
+    height: 7px;
+    margin-left: -3.5px;
+  }
+  .orb-core {
+    position: absolute;
+    inset: 36%;
+    border-radius: 50%;
+    background: radial-gradient(circle at 40% 35%, #fff4cc 0%, #ffd230 22%, #c6a45c 48%, #5a4210 78%, #1e1608 100%);
+    box-shadow:
+      0 0 60px 10px rgba(255, 210, 48, 0.35),
+      0 0 140px 40px rgba(150, 114, 29, 0.25);
+    animation: breathe 3.2s ease-in-out infinite;
+  }
+  .core-light {
+    position: absolute;
+    inset: 20%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 255, 255, 0.9), transparent 70%);
+    filter: blur(6px);
+    animation: wander 7s ease-in-out infinite;
+  }
+  .orb-label {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -0.5rem;
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.4em;
+    color: var(--gold-bright);
+  }
+
+  /* ---------- Cycle ---------- */
+  .cycle {
+    border-radius: 2rem;
+    border: 1px solid var(--line-strong);
+    background: radial-gradient(ellipse at 50% 50%, rgba(150, 114, 29, 0.12), transparent 65%), var(--card);
+    padding: clamp(1.25rem, 3vw, 2rem);
+  }
+  .cy-steps {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
+  }
+  .cy-step {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.4rem 1rem 0.4rem 0.4rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: rgba(17, 16, 13, 0.5);
+    color: #d1d5dc;
+    font: inherit;
+    font-weight: 600;
+    cursor: pointer;
+    transition:
+      background 0.3s var(--ease),
+      border-color 0.3s var(--ease),
+      color 0.3s var(--ease);
+  }
+  .cy-ico {
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(150, 114, 29, 0.25);
+    color: var(--gold-bright);
+  }
+  .cy-step[aria-selected='true'] {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: #fff;
+  }
+  .cy-step[aria-selected='true'] .cy-ico {
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
+  }
+  .cy-bar {
+    height: 2px;
+    margin: 1.25rem auto 0;
+    max-width: 30rem;
+    border-radius: 2px;
+    background: rgba(255, 255, 255, 0.08);
+    overflow: hidden;
+  }
+  .cy-bar i {
+    display: block;
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, var(--primary), var(--gold-bright));
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+  .cy-bar i.run {
+    animation: fill 3.6s linear forwards;
+  }
+  .cy-svg {
+    width: 100%;
+    height: auto;
+    margin-top: 1rem;
+    overflow: visible;
+  }
+  .cy-cap {
+    fill: var(--faint);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+  .cy-lbl {
+    fill: #d1d5dc;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .cy-lbl.small {
+    fill: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .wire {
+    fill: none;
+    stroke: #364153;
+    stroke-width: 1.5;
+    stroke-dasharray: 5 7;
+    transition:
+      stroke 0.4s ease,
+      opacity 0.4s ease;
+  }
+  .node circle,
+  .node rect {
+    fill: #17202d;
+    stroke: #364153;
+    stroke-width: 1.5;
+    transition:
+      fill 0.4s ease,
+      stroke 0.4s ease;
+  }
+  .node :global(svg) {
+    color: var(--muted);
+    transition: color 0.4s ease;
+  }
+  .n-sys text {
+    fill: #e5e7eb;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.18em;
+  }
+  .tick {
+    opacity: 0;
+    transition: opacity 0.4s ease;
+  }
+  .tick circle {
+    fill: #3f8f5a;
+    stroke: none;
+  }
+  .tick path {
+    fill: none;
+    stroke: #fff;
+    stroke-width: 2;
+  }
+  .trend {
+    opacity: 0.25;
+    transition: opacity 0.5s ease;
+  }
+  .trend rect {
+    fill: #17202d;
+    stroke: #364153;
+  }
+  .trend polyline {
+    fill: none;
+    stroke: #ffd230;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-dasharray: 1;
+    stroke-dashoffset: 1;
+  }
+  .halo {
+    opacity: 0.6;
+    animation: breathe-o 3s ease-in-out infinite;
+  }
+  .core-ring {
+    fill: none;
+    stroke: #ffd230;
+    transform-origin: 450px 230px;
+  }
+  .cr1 {
+    stroke-dasharray: 3 8;
+    opacity: 0.5;
+    animation: spin 30s linear infinite;
+  }
+  .cr2 {
+    opacity: 0.25;
+  }
+  .core-txt {
+    fill: #1e1608;
+    font-size: 15px;
+    font-weight: 800;
+    letter-spacing: 0.16em;
+  }
+
+  /* états du cycle */
+  .cycle[data-stage='0'] .w-in,
+  .cycle[data-stage='1'] .w-mem,
+  .cycle[data-stage='3'] .w-out,
+  .cycle[data-stage='4'] .w-out,
+  .cycle[data-stage='4'] .w-gov {
+    stroke: #ffd230;
+    animation: flow 0.9s linear infinite;
+  }
+  .cycle[data-stage='0'] .n-in circle,
+  .cycle[data-stage='1'] .n-mem circle,
+  .cycle[data-stage='3'] .n-sys rect,
+  .cycle[data-stage='4'] .n-sys rect,
+  .cycle[data-stage='4'] .n-gov circle {
+    stroke: #ffd230;
+    fill: #2a2412;
+  }
+  .cycle[data-stage='0'] .n-in :global(svg),
+  .cycle[data-stage='1'] .n-mem :global(svg),
+  .cycle[data-stage='4'] .n-gov :global(svg) {
+    color: #ffd230;
+  }
+  .cycle[data-stage='1'] .cr1,
+  .cycle[data-stage='1'] .cr2 {
+    animation:
+      spin 30s linear infinite,
+      pulse-ring 1.2s ease-out infinite;
+    opacity: 0.8;
+  }
+  .cycle[data-stage='2'] .trend {
+    opacity: 1;
+  }
+  .cycle[data-stage='2'] .trend polyline {
+    animation: draw 1.4s ease forwards;
+  }
+  .cycle[data-stage='4'] .tick {
+    opacity: 1;
+  }
+  .cy-caption {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #e5e7eb;
+    min-height: 1.6em;
+  }
+  .cy-caption.in {
+    animation: rise 0.5s var(--ease);
+  }
+
+  /* ---------- Orbite ---------- */
+  .orbit {
+    position: relative;
+    width: min(100%, 620px);
+    aspect-ratio: 1;
+    margin: 0 auto;
+  }
+  .o-ring {
+    position: absolute;
+    inset: 9%;
+    border-radius: 50%;
+    border: 1px dashed rgba(255, 210, 48, 0.3);
+    animation: spin 60s linear infinite;
+  }
+  .o-center {
+    position: absolute;
+    inset: 24%;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: radial-gradient(circle at 50% 30%, rgba(150, 114, 29, 0.35), var(--card) 70%);
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 0 80px rgba(150, 114, 29, 0.2);
+  }
+  .o-card {
+    grid-area: 1 / 1;
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 0.5rem;
+    padding: 0 12%;
+    opacity: 0;
+    transform: scale(0.95);
+    transition:
+      opacity 0.4s var(--ease),
+      transform 0.4s var(--ease);
+    pointer-events: none;
+  }
+  .o-card.on {
+    opacity: 1;
+    transform: none;
+  }
+  .o-big {
+    width: 3.5rem;
+    height: 3.5rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+  }
+  .o-card h3 {
+    font-size: 1.25rem;
+  }
+  .o-card p {
     font-size: 0.85rem;
     color: var(--muted);
   }
-
-  .statement {
+  .o-node {
+    position: absolute;
+    transform: translate(-50%, -50%);
     display: grid;
-    gap: 2rem;
+    justify-items: center;
+    gap: 0.35rem;
+    background: none;
+    border: 0;
+    padding: 0;
+    color: #d1d5dc;
+    font: inherit;
+    cursor: pointer;
   }
-  .statement > * {
-    max-width: 60rem;
+  .o-ico {
+    width: 3.5rem;
+    height: 3.5rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1px solid var(--line-strong);
+    color: var(--gold-bright);
+    transition:
+      transform 0.3s var(--ease),
+      background 0.3s var(--ease),
+      box-shadow 0.3s var(--ease);
   }
-  .big {
-    font-family: var(--font-display);
-    font-size: clamp(2rem, 4vw, 3.3rem);
-    line-height: 1.15;
+  .o-name {
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
   }
-  .big em {
+  .o-node:hover .o-ico,
+  .o-node.on .o-ico {
+    transform: scale(1.12);
+    background: var(--primary);
+    color: #fff;
+    box-shadow: 0 0 30px rgba(255, 210, 48, 0.4);
+  }
+  .o-node.on .o-name {
     color: var(--gold-bright);
   }
-  .head {
-    display: grid;
-    gap: 1.5rem;
-    max-width: 52rem;
-    margin-bottom: clamp(2.5rem, 5vw, 4rem);
+
+  /* ---------- Architecture ---------- */
+  .pipe {
+    position: relative;
+    padding: 3rem clamp(1rem, 3vw, 2rem) 2rem;
+    border-radius: 2rem;
+    border: 1px dashed var(--gold-dim);
   }
-  .caps {
+  .pipe-label {
+    position: absolute;
+    top: -0.8rem;
+    left: 50%;
+    transform: translateX(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.9rem;
+    border-radius: 999px;
+    background: var(--black);
+    border: 1px solid var(--gold-dim);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--gold-bright);
+    white-space: nowrap;
+  }
+  .pipe-track {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    top: 50%;
+    height: 2px;
+    background: #364153;
+    overflow: hidden;
+  }
+  .pipe-track i {
+    position: absolute;
+    top: -3px;
+    width: 18%;
+    height: 8px;
+    border-radius: 8px;
+    background: linear-gradient(90deg, transparent, #ffd230, transparent);
+    animation: travel 2.8s linear infinite;
+  }
+  .pipe-row {
+    position: relative;
     list-style: none;
     margin: 0;
     padding: 0;
     display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1px;
-    background: var(--line-strong);
-    border: 1px solid var(--line-strong);
-    border-radius: 1.5rem;
-    overflow: hidden;
-  }
-  .caps li {
-    background: var(--card);
-    padding: 2rem 1.5rem 2.25rem;
-    display: grid;
-    gap: 0.75rem;
-    align-content: start;
-  }
-  .caps li:last-child {
-    grid-column: span 2;
-  }
-  .caps h3 {
-    font-family: var(--font-display);
-    font-size: 1.7rem;
-  }
-  .caps p {
-    font-size: 0.92rem;
-    color: var(--muted);
-  }
-
-  .arch-sec {
-    background: var(--graphite);
-  }
-  .arch {
-    margin: 0;
-  }
-  .gov {
-    position: relative;
-    border: 1px dashed var(--gold-dim);
-    padding: 3.25rem clamp(1rem, 2.5vw, 2rem) clamp(1.5rem, 3vw, 2.5rem);
-  }
-  .gov-label {
-    position: absolute;
-    top: -0.65rem;
-    left: 1.5rem;
-    padding: 0 0.75rem;
-    background: var(--graphite);
-    font-size: 0.68rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: var(--gold);
-  }
-  .flow {
-    display: grid;
-    grid-template-columns: 0.8fr 1fr 1.3fr 1fr 1fr 0.8fr;
-    gap: 1.75rem;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 1rem;
     align-items: center;
   }
-  .flow > * {
-    position: relative;
-  }
-  .flow > *:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    right: -1.6rem;
-    top: 50%;
-    width: 1.45rem;
-    height: 1px;
-    background: linear-gradient(90deg, var(--line-strong), var(--gold));
-  }
-  .io {
+  .pm {
     display: grid;
-    gap: 0.4rem;
-    font-size: 0.8rem;
-    color: var(--muted);
-  }
-  .io-t {
-    font-size: 0.66rem;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: var(--faint);
-  }
-  .mod {
+    justify-items: center;
+    text-align: center;
+    gap: 0.35rem;
+    padding: 1.25rem 0.75rem;
+    border-radius: 1.25rem;
     border: 1px solid var(--line-strong);
     background: var(--card);
-    padding: 1.1rem 1rem;
-    display: grid;
-    gap: 0.35rem;
+    transition:
+      transform 0.3s var(--ease),
+      border-color 0.3s var(--ease);
   }
-  .m-name {
-    font-size: 0.82rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
+  .pm:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold-bright);
   }
-  .m-role {
+  .pm b {
+    font-size: 0.95rem;
+  }
+  .pm small {
     font-size: 0.75rem;
-    line-height: 1.45;
     color: var(--muted);
+    line-height: 1.4;
   }
-  .center {
+  .pm-ico {
+    width: 2.75rem;
+    height: 2.75rem;
     display: grid;
-    gap: 0.6rem;
-  }
-  .core {
-    border-color: var(--gold);
-    background: radial-gradient(ellipse at center, rgba(198, 164, 92, 0.2), var(--card) 75%);
-    padding-block: 1.6rem;
-  }
-  .core .m-name {
+    place-items: center;
+    border-radius: 50%;
+    background: rgba(150, 114, 29, 0.25);
     color: var(--gold-bright);
   }
-  .aux {
-    padding-block: 0.7rem;
+  .pm-ico.sm {
+    width: 2rem;
+    height: 2rem;
   }
-  .arch figcaption {
-    margin-top: 1.25rem;
-    font-size: 0.8rem;
-    color: var(--faint);
+  .pm.stack {
+    gap: 0.75rem;
+  }
+  .pm.stack div {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .pm.core {
+    border-color: var(--gold-bright);
+    background: radial-gradient(circle at 50% 0%, rgba(150, 114, 29, 0.45), var(--card) 75%);
+    box-shadow: 0 0 40px rgba(150, 114, 29, 0.3);
+  }
+  .pm.core b {
+    color: var(--gold-bright);
   }
 
-  .scenarios {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: var(--line-strong);
+  /* ---------- Scénarios ---------- */
+  .scen {
+    position: relative;
+    border-radius: 2rem;
     border: 1px solid var(--line-strong);
-    border-radius: 1.5rem;
-    overflow: hidden;
-  }
-  .scenario {
     background: var(--card);
-    padding: 2rem 1.75rem;
+    padding: clamp(1.25rem, 3vw, 2.25rem);
+  }
+  .sc-tabs {
     display: grid;
-    gap: 1rem;
-    align-content: start;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
   }
-  .scenario header {
+  .sc-tab {
     display: flex;
-    justify-content: space-between;
-    gap: 1rem;
-    font-size: 0.66rem;
+    align-items: center;
+    gap: 0.75rem;
+    text-align: left;
+    padding: 0.75rem;
+    border-radius: 1rem;
+    border: 1px solid var(--line-strong);
+    background: rgba(17, 16, 13, 0.45);
+    color: #d1d5dc;
+    font: inherit;
     font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
+    cursor: pointer;
+    transition:
+      border-color 0.3s var(--ease),
+      background 0.3s var(--ease);
   }
-  .sc-id {
-    color: var(--faint);
+  .sc-letter {
+    flex: none;
+    width: 2.25rem;
+    height: 2.25rem;
+    display: grid;
+    place-items: center;
+    border-radius: 0.75rem;
+    background: rgba(150, 114, 29, 0.25);
+    color: var(--gold-bright);
+    font-weight: 800;
+  }
+  .sc-tab[aria-selected='true'] {
+    border-color: var(--gold-bright);
+    background: rgba(150, 114, 29, 0.18);
+    color: #fff;
+  }
+  .sc-tab[aria-selected='true'] .sc-letter {
+    background: var(--primary);
+    color: #fff;
+  }
+  .sc-panel {
+    display: none;
+    margin-top: 2rem;
+  }
+  .sc-panel.on {
+    display: block;
+  }
+  .sc-ctx {
+    text-align: center;
+    color: #e5e7eb;
+    font-weight: 600;
   }
   .sc-sys {
+    display: inline-block;
+    margin-right: 0.75rem;
+    padding: 0.2rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(150, 114, 29, 0.25);
+    color: var(--gold-bright);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+  }
+  .sc-flow {
+    position: relative;
+    list-style: none;
+    margin: 2.25rem 0 1.5rem;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(var(--n), minmax(0, 1fr));
+    gap: 1rem;
+  }
+  .sc-flow::before {
+    content: '';
+    position: absolute;
+    top: 1.75rem;
+    left: 10%;
+    right: 10%;
+    height: 2px;
+    background: #364153;
+  }
+  .sc-flow li {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    text-align: center;
+    gap: 0.6rem;
+    opacity: 0.25;
+    transform: translateY(8px);
+    transition:
+      opacity 0.5s var(--ease),
+      transform 0.5s var(--ease);
+  }
+  .sc-flow li.on {
+    opacity: 1;
+    transform: none;
+  }
+  .sc-node {
+    width: 3.5rem;
+    height: 3.5rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--black);
+    border: 2px solid #364153;
+    color: var(--muted);
+    transition:
+      border-color 0.4s ease,
+      color 0.4s ease,
+      box-shadow 0.4s ease;
+  }
+  .sc-flow li.on .sc-node {
+    border-color: var(--gold-bright);
+    color: var(--gold-bright);
+    box-shadow: 0 0 24px rgba(255, 210, 48, 0.35);
+  }
+  .sc-step {
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #e5e7eb;
+  }
+  .sc-guard {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .sc-guard :global(svg) {
+    flex: none;
     color: var(--gold);
   }
-  .scenario h3 {
-    margin-top: 1rem;
-    font-family: var(--font-display);
-    font-size: 1.65rem;
-    line-height: 1.15;
-  }
-  .ctx {
-    color: #c9c8c3;
-    font-size: 0.93rem;
-  }
-  .scenario ol {
-    list-style: none;
-    margin: 0.5rem 0;
-    padding: 0;
-    border-left: 1px solid var(--gold-dim);
-  }
-  .scenario li {
-    display: grid;
-    grid-template-columns: 2.4rem 1fr;
-    padding: 0.5rem 0 0.5rem 1rem;
-    font-size: 0.88rem;
-    color: #bdbcb7;
-  }
-  .guard {
-    margin-top: auto;
-    padding-top: 1rem;
-    border-top: 1px solid var(--line);
-    font-size: 0.8rem;
-    color: var(--muted);
-  }
-
-  .two {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr);
-    gap: clamp(2rem, 6vw, 6rem);
-  }
-  .two h2 {
-    margin-top: 1.5rem;
-  }
-  .lead.side {
-    margin-top: 1.5rem;
-  }
-  .sov {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border-top: 1px solid var(--line);
-  }
-  .sov li {
-    padding: 1.6rem 1.25rem 1.6rem 0;
-    border-bottom: 1px solid var(--line);
-    display: grid;
+  .sc-replay {
+    position: absolute;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    display: inline-flex;
+    align-items: center;
     gap: 0.4rem;
-    align-content: start;
-  }
-  .sov li:nth-child(even) {
-    padding-left: 1.25rem;
-    border-left: 1px solid var(--line);
-  }
-  .sov h3 {
-    font-family: var(--font-display);
-    font-size: 1.35rem;
-  }
-  .sov p {
-    font-size: 0.9rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-strong);
+    background: none;
     color: var(--muted);
+    font: inherit;
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+  .sc-replay:hover {
+    color: var(--gold-bright);
+    border-color: var(--gold-bright);
   }
 
-  .gov-sec .wrap {
+  /* ---------- Citation ---------- */
+  .quote-sec .wrap {
     display: grid;
+    justify-items: center;
+    text-align: center;
     gap: 2rem;
-  }
-  .gov-sec .wrap > * {
-    max-width: 62rem;
   }
   blockquote {
     margin: 0;
-    font-family: var(--font-display);
-    font-size: clamp(1.7rem, 3.2vw, 2.6rem);
-    line-height: 1.22;
+    max-width: 46rem;
+    font-size: clamp(1.6rem, 3.2vw, 2.6rem);
+    font-weight: 700;
+    line-height: 1.2;
   }
-  blockquote em {
+  blockquote :global(em) {
     color: var(--gold-bright);
   }
   .demo {
     display: flex;
     flex-wrap: wrap;
+    justify-content: center;
     align-items: center;
-    gap: 1rem 1.5rem;
+    gap: 0.75rem 1.25rem;
     font-size: 0.85rem;
   }
-  .demo .muted {
-    max-width: 30rem;
+
+  /* ---------- Animations ---------- */
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  @keyframes breathe {
+    50% {
+      transform: scale(1.06);
+      box-shadow:
+        0 0 80px 18px rgba(255, 210, 48, 0.45),
+        0 0 180px 60px rgba(150, 114, 29, 0.3);
+    }
+  }
+  @keyframes breathe-o {
+    50% {
+      opacity: 1;
+    }
+  }
+  @keyframes wander {
+    25% {
+      transform: translate(18%, -12%);
+    }
+    50% {
+      transform: translate(-14%, 10%);
+    }
+    75% {
+      transform: translate(10%, 16%);
+    }
+  }
+  @keyframes flow {
+    to {
+      stroke-dashoffset: -24;
+    }
+  }
+  @keyframes draw {
+    to {
+      stroke-dashoffset: 0;
+    }
+  }
+  @keyframes pulse-ring {
+    from {
+      stroke-width: 1;
+    }
+    to {
+      stroke-width: 4;
+      opacity: 0;
+    }
+  }
+  @keyframes fill {
+    to {
+      transform: scaleX(1);
+    }
+  }
+  @keyframes rise {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+  }
+  @keyframes travel {
+    from {
+      left: -18%;
+    }
+    to {
+      left: 100%;
+    }
   }
 
-  @media (max-width: 1080px) {
-    .flow {
+  /* ---------- Responsive ---------- */
+  @media (max-width: 960px) {
+    .hero-grid {
       grid-template-columns: 1fr;
-      gap: 1.6rem;
     }
-    .flow > *:not(:last-child)::after {
-      right: auto;
+    .orb-wrap {
+      order: -1;
+    }
+    .orb {
+      width: min(80vw, 320px);
+    }
+    .pipe-row {
+      grid-template-columns: 1fr;
+    }
+    .pipe-track {
       left: 50%;
-      top: auto;
-      bottom: -1.45rem;
-      width: 1px;
-      height: 1.3rem;
-      background: linear-gradient(180deg, var(--line-strong), var(--gold));
+      right: auto;
+      top: 3rem;
+      bottom: 2rem;
+      width: 2px;
+      height: auto;
     }
-    .io {
+    .pipe-track i {
+      display: none;
+    }
+    .sc-tabs {
+      grid-template-columns: 1fr;
+    }
+    .pipe-label {
+      left: 1rem;
+      right: 1rem;
+      transform: none;
+      white-space: normal;
+      text-align: center;
+      justify-content: center;
+      font-size: 0.65rem;
+    }
+  }
+  @media (max-width: 720px) {
+    .orbit {
+      aspect-ratio: auto;
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 1rem 0.5rem;
+    }
+    .o-ring {
+      display: none;
+    }
+    .o-center {
+      position: relative;
+      inset: auto;
+      grid-column: 1 / -1;
+      border-radius: 1.5rem;
+      padding: 1.5rem 0;
+    }
+    .o-node {
+      position: static;
+      transform: none;
+    }
+    .o-name {
+      font-size: 0.7rem;
+      white-space: normal;
       text-align: center;
     }
-    .center {
-      grid-template-columns: 1fr 1.2fr 1fr;
+    .sc-flow {
+      grid-template-columns: 1fr;
+      gap: 0.75rem;
+    }
+    .sc-flow::before {
+      top: 1rem;
+      bottom: 1rem;
+      left: 1.75rem;
+      right: auto;
+      width: 2px;
+      height: auto;
+    }
+    .sc-flow li {
+      grid-template-columns: 3.5rem 1fr;
+      justify-items: start;
       align-items: center;
+      text-align: left;
+      gap: 1rem;
     }
-    .caps {
-      grid-template-columns: 1fr 1fr;
+    .sc-replay {
+      position: static;
+      margin: 1rem auto 0;
+      display: flex;
     }
-    .caps li:last-child {
-      grid-column: auto;
+    .cy-step {
+      font-size: 0.85rem;
     }
-    .scenarios {
-      grid-template-columns: 1fr;
+    .cy-scroll {
+      overflow-x: auto;
+      margin-inline: -0.5rem;
+      -webkit-overflow-scrolling: touch;
+    }
+    .cy-scroll .cy-svg {
+      min-width: 640px;
     }
   }
-  @media (max-width: 900px) {
-    .hero-grid,
-    .two {
-      grid-template-columns: 1fr;
-    }
-  }
-  @media (max-width: 560px) {
-    .caps,
-    .sov {
-      grid-template-columns: 1fr;
-    }
-    .sov li:nth-child(even) {
-      padding-left: 0;
-      border-left: 0;
-    }
-    .center {
-      grid-template-columns: 1fr;
+  @media (prefers-reduced-motion: reduce) {
+    .pipe-track i,
+    .spin {
+      display: none;
     }
   }
 </style>
+
+<script>
+  const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Orbe : légère inclinaison qui suit la souris
+  const orbWrap = document.querySelector('[data-orb]');
+  const orb = document.querySelector('[data-orb-inner]');
+  if (orbWrap && orb && !reduced) {
+    window.addEventListener('pointermove', (e) => {
+      const r = orbWrap.getBoundingClientRect();
+      const x = (e.clientX - (r.left + r.width / 2)) / window.innerWidth;
+      const y = (e.clientY - (r.top + r.height / 2)) / window.innerHeight;
+      orb.style.transform = `rotateY(${x * 22}deg) rotateX(${-y * 22}deg)`;
+    });
+  }
+
+  // Cycle : défilement automatique des cinq étapes
+  const cycle = document.querySelector('[data-cycle]');
+  if (cycle) {
+    const steps = [...cycle.querySelectorAll('[data-step]')];
+    const caption = cycle.querySelector('[data-cy-caption]');
+    const bar = cycle.querySelector('[data-cy-bar]');
+    const texts = JSON.parse(cycle.getAttribute('data-texts') || '[]');
+    let stage = 0;
+    let timer;
+    const show = (i) => {
+      stage = i;
+      cycle.setAttribute('data-stage', String(i));
+      steps.forEach((s, j) => s.setAttribute('aria-selected', String(i === j)));
+      caption.textContent = texts[i];
+      caption.classList.remove('in');
+      void caption.offsetWidth;
+      caption.classList.add('in');
+      bar.classList.remove('run');
+      void bar.offsetWidth;
+      if (!reduced) bar.classList.add('run');
+      clearTimeout(timer);
+      if (!reduced) timer = setTimeout(() => show((stage + 1) % steps.length), 3600);
+    };
+    steps.forEach((s, i) => s.addEventListener('click', () => show(i)));
+    const io = new IntersectionObserver((en) => {
+      if (en[0].isIntersecting) { show(stage); io.disconnect(); }
+    });
+    io.observe(cycle);
+  }
+
+  // Orbite des capacités
+  const orbit = document.querySelector('[data-orbit]');
+  if (orbit) {
+    const nodes = [...orbit.querySelectorAll('[data-node]')];
+    const cards = [...orbit.querySelectorAll('[data-card]')];
+    let cur = 0;
+    let auto = !reduced;
+    const sel = (i) => {
+      cur = i;
+      nodes.forEach((n, j) => n.classList.toggle('on', i === j));
+      cards.forEach((c, j) => c.classList.toggle('on', i === j));
+    };
+    nodes.forEach((n, i) => {
+      n.addEventListener('click', () => { auto = false; sel(i); });
+      n.addEventListener('mouseenter', () => { auto = false; sel(i); });
+    });
+    setInterval(() => { if (auto) sel((cur + 1) % nodes.length); }, 2800);
+  }
+
+  // Scénarios : les étapes s'allument une à une
+  const scen = document.querySelector('[data-scen]');
+  if (scen) {
+    const tabs = [...scen.querySelectorAll('[data-tab]')];
+    const panels = [...scen.querySelectorAll('[data-panel]')];
+    let timers = [];
+    const play = (i) => {
+      timers.forEach(clearTimeout);
+      timers = [];
+      tabs.forEach((t, j) => t.setAttribute('aria-selected', String(i === j)));
+      panels.forEach((p, j) => p.classList.toggle('on', i === j));
+      const items = [...panels[i].querySelectorAll('.sc-flow li')];
+      items.forEach((li) => li.classList.remove('on'));
+      items.forEach((li, k) => timers.push(setTimeout(() => li.classList.add('on'), reduced ? 0 : 350 + k * 650)));
+    };
+    let current = 0;
+    tabs.forEach((t, i) => t.addEventListener('click', () => { current = i; play(i); }));
+    scen.querySelector('[data-replay]')?.addEventListener('click', () => play(current));
+    const io = new IntersectionObserver((en) => {
+      if (en[0].isIntersecting) { play(0); io.disconnect(); }
+    }, { threshold: 0.3 });
+    io.observe(scen);
+  }
+</script>
