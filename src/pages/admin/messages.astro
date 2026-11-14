@@ -1,0 +1,53 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import OrgPicker from '../../components/admin/OrgPicker.astro';
+import { db } from '../../lib/server/db.ts';
+import { can } from '../../lib/server/authz.ts';
+import { orgOptions, pickOrg, MESSAGE_STATUS, TOPIC_LABEL, ago, fmtDate } from '../../lib/server/admin-view.ts';
+
+const u = Astro.locals.user!;
+if (!can(u, 'messages.handle')) return Astro.redirect('/admin');
+const options = await orgOptions(db!, u, 'messages.handle');
+const org = pickOrg(options, Astro.url.searchParams.get('org'), u, true);
+const status = Astro.url.searchParams.get('statut');
+const filter = status && status in MESSAGE_STATUS ? { status: status as 'NEW' } : { status: { not: 'ARCHIVED' as const } };
+const messages = await db!.contactMessage.findMany({
+  where: { ...(org ? { orgId: org.id } : options.length ? { orgId: { in: options.map((o) => o.id) } } : {}), ...filter },
+  include: { org: true },
+  orderBy: { createdAt: 'desc' },
+  take: 200,
+});
+const base = (extra: Record<string, string>) => `?${new URLSearchParams({ org: org?.id ?? 'all', ...extra })}`;
+---
+<Admin title="Questions des internautes" subtitle="Messages envoyés depuis le formulaire de contact du site, transmis à l’organisation concernée." active="messages">
+  <OrgPicker options={options} current={org} allowAll />
+  <nav class="a-tabs">
+    <a href={base({})} aria-current={!status ? 'page' : undefined}>À suivre</a>
+    {Object.entries(MESSAGE_STATUS).map(([k, s]) => <a href={base({ statut: k })} aria-current={status === k ? 'page' : undefined}>{s.label}</a>)}
+  </nav>
+  {messages.length === 0 && <p class="a-card a-empty">Aucun message ici. Les nouveaux messages apparaîtront instantanément.</p>}
+  <div class="a-grid">
+    {messages.map((m) => (
+      <article class="a-card" id={`m-${m.id}`}>
+        <h2>
+          <span>{m.name} <span class="a-faint">· {TOPIC_LABEL[m.topic] ?? m.topic}{!org ? ` · ${m.org.name}` : ''}</span></span>
+          <span class={`a-pill ${MESSAGE_STATUS[m.status].tone}`}>{MESSAGE_STATUS[m.status].label}</span>
+        </h2>
+        <p class="a-faint">
+          <a href={`mailto:${m.email}?subject=${encodeURIComponent('AULIA — ' + (TOPIC_LABEL[m.topic] ?? ''))}`}>{m.email}</a>
+          {m.phone && <> · {m.phone}</>}{m.organization && <> · {m.organization}</>} · {m.lang === 'fr' ? 'français' : 'anglais'} · {ago(m.createdAt)} ({fmtDate(m.createdAt)})
+        </p>
+        <p style="white-space:pre-wrap;margin:.8rem 0">{m.message}</p>
+        <form class="a-form" data-action="message-update" data-payload={JSON.stringify({ id: m.id })} data-ok="Note enregistrée" data-reset="false">
+          <label class="a-field"><span>Note interne (suivi)</span><textarea name="note" rows="2">{m.note ?? ''}</textarea></label>
+          <div class="a-actions">
+            <button class="a-btn small" type="submit">Enregistrer la note</button>
+            {m.status !== 'READ' && m.status !== 'HANDLED' && <button class="a-btn small" type="button" data-action="message-update" data-payload={JSON.stringify({ id: m.id, status: 'READ' })}>Marquer comme lu</button>}
+            {m.status !== 'HANDLED' && <button class="a-btn small primary" type="button" data-action="message-update" data-payload={JSON.stringify({ id: m.id, status: 'HANDLED' })} data-ok="Marqué comme traité">Traité</button>}
+            {m.status !== 'ARCHIVED' && <button class="a-btn small" type="button" data-action="message-update" data-payload={JSON.stringify({ id: m.id, status: 'ARCHIVED' })}>Archiver</button>}
+          </div>
+        </form>
+      </article>
+    ))}
+  </div>
+</Admin>

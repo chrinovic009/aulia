@@ -1,4 +1,5 @@
 ---
+import { uiText } from '../data/site.ts';
 /**
  * Emblème animé du hero.
  * Séquence : un point apparaît → d'autres points → connexions → géométrie
@@ -11,7 +12,7 @@
 import { ui, type Lang } from '../i18n.ts';
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
-const t = ui[lang];
+const t = uiText(lang, Astro.locals);
 const C = 300;
 const outer = [-96, -58, -18, 22, 58, 96, 134, 172, 212, 248].map((deg, i) => {
   const r = i % 2 ? 236 : 252;

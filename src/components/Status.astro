@@ -3,7 +3,7 @@ import { getContent, type Status } from '../data/site.ts';
 import type { Lang } from '../i18n.ts';
 interface Props { status: Status; lang: Lang; }
 const { status, lang } = Astro.props;
-const { statusLabel } = getContent(lang);
+const { statusLabel } = getContent(lang, Astro.locals);
 ---
 <span class:list={['status', `s-${status}`]}><i aria-hidden="true"></i>{statusLabel[status]}</span>
 

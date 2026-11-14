@@ -1,0 +1,34 @@
+---
+import AdminAuth from '../../layouts/AdminAuth.astro';
+const email = Astro.url.searchParams.get('email') ?? '';
+---
+<AdminAuth title="Activer votre accès" lead="Votre adresse est vérifiée par un code à 6 chiffres. Seules les personnes invitées peuvent créer un accès.">
+  <form class="a-form" data-auth="/api/auth/code" data-payload='{"purpose":"join"}' id="step1">
+    <label class="a-field"><span>Adresse e-mail invitée</span><input name="email" type="email" autocomplete="email" value={email} required /></label>
+    <button class="a-btn primary" type="submit">Recevoir mon code</button>
+  </form>
+  <form class="a-form" data-auth="/api/auth/join" data-confirm-password="1" id="step2" hidden>
+    <input type="hidden" name="email" />
+    <label class="a-field"><span>Code reçu par e-mail</span><input class="a-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required /></label>
+    <label class="a-field"><span>Nom complet</span><input name="name" autocomplete="name" required /></label>
+    <label class="a-field"><span>Mot de passe (10 caractères minimum)</span><input name="password" type="password" autocomplete="new-password" minlength="10" required /></label>
+    <label class="a-field"><span>Confirmer le mot de passe</span><input name="password2" type="password" autocomplete="new-password" minlength="10" required /></label>
+    <button class="a-btn primary" type="submit">Créer mon accès</button>
+    <button class="a-btn small" type="button" id="again">Recevoir un nouveau code</button>
+  </form>
+  <div class="links"><a href="/admin/connexion">J’ai déjà un compte</a></div>
+  <script>
+    const s1 = document.getElementById('step1') as HTMLFormElement;
+    const s2 = document.getElementById('step2') as HTMLFormElement;
+    s1.addEventListener('auth:done', () => {
+      (s2.elements.namedItem('email') as HTMLInputElement).value = (s1.elements.namedItem('email') as HTMLInputElement).value;
+      s1.hidden = true;
+      s2.hidden = false;
+      (s2.elements.namedItem('code') as HTMLInputElement).focus();
+    });
+    document.getElementById('again')?.addEventListener('click', () => {
+      s2.hidden = true;
+      s1.hidden = false;
+    });
+  </script>
+</AdminAuth>

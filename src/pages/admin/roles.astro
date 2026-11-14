@@ -1,0 +1,36 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { db } from '../../lib/server/db.ts';
+const roles = await db!.role.findMany({ orderBy: [{ scope: 'asc' }, { rank: 'asc' }] });
+const PERM: Record<string, string> = {
+  'group.all': 'Tous les droits du groupe',
+  'content.publish': 'Valider et publier sur le site',
+  'content.review': 'Examiner les propositions',
+  'content.edit': 'Préparer du contenu public',
+  'content.submit': 'Soumettre au fondateur',
+  'team.manage': 'Gérer l’équipe',
+  'site.view': 'Voir les visites',
+  'messages.handle': 'Traiter les questions des internautes',
+  'audit.view': 'Consulter le journal',
+  'directory.view': 'Voir l’annuaire',
+};
+---
+<Admin title="Catalogue des rôles" subtitle="Un catalogue unique pour tout le groupe. Chaque rôle peut être utilisé par plusieurs filiales et par plusieurs personnes." active="roles">
+  {(['GROUP', 'SUBSIDIARY'] as const).map((scope) => (
+    <section class="a-card a-section a-table-wrap">
+      <h2>{scope === 'GROUP' ? 'Rôles du groupe (attribués par le fondateur, dans la holding)' : 'Rôles de filiale (attribués par le DG, sauf le rôle de DG)'}</h2>
+      <table class="a-table">
+        <thead><tr><th>Rôle</th><th>Description</th><th>Droits</th></tr></thead>
+        <tbody>
+          {roles.filter((r) => r.scope === scope).map((r) => (
+            <tr>
+              <td><strong>{r.labelFr}</strong><div class="a-faint">{r.labelEn}</div></td>
+              <td class="a-muted">{r.description}</td>
+              <td><div class="a-actions">{r.permissions.length ? r.permissions.map((p) => <span class="a-pill">{PERM[p] ?? p}</span>) : <span class="a-faint">Accès limité aux outils de son travail</span>}</div></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  ))}
+</Admin>

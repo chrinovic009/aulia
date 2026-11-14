@@ -1,4 +1,6 @@
 ---
+import page from '../data/pages/home.ts';
+import { block } from '../data/site.ts';
 import Layout from '../layouts/Layout.astro';
 import HeroEmblem from '../components/HeroEmblem.astro';
 import EcosystemMap from '../components/EcosystemMap.astro';
@@ -15,83 +17,14 @@ import { path, contactPath, type Lang } from '../i18n.ts';
 
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
-const { entities, anima, research, doctrine } = getContent(lang);
+const { entities, anima, research, doctrine } = getContent(lang, Astro.locals);
 
 const entityIcon: Record<string, string> = { care: 'medical', vigil: 'gauge', flow: 'flow', vr: 'vr' };
 const doctrineIcons = ['search', 'radar', 'bulb', 'shield', 'transform'];
 const mottoIcons = ['wave', 'message', 'trend', 'network', 'bolt'];
 const researchIcons = ['cpu', 'atom', 'cog', 'factory', 'server', 'box', 'link', 'user'];
 
-const T = {
-  en: {
-    h1: 'Building Intelligence. <span class="gold">Transforming Systems.</span>',
-    tagline: 'A technology group building specialised companies for essential systems.',
-    explore: 'Explore the ecosystem',
-    discover: 'Discover ANIMA',
-    pillars: [
-      ['building', 'A parent company'],
-      ['layers', 'Specialised companies'],
-      ['network', 'A transversal intelligence'],
-    ],
-    docEyebrow: 'Doctrine',
-    docTitle: 'Five verbs. <em>One direction.</em>',
-    ecoEyebrow: 'Ecosystem',
-    ecoTitle: 'One vision. <em>Multiple intelligences.</em>',
-    seeMap: 'See the full ecosystem',
-    animaEyebrow: 'ANIMA',
-    animaTitle: 'The intelligence <em>behind the systems.</em>',
-    animaLead: 'One architecture to perceive, understand and coordinate — under human control.',
-    pathEyebrow: 'Our path',
-    pathTitle: 'Prove first. <em>Then grow.</em>',
-    path: [
-      { icon: 'medical', title: 'AULIA Care', text: 'First proof in the field' },
-      { icon: 'factory', title: 'Vigil & Flow', text: 'Industrial value' },
-      { icon: 'network', title: 'ANIMA', text: 'Transversal intelligence' },
-      { icon: 'expand', title: 'New companies', text: 'As needs emerge' },
-    ],
-    resEyebrow: 'Research & Innovation',
-    resTitle: 'Mastering technology, <em>not just using it.</em>',
-    resLink: 'Explore our research',
-    ctaEyebrow: 'Partnerships',
-    ctaTitle: "Let's build <em>what matters.</em>",
-    ctaLabel: 'Build with AULIA',
-    ctaSecondary: 'Request a presentation',
-  },
-  fr: {
-    h1: "Construire l'intelligence. <span class=\"gold\">Transformer les systèmes.</span>",
-    tagline: 'Un groupe technologique qui bâtit des entreprises spécialisées pour les systèmes essentiels.',
-    explore: "Explorer l'écosystème",
-    discover: 'Découvrir ANIMA',
-    pillars: [
-      ['building', 'Une société mère'],
-      ['layers', 'Des entreprises spécialisées'],
-      ['network', 'Une intelligence transversale'],
-    ],
-    docEyebrow: 'Doctrine',
-    docTitle: 'Cinq verbes. <em>Une direction.</em>',
-    ecoEyebrow: 'Écosystème',
-    ecoTitle: 'Une vision. <em>Plusieurs intelligences.</em>',
-    seeMap: "Voir tout l'écosystème",
-    animaEyebrow: 'ANIMA',
-    animaTitle: "L'intelligence <em>derrière les systèmes.</em>",
-    animaLead: 'Une architecture pour percevoir, comprendre et coordonner — sous contrôle humain.',
-    pathEyebrow: 'Notre trajectoire',
-    pathTitle: "Prouver d'abord. <em>Grandir ensuite.</em>",
-    path: [
-      { icon: 'medical', title: 'AULIA Care', text: 'Première preuve sur le terrain' },
-      { icon: 'factory', title: 'Vigil & Flow', text: 'Valeur industrielle' },
-      { icon: 'network', title: 'ANIMA', text: 'Intelligence transversale' },
-      { icon: 'expand', title: 'Nouvelles entreprises', text: 'Selon les besoins' },
-    ],
-    resEyebrow: 'Recherche & Innovation',
-    resTitle: "Maîtriser la technologie, <em>pas seulement l'utiliser.</em>",
-    resLink: 'Explorer notre recherche',
-    ctaEyebrow: 'Partenariats',
-    ctaTitle: 'Construisons <em>ce qui compte.</em>',
-    ctaLabel: 'Construire avec AULIA',
-    ctaSecondary: 'Demander une présentation',
-  },
-}[lang];
+const T = block(Astro.locals, 'page:home', lang, page);
 
 const doctrineTiles = doctrine.map((d, i) => ({ icon: doctrineIcons[i], title: d.word, text: d.short }));
 const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r.title }));
@@ -133,7 +66,7 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
         {entities.map((e, i) => (
           <a href={path(lang, 'ecosystem', e.slug)} class="uni-card reveal" style={`transition-delay:${i * 80}ms`}>
             <div class="uni-top" aria-hidden="true">
-              <span class="uni-ico"><Icon name={entityIcon[e.slug]} size={40} /></span>
+              <span class="uni-ico"><Icon name={entityIcon[e.slug] ?? 'layers'} size={40} /></span>
               <span class="uni-short">{e.short}</span>
             </div>
             <div class="uni-body">

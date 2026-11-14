@@ -1,4 +1,5 @@
 ---
+import { uiText } from '../data/site.ts';
 import Layout from '../layouts/Layout.astro';
 import PageHero from './PageHero.astro';
 import { ui, type Lang, type RouteKey } from '../i18n.ts';
@@ -6,7 +7,7 @@ interface Props { lang: Lang; route: RouteKey; title: string; lead: string; sect
 const { lang, route, title, lead, sections } = Astro.props;
 ---
 <Layout lang={lang} route={route} title={title} description={lead}>
-  <PageHero eyebrow={ui[lang].legalEyebrow} title={title} lead={lead} />
+  <PageHero eyebrow={uiText(lang, Astro.locals).legalEyebrow} title={title} lead={lead} />
   <section class="section">
     <div class="wrap">
       <ol class="legal">

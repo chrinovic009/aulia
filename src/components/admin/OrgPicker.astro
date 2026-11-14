@@ -1,0 +1,19 @@
+---
+/** Choix de l'organisation affichée (?org=…). */
+import type { OrgOption } from '../../lib/server/admin-view.ts';
+interface Props { options: OrgOption[]; current: OrgOption | null; allowAll?: boolean; }
+const { options, current, allowAll } = Astro.props;
+const url = new URL(Astro.url);
+const href = (id: string) => {
+  const u = new URL(url);
+  u.searchParams.set('org', id);
+  u.searchParams.delete('_live');
+  return u.pathname + u.search;
+};
+---
+{(options.length > 1 || allowAll) && (
+  <nav class="a-tabs" aria-label="Organisation">
+    {allowAll && <a href={href('all')} aria-current={current === null ? 'page' : undefined}>Tout le groupe</a>}
+    {options.map((o) => <a href={href(o.id)} aria-current={current?.id === o.id ? 'page' : undefined}>{o.name}</a>)}
+  </nav>
+)}

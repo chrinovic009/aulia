@@ -1,9 +1,10 @@
 ---
+import { uiText } from '../data/site.ts';
 /** Visualisation abstraite d'ANIMA : des signaux entrent, le noyau coordonne, des systèmes reçoivent. */
 import { ui, type Lang } from '../i18n.ts';
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
-const t = ui[lang];
+const t = uiText(lang, Astro.locals);
 const inputs = t.coreInputs;
 const outputs = ['CARE', 'VIGIL', 'FLOW', 'VR'];
 const cy = 230;

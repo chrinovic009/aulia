@@ -1,0 +1,23 @@
+---
+/** Fil d'activité (journal). */
+import { ago, ACTION_LABEL } from '../../lib/server/admin-view.ts';
+interface Props {
+  items: { id: bigint; at: Date; action: string; summary: string | null; actor: { name: string } | null; orgName?: string | null }[];
+}
+const { items } = Astro.props;
+const recent = Date.now() - 60_000;
+---
+{items.length === 0 ? <p class="a-empty">Aucune activité pour le moment.</p> : (
+  <ul class="a-feed">
+    {items.map((e) => (
+      <li data-new={e.at.getTime() > recent ? '' : undefined}>
+        <time datetime={e.at.toISOString()} title={e.at.toISOString()}>{ago(e.at)}</time>
+        <div>
+          <span class="a-pill">{ACTION_LABEL[e.action] ?? e.action}</span>{' '}
+          {e.summary}
+          <div class="a-faint">{e.actor?.name ?? 'Système'}{e.orgName ? ` · ${e.orgName}` : ''}</div>
+        </div>
+      </li>
+    ))}
+  </ul>
+)}

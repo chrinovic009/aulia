@@ -1,0 +1,71 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { db } from '../../lib/server/db.ts';
+import { canPublish } from '../../lib/server/authz.ts';
+import { diff } from '../../lib/server/shape.ts';
+import { ago, fmtDate } from '../../lib/server/admin-view.ts';
+const u = Astro.locals.user!;
+if (!canPublish(u)) return Astro.redirect('/admin');
+const pending = await db!.contentVersion.findMany({
+  where: { status: 'SUBMITTED' },
+  include: { block: { include: { org: true } }, author: { select: { name: true, email: true } } },
+  orderBy: { submittedAt: 'asc' },
+});
+const lives = await db!.contentLive.findMany({ where: { blockId: { in: pending.map((p) => p.blockId) } } });
+const rows = pending.map((v) => {
+  const live = lives.find((l) => l.blockId === v.blockId && l.locale === v.locale);
+  return { v, changes: diff(live?.data ?? {}, v.data) };
+});
+const recent = await db!.contentVersion.findMany({
+  where: { status: { in: ['PUBLISHED', 'REJECTED', 'ARCHIVED'] }, reviewedAt: { not: null }, authorId: { not: u.id } },
+  include: { block: true, author: { select: { name: true } }, reviewer: { select: { name: true } } },
+  orderBy: { reviewedAt: 'desc' },
+  take: 10,
+});
+---
+<Admin title="Validation" subtitle="Rien n’apparaît sur le site public sans votre accord. Comparez, puis publiez ou renvoyez avec un commentaire." active="review">
+  {rows.length === 0 && <p class="a-card a-empty">Aucune proposition en attente. Les nouvelles soumissions apparaîtront ici instantanément.</p>}
+  {rows.map(({ v, changes }) => (
+    <article class="a-card a-section" id={`v-${v.id}`}>
+      <h2>
+        <span>{v.block.label} <span class="a-pill">{v.locale.toUpperCase()}</span> <span class="a-pill info">{v.block.org.name}</span></span>
+        <a href={`/admin/contenu/${v.blockId}?lang=${v.locale}`}>Ouvrir le bloc</a>
+      </h2>
+      <p class="a-faint">Proposé par {v.author?.name} · {v.submittedAt ? `${ago(v.submittedAt)} (${fmtDate(v.submittedAt)})` : ''}</p>
+      {v.note && <p class="a-note" style="margin-top:.6rem">« {v.note} »</p>}
+      <div class="a-diff" style="margin-top:1rem">
+        {changes.length === 0 ? <p class="a-faint">Aucune différence avec la version en ligne.</p> : changes.slice(0, 80).map((c) => (
+          <div class="a-diff-row">
+            <div>{c.path}</div>
+            <div>{c.kind !== 'added' ? <del>{c.before || '∅'}</del> : <span class="a-faint">(nouveau)</span>}</div>
+            <div>{c.kind !== 'removed' ? <ins>{c.after || '∅'}</ins> : <span class="a-faint">(retiré)</span>}</div>
+          </div>
+        ))}
+        {changes.length > 80 && <p class="a-faint">… et {changes.length - 80} autres changements.</p>}
+      </div>
+      <div class="a-form" style="margin-top:1rem">
+        <label class="a-field"><span>Commentaire pour {v.author?.name?.split(' ')[0] ?? 'l’auteur'} (obligatoire en cas de refus)</span>
+          <textarea id={`c-${v.id}`} name="comment" rows="2"></textarea>
+        </label>
+        <div class="a-actions">
+          <button class="a-btn primary" type="button" data-action="content-publish" data-payload={JSON.stringify({ id: v.id })} data-with={`#c-${v.id}`} data-confirm="Confirmer la publication" data-ok="Publié : le site est à jour">Valider et publier</button>
+          <button class="a-btn danger" type="button" data-action="content-reject" data-payload={JSON.stringify({ id: v.id })} data-with={`#c-${v.id}`} data-ok="Proposition renvoyée à l’auteur">Refuser</button>
+        </div>
+      </div>
+    </article>
+  ))}
+
+  <section class="a-card a-section">
+    <h2>Décisions récentes</h2>
+    {recent.length === 0 ? <p class="a-empty">Aucune décision pour le moment.</p> : (
+      <table class="a-table"><tbody>
+        {recent.map((r) => (
+          <tr>
+            <td>{r.block.label} <span class="a-pill">{r.locale.toUpperCase()}</span><div class="a-faint">{r.author?.name} → {r.reviewer?.name} · {r.reviewedAt ? ago(r.reviewedAt) : ''}{r.reviewComment ? ` · « ${r.reviewComment} »` : ''}</div></td>
+            <td class="num">{r.status === 'REJECTED' ? <span class="a-pill err">Refusé</span> : <span class="a-pill ok">Publié</span>}</td>
+          </tr>
+        ))}
+      </tbody></table>
+    )}
+  </section>
+</Admin>

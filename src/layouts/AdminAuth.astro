@@ -1,0 +1,62 @@
+---
+/** Pages d'accès à l'espace interne (connexion, invitation, récupération, deuxième étape). */
+import '../styles/admin.css';
+interface Props { title: string; lead?: string; }
+const { title, lead } = Astro.props;
+const dbReady = Astro.locals.dbReady;
+---
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} — Espace AULIA</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" />
+  </head>
+  <body>
+    <div class="a-auth">
+      <section class="a-auth-card">
+        <header>
+          <a href="/"><img src="/images/aulia-mark.png" alt="AULIA" width="54" height="54" /></a>
+          <h1>{title}</h1>
+          {lead && <p class="a-muted">{lead}</p>}
+        </header>
+        {!dbReady && (
+          <p class="a-note err">La base de données n’est pas encore configurée (variable DATABASE_URL). Voir le guide d’installation dans README.md.</p>
+        )}
+        <slot />
+      </section>
+    </div>
+    <script>
+      // Envoi des formulaires d'accès : <form data-auth="/api/auth/login">
+      import { post, toast } from '../lib/client/admin-core.ts';
+      document.querySelectorAll<HTMLFormElement>('form[data-auth]').forEach((form) => {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const btn = form.querySelector<HTMLButtonElement>('[type=submit]');
+          const data: Record<string, unknown> = { ...JSON.parse(form.dataset.payload ?? '{}') };
+          for (const el of Array.from(form.elements) as HTMLInputElement[]) if (el.name) data[el.name] = el.value;
+          if (form.dataset.confirmPassword && data.password !== data.password2) return toast('Les deux mots de passe ne correspondent pas.', 'err');
+          btn?.setAttribute('disabled', '');
+          try {
+            const out = await post(form.dataset.auth!, data);
+            form.dispatchEvent(new CustomEvent('auth:done', { detail: out }));
+            if (out.message) toast(String(out.message), 'ok');
+            if (out.next) {
+              const suite = new URLSearchParams(location.search).get('suite');
+              location.href = suite && suite.startsWith('/admin') && out.next === '/admin' ? suite : String(out.next);
+            }
+          } catch (err) {
+            toast((err as Error).message, 'err');
+          } finally {
+            btn?.removeAttribute('disabled');
+          }
+        });
+      });
+    </script>
+  </body>
+</html>

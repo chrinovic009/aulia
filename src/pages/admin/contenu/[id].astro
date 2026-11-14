@@ -1,0 +1,180 @@
+---
+import Admin from '../../../layouts/Admin.astro';
+import Field from '../../../components/admin/Field.astro';
+import { db } from '../../../lib/server/db.ts';
+import { can, canPublish } from '../../../lib/server/authz.ts';
+import { VERSION_STATUS, ago, fmtDate } from '../../../lib/server/admin-view.ts';
+import { blockCatalog } from '../../../data/blocks.ts';
+import { path as sitePath } from '../../../i18n.ts';
+
+const u = Astro.locals.user!;
+const lang = Astro.url.searchParams.get('lang') === 'fr' ? 'fr' : 'en';
+const block = await db!.contentBlock.findUnique({ where: { id: Astro.params.id }, include: { org: true } });
+if (!block) return Astro.redirect('/admin/contenu');
+const publisher = canPublish(u);
+if (!publisher && !can(u, 'content.edit', block.orgId)) return Astro.redirect('/admin/contenu');
+
+const [live, mine, history, othersPending] = await Promise.all([
+  db!.contentLive.findUnique({ where: { blockId_locale: { blockId: block.id, locale: lang } } }),
+  db!.contentVersion.findFirst({ where: { blockId: block.id, locale: lang, authorId: u.id, status: { in: ['DRAFT', 'REJECTED', 'SUBMITTED'] } }, orderBy: { updatedAt: 'desc' } }),
+  db!.contentVersion.findMany({ where: { blockId: block.id, locale: lang }, include: { author: { select: { name: true } }, reviewer: { select: { name: true } } }, orderBy: { createdAt: 'desc' }, take: 15 }),
+  db!.contentVersion.count({ where: { blockId: block.id, locale: lang, status: 'SUBMITTED', authorId: { not: u.id } } }),
+]);
+const fallback = blockCatalog().find((b) => b.key === block.key)?.data[lang];
+const data = (mine?.data ?? live?.data ?? fallback ?? {}) as unknown;
+const canSubmit = can(u, 'content.submit', block.orgId);
+
+const page = block.pages.find((p) => p !== '*' && !p.includes('*')) ?? '/';
+const routeKey = ({ '/': 'home', '/vision': 'vision', '/ecosystem': 'ecosystem', '/anima': 'anima', '/research': 'research', '/partnerships': 'partnerships', '/contact': 'contact', '/legal-notice': 'legal', '/privacy': 'privacy' } as const)[page as '/'];
+const ent = page.match(/^\/ecosystem\/(.+)$/);
+const preview = routeKey ? sitePath(lang, routeKey) : ent ? sitePath(lang, 'ecosystem', ent[1]) : lang === 'fr' ? '/fr' : '/';
+---
+<Admin title={block.label} subtitle={`${block.org.name} · ${lang === 'en' ? 'version anglaise' : 'version française'}`} active="content">
+  <a slot="actions" class="a-btn small" href={preview} target="_blank" rel="noopener">Voir la page en ligne ↗</a>
+
+  <nav class="a-tabs">
+    <a href={`?lang=en`} aria-current={lang === 'en' ? 'page' : undefined}>English</a>
+    <a href={`?lang=fr`} aria-current={lang === 'fr' ? 'page' : undefined}>Français</a>
+    <a href="/admin/contenu">← Tous les blocs</a>
+  </nav>
+
+  {mine?.status === 'REJECTED' && <p class="a-note err"><strong>Proposition refusée :</strong> « {mine.reviewComment} ». Corrigez puis soumettez de nouveau.</p>}
+  {mine?.status === 'SUBMITTED' && <p class="a-note warn">Votre proposition est en attente de validation{publisher ? '' : ' par le fondateur'}. La modifier la repasse en brouillon.</p>}
+  {mine?.status === 'DRAFT' && <p class="a-note">Vous modifiez votre brouillon (enregistré {ago(mine.updatedAt)}). La version en ligne n’a pas changé.</p>}
+  {publisher && othersPending > 0 && <p class="a-note gold">{othersPending} proposition(s) d’autres personnes attendent votre validation pour ce bloc. <a href="/admin/validation">Les examiner</a></p>}
+  <p class="a-faint" style="margin:.6rem 0 1rem">Les balises &lt;em&gt;…&lt;/em&gt; mettent un mot en valeur (en or sur le site). Ne modifiez pas les mots techniques entre guillemets simples (icônes).</p>
+
+  <div class="a-grid" style="grid-template-columns:minmax(0,1fr) 300px;align-items:start" id="ed-wrap">
+    <section class="a-card ed" data-live-skip id="editor" data-block={block.id} data-lang={lang}>
+      <Field k="root" value={data} root />
+    </section>
+    <aside class="a-grid" style="position:sticky;top:1rem">
+      <section class="a-card a-form">
+        <label class="a-field"><span>Note pour la validation (facultatif)</span><textarea id="ed-note" rows="3" placeholder="Ce qui change et pourquoi">{mine?.note ?? ''}</textarea></label>
+        <button class="a-btn" type="button" data-save="draft">Enregistrer le brouillon</button>
+        {publisher ? (
+          <button class="a-btn primary" type="button" data-save="publish" data-confirm="Publier sur le site ?">Publier maintenant</button>
+        ) : canSubmit ? (
+          <button class="a-btn primary" type="button" data-save="submit">Soumettre au fondateur</button>
+        ) : (
+          <p class="a-faint">Votre rôle permet de préparer des brouillons ; la soumission est faite par votre direction.</p>
+        )}
+        {mine && <button class="a-btn small danger" type="button" data-action="content-discard" data-payload={JSON.stringify({ id: mine.id })} data-confirm="Abandonner ?" data-redirect={`/admin/contenu/${block.id}?lang=${lang}`} data-ok="Brouillon abandonné">Abandonner ma proposition</button>}
+      </section>
+      <section class="a-card">
+        <h2>Historique</h2>
+        <ul class="a-feed">
+          {history.map((v) => (
+            <li style="grid-template-columns:1fr">
+              <div>
+                <span class={`a-pill ${VERSION_STATUS[v.status].tone}`}>{VERSION_STATUS[v.status].label}</span>
+                <div class="a-faint">{v.author?.name ?? '—'} · {fmtDate(v.publishedAt ?? v.updatedAt)}{v.reviewer && v.status !== 'PUBLISHED' && v.reviewComment ? ` · ${v.reviewer.name} : « ${v.reviewComment} »` : ''}</div>
+                {v.note && <div class="a-faint">{v.note}</div>}
+                {publisher && v.status === 'ARCHIVED' && v.publishedAt && (
+                  <button class="a-btn small" type="button" data-action="content-restore" data-payload={JSON.stringify({ id: v.id })} data-confirm="Rétablir en ligne ?" data-ok="Version rétablie">Rétablir cette version</button>
+                )}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    import { post, toast } from '../../../lib/client/admin-core.ts';
+
+    const editor = document.getElementById('editor') as HTMLElement;
+
+    function read(f: HTMLElement): unknown {
+      const kind = f.dataset.kind;
+      const body = f.querySelector(':scope > .f-body');
+      if (kind === 'obj') {
+        const o: Record<string, unknown> = {};
+        body?.querySelectorAll<HTMLElement>(':scope > .f').forEach((c) => (o[c.dataset.key!] = read(c)));
+        return o;
+      }
+      if (kind === 'arr') return Array.from(body?.querySelectorAll<HTMLElement>(':scope > .f') ?? []).map(read);
+      const el = f.querySelector<HTMLInputElement>(':scope > [data-val], :scope > label > [data-val]');
+      if (!el) return '';
+      if (kind === 'num') return Number(el.value);
+      if (kind === 'bool') return el.checked;
+      return el.value;
+    }
+
+    function renumber(body: Element) {
+      body.querySelectorAll<HTMLElement>(':scope > .f').forEach((f, i) => {
+        f.dataset.key = String(i);
+        const head = f.querySelector(':scope > .f-head > span');
+        if (head) head.textContent = `Élément ${i + 1}`;
+      });
+    }
+
+    editor.addEventListener('click', (e) => {
+      const btn = (e.target as Element).closest<HTMLButtonElement>('[data-ed]');
+      if (!btn) return;
+      const op = btn.dataset.ed;
+      if (op === 'add') {
+        const body = btn.closest('.f-body')!;
+        const items = body.querySelectorAll<HTMLElement>(':scope > .f');
+        const last = items[items.length - 1];
+        const copy = last.cloneNode(true) as HTMLElement;
+        copy.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-val]').forEach((el) => {
+          if (el.readOnly) return;
+          if ((el as HTMLInputElement).type === 'checkbox') (el as HTMLInputElement).checked = false;
+          else if (el.tagName !== 'SELECT') el.value = '';
+        });
+        last.after(copy);
+        renumber(body);
+        copy.querySelector<HTMLElement>('[data-val]')?.focus();
+        return;
+      }
+      const item = btn.closest<HTMLElement>('.f.item')!;
+      const body = item.parentElement!;
+      if (op === 'remove') {
+        if (body.querySelectorAll(':scope > .f').length <= 1) return toast('Une liste garde au moins un élément.', 'err');
+        item.remove();
+      }
+      if (op === 'up' && item.previousElementSibling?.classList.contains('f')) item.previousElementSibling.before(item);
+      if (op === 'down' && item.nextElementSibling?.classList.contains('f')) item.nextElementSibling.after(item);
+      renumber(body);
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('[data-save]').forEach((btn) =>
+      btn.addEventListener('click', async () => {
+        if (btn.dataset.confirm && !btn.classList.contains('confirming')) {
+          const t = btn.textContent;
+          btn.classList.add('confirming');
+          btn.textContent = btn.dataset.confirm;
+          setTimeout(() => { btn.classList.remove('confirming'); btn.textContent = t; }, 3500);
+          return;
+        }
+        btn.classList.remove('confirming');
+        const root = editor.querySelector<HTMLElement>(':scope > .f')!;
+        const then = btn.dataset.save === 'draft' ? undefined : btn.dataset.save;
+        btn.setAttribute('disabled', '');
+        try {
+          await post('/api/admin/content-save', {
+            blockId: editor.dataset.block,
+            locale: editor.dataset.lang,
+            data: read(root),
+            note: (document.getElementById('ed-note') as HTMLTextAreaElement).value,
+            then,
+          });
+          toast(then === 'publish' ? 'Publié : le site est à jour.' : then === 'submit' ? 'Soumis au fondateur pour validation.' : 'Brouillon enregistré.', 'ok');
+          setTimeout(() => location.reload(), 700);
+        } catch (err) {
+          toast((err as Error).message, 'err');
+        } finally {
+          btn.removeAttribute('disabled');
+        }
+      }),
+    );
+  </script>
+</Admin>
+<style>
+  @media (max-width: 1000px) {
+    #ed-wrap { grid-template-columns: 1fr !important; }
+    #ed-wrap aside { position: static !important; }
+  }
+</style>

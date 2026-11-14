@@ -1,4 +1,5 @@
 ---
+import { uiText } from '../data/site.ts';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Preloader from '../components/Preloader.astro';
@@ -18,8 +19,8 @@ interface Props {
 }
 
 const { lang, route, sub, title, image = '/og-image.jpg' } = Astro.props;
-const { site } = getContent(lang);
-const t = ui[lang];
+const { site } = getContent(lang, Astro.locals);
+const t = uiText(lang, Astro.locals);
 const description = Astro.props.description ?? site.description;
 const other: Lang = lang === 'en' ? 'fr' : 'en';
 const hrefFor = (l: Lang) => (route ? path(l, route, sub) : path(l, 'home'));
@@ -31,7 +32,7 @@ const ogImage = abs(image);
 ---
 
 <!doctype html>
-<html lang={lang} class="no-js">
+<html lang={lang} class="no-js" data-live-since={Astro.locals.liveSince ?? 0}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -94,6 +95,7 @@ const ogImage = abs(image);
     <Footer lang={lang} />
 
     <script>
+      import '../lib/client/site-live.ts';
       // Mémorise le choix de langue quand le visiteur utilise le sélecteur.
       document.querySelectorAll('[data-set-lang]').forEach((a) =>
         a.addEventListener('click', () => {

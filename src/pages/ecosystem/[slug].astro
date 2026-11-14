@@ -2,9 +2,8 @@
 import Entity from '../../views/Entity.astro';
 import { getContent } from '../../data/site.ts';
 
-export function getStaticPaths() {
-  return getContent('en').entities.map((e) => ({ params: { slug: e.slug } }));
-}
+// Page rendue à la demande : une filiale ajoutée depuis l'espace d'administration apparaît dès sa publication.
 const { slug } = Astro.params;
+if (!getContent('en', Astro.locals).entities.some((e) => e.slug === slug)) return Astro.rewrite('/404');
 ---
 <Entity lang="en" slug={slug as string} />

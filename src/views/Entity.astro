@@ -1,4 +1,6 @@
 ---
+import page from '../data/pages/entity.ts';
+import { block } from '../data/site.ts';
 import Layout from '../layouts/Layout.astro';
 import Status from '../components/Status.astro';
 import Arrow from '../components/Arrow.astro';
@@ -11,7 +13,7 @@ import { path, contactPath, type Lang } from '../i18n.ts';
 
 interface Props { lang: Lang; slug: string; }
 const { lang, slug } = Astro.props;
-const { entities } = getContent(lang);
+const { entities } = getContent(lang, Astro.locals);
 const idx = entities.findIndex((x) => x.slug === slug);
 const e = entities[idx];
 const next = entities[(idx + 1) % entities.length];
@@ -26,31 +28,10 @@ const capIcons: Record<string, string[]> = {
 const problemIcons = ['file', 'search', 'clock', 'alert'];
 const archIcons = ['layers', 'lock', 'steps'];
 
-const T = {
-  en: {
-    eco: 'Ecosystem', crumbs: 'Breadcrumb', mission: 'Mission',
-    probEyebrow: 'The problem', probTitle: 'What we <em>solve.</em>',
-    capEyebrow: 'Capabilities', capTitle: 'What we build, <em>and where we stand.</em>',
-    archEyebrow: 'Principles', archTitle: 'How <em>it works.</em>',
-    within: 'Within the ecosystem', animaTag: 'With ANIMA · target architecture',
-    noDemo: 'No public demonstration yet.',
-    ctaEyebrow: 'Contact', ctaTitle: (n: string) => `Talk to us <em>about ${n}.</em>`,
-    ctaLabel: 'Request a presentation', next: 'Next:',
-  },
-  fr: {
-    eco: 'Écosystème', crumbs: "Fil d'Ariane", mission: 'Mission',
-    probEyebrow: 'Le problème', probTitle: 'Ce que nous <em>résolvons.</em>',
-    capEyebrow: 'Capacités', capTitle: 'Ce que nous construisons, <em>et où nous en sommes.</em>',
-    archEyebrow: 'Principes', archTitle: 'Comment <em>ça fonctionne.</em>',
-    within: "Dans l'écosystème", animaTag: 'Avec ANIMA · architecture cible',
-    noDemo: 'Pas encore de démonstration publique.',
-    ctaEyebrow: 'Contact', ctaTitle: (n: string) => `Parlons <em>de ${n}.</em>`,
-    ctaLabel: 'Demander une présentation', next: 'Suivant :',
-  },
-}[lang];
+const T = block(Astro.locals, 'page:entity', lang, page);
 
 const problems = e.problems.map((p, i) => ({ icon: problemIcons[i % problemIcons.length], title: p }));
-const caps = e.capabilities.map((c, i) => ({ icon: capIcons[e.slug][i] ?? 'spark', title: c.title, text: c.text, status: c.status }));
+const caps = e.capabilities.map((c, i) => ({ icon: capIcons[e.slug]?.[i] ?? 'spark', title: c.title, text: c.text, status: c.status }));
 const arch = e.architecture.map((a, i) => ({ icon: archIcons[i] ?? 'spark', title: a.title }));
 ---
 
@@ -73,7 +54,7 @@ const arch = e.architecture.map((a, i) => ({ icon: archIcons[i] ?? 'spark', titl
       </div>
       <div class="emblem" aria-hidden="true">
         <span class="ring r1"></span><span class="ring r2"></span>
-        <span class="big-ico"><Icon name={entityIcon[e.slug]} size={72} /></span>
+        <span class="big-ico"><Icon name={entityIcon[e.slug] ?? 'layers'} size={72} /></span>
       </div>
     </div>
   </section>
@@ -128,7 +109,7 @@ const arch = e.architecture.map((a, i) => ({ icon: archIcons[i] ?? 'spark', titl
 
   <CtaBand
     eyebrow={T.ctaEyebrow}
-    title={T.ctaTitle(e.name)}
+    title={T.ctaTitle.replace('{name}', e.name)}
     href={contactPath(lang, e.slug)}
     label={T.ctaLabel}
     secondary={{ href: path(lang, 'ecosystem', next.slug), label: `${T.next} ${next.name}` }}

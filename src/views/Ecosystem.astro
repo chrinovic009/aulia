@@ -1,4 +1,6 @@
 ---
+import page from '../data/pages/ecosystem.ts';
+import { block } from '../data/site.ts';
 import Layout from '../layouts/Layout.astro';
 import PageHero from '../components/PageHero.astro';
 import EcosystemMap from '../components/EcosystemMap.astro';
@@ -13,45 +15,10 @@ import { path, type Lang } from '../i18n.ts';
 
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
-const { entities } = getContent(lang);
+const { entities } = getContent(lang, Astro.locals);
 const entityIcon: Record<string, string> = { care: 'medical', vigil: 'gauge', flow: 'flow', vr: 'vr' };
 
-const T = {
-  en: {
-    title: 'Ecosystem',
-    meta: 'The structure of the AULIA group: a parent company, specialised companies and a transversal intelligence layer, ANIMA.',
-    hero: 'One vision. <em>Multiple intelligences.</em> Connected systems.',
-    lead: 'AULIA at the centre. Specialised companies around it. ANIMA, in time, between them.',
-    roles: [
-      { icon: 'building', title: 'AULIA', text: 'Parent company: vision, doctrine, governance, IP' },
-      { icon: 'layers', title: 'Subsidiaries', text: 'Autonomous companies, each mastering its field' },
-      { icon: 'network', title: 'ANIMA', text: 'Transversal intelligence layer — target architecture' },
-    ],
-    mapEyebrow: 'Interactive map',
-    mapTitle: 'Explore <em>the structure.</em>',
-    compEyebrow: 'The companies',
-    compTitle: 'Each one <em>earns its place.</em>',
-    ctaTitle: 'The intelligence <em>that connects the systems.</em>',
-    ctaLabel: 'Discover ANIMA',
-  },
-  fr: {
-    title: 'Écosystème',
-    meta: "La structure du groupe AULIA : une société mère, des entreprises spécialisées et une couche d'intelligence transversale, ANIMA.",
-    hero: 'Une vision. <em>Plusieurs intelligences.</em> Des systèmes connectés.',
-    lead: 'AULIA au centre. Des entreprises spécialisées autour. ANIMA, à terme, entre elles.',
-    roles: [
-      { icon: 'building', title: 'AULIA', text: 'Société mère : vision, doctrine, gouvernance, PI' },
-      { icon: 'layers', title: 'Filiales', text: 'Des entreprises autonomes, chacune maître de son domaine' },
-      { icon: 'network', title: 'ANIMA', text: "Couche d'intelligence transversale — architecture cible" },
-    ],
-    mapEyebrow: 'Carte interactive',
-    mapTitle: 'Explorer <em>la structure.</em>',
-    compEyebrow: 'Les entreprises',
-    compTitle: 'Chacune <em>mérite sa place.</em>',
-    ctaTitle: "L'intelligence <em>qui relie les systèmes.</em>",
-    ctaLabel: 'Découvrir ANIMA',
-  },
-}[lang];
+const T = block(Astro.locals, 'page:ecosystem', lang, page);
 ---
 
 <Layout lang={lang} route="ecosystem" title={T.title} description={T.meta}>
@@ -77,7 +44,7 @@ const T = {
         {entities.map((e, i) => (
           <a href={path(lang, 'ecosystem', e.slug)} class="uni-card reveal" style={`transition-delay:${i * 80}ms`}>
             <div class="uni-top" aria-hidden="true">
-              <span class="uni-ico"><Icon name={entityIcon[e.slug]} size={40} /></span>
+              <span class="uni-ico"><Icon name={entityIcon[e.slug] ?? 'layers'} size={40} /></span>
               <span class="uni-short">{e.short}</span>
             </div>
             <div class="uni-body">

@@ -1,0 +1,102 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import Feed from '../../components/admin/Feed.astro';
+import { db } from '../../lib/server/db.ts';
+import { can, canPublish, isFounder, orgsWith, visibleOrgIds } from '../../lib/server/authz.ts';
+import { ago, MESSAGE_STATUS, TOPIC_LABEL, VERSION_STATUS } from '../../lib/server/admin-view.ts';
+
+const u = Astro.locals.user!;
+const founder = isFounder(u);
+const ids = visibleOrgIds(u);
+const inOrgs = ids === null ? {} : { orgId: { in: ids } };
+const siteOrgs = orgsWith(u, 'site.view');
+const msgOrgs = orgsWith(u, 'messages.handle');
+const auditOrgs = orgsWith(u, 'audit.view');
+const week = new Date(Date.now() - 7 * 864e5);
+
+const d = db!;
+const [orgCount, peopleCount, pending, newMsgs, visits, visitors, myDrafts, reviews, messages, feed] = await Promise.all([
+  founder ? d.organization.count({ where: { kind: 'SUBSIDIARY', status: { not: 'ARCHIVED' } } }) : Promise.resolve(0),
+  d.membership.count({ where: { status: 'ACTIVE', ...inOrgs } }),
+  canPublish(u) ? d.contentVersion.count({ where: { status: 'SUBMITTED' } }) : d.contentVersion.count({ where: { status: 'SUBMITTED', authorId: u.id } }),
+  msgOrgs === null || msgOrgs.length ? d.contactMessage.count({ where: { status: 'NEW', ...(msgOrgs ? { orgId: { in: msgOrgs } } : {}) } }) : Promise.resolve(0),
+  siteOrgs === null || siteOrgs.length ? d.siteEvent.count({ where: { kind: 'VIEW', at: { gte: week }, ...(siteOrgs ? { orgId: { in: siteOrgs } } : {}) } }) : Promise.resolve(0),
+  siteOrgs === null || siteOrgs.length
+    ? d.siteEvent.groupBy({ by: ['visitorHash'], where: { kind: 'VIEW', at: { gte: week }, ...(siteOrgs ? { orgId: { in: siteOrgs } } : {}) } }).then((r) => r.length)
+    : Promise.resolve(0),
+  d.contentVersion.findMany({ where: { authorId: u.id, status: { in: ['DRAFT', 'SUBMITTED', 'REJECTED'] } }, include: { block: true }, orderBy: { updatedAt: 'desc' }, take: 6 }),
+  canPublish(u) ? d.contentVersion.findMany({ where: { status: 'SUBMITTED' }, include: { block: true, author: true }, orderBy: { submittedAt: 'asc' }, take: 6 }) : Promise.resolve([]),
+  msgOrgs === null || msgOrgs.length ? d.contactMessage.findMany({ where: msgOrgs ? { orgId: { in: msgOrgs } } : {}, include: { org: true }, orderBy: { createdAt: 'desc' }, take: 5 }) : Promise.resolve([]),
+  d.auditLog.findMany({
+    where: auditOrgs === null ? {} : auditOrgs.length ? { OR: [{ orgId: { in: auditOrgs } }, { actorId: u.id }] } : { actorId: u.id },
+    include: { actor: { select: { name: true } } },
+    orderBy: { id: 'desc' },
+    take: 12,
+  }),
+]);
+const orgNames = new Map((await d.organization.findMany({ select: { id: true, name: true } })).map((o) => [o.id, o.name]));
+const items = feed.map((e) => ({ ...e, orgName: e.orgId ? orgNames.get(e.orgId) : null }));
+const first = u.name.split(' ')[0];
+---
+<Admin title={`Bonjour, ${first}`} subtitle={founder ? 'Vue d’ensemble du groupe AULIA' : u.memberships.map((m) => `${m.roleLabel} · ${m.orgName}`).join(' — ')} active="home">
+  {u.memberships.length === 0 && <p class="a-note warn">Votre accès n’est rattaché à aucune organisation active. Contactez la direction du groupe.</p>}
+
+  <div class="a-grid cols-4">
+    {founder && <a class="a-card a-kpi" href="/admin/filiales" style="text-decoration:none"><b>{orgCount}</b><span>filiale{orgCount > 1 ? 's' : ''}</span></a>}
+    <a class="a-card a-kpi" href="/admin/equipe" style="text-decoration:none"><b>{peopleCount}</b><span>membre{peopleCount > 1 ? 's' : ''} actif{peopleCount > 1 ? 's' : ''}</span></a>
+    <a class={`a-card a-kpi ${pending ? 'gold' : ''}`} href={canPublish(u) ? '/admin/validation' : '/admin/contenu'} style="text-decoration:none"><b>{pending}</b><span>{canPublish(u) ? 'publication(s) à valider' : 'proposition(s) en attente'}</span></a>
+    {can(u, 'messages.handle') && <a class={`a-card a-kpi ${newMsgs ? 'gold' : ''}`} href="/admin/messages" style="text-decoration:none"><b>{newMsgs}</b><span>nouvelle(s) question(s)</span></a>}
+    {can(u, 'site.view') && <a class="a-card a-kpi" href="/admin/site" style="text-decoration:none"><b>{visitors}</b><span>visiteurs · {visits} pages vues (7 j)</span></a>}
+  </div>
+
+  <div class="a-grid cols-2 a-section">
+    {canPublish(u) && (
+      <section class="a-card">
+        <h2>À valider <a href="/admin/validation">Tout voir</a></h2>
+        {reviews.length === 0 ? <p class="a-empty">Rien en attente.</p> : (
+          <table class="a-table"><tbody>
+            {reviews.map((v) => (
+              <tr>
+                <td><a href={`/admin/validation#v-${v.id}`}>{v.block.label}</a> <span class="a-pill">{v.locale.toUpperCase()}</span><div class="a-faint">{v.author?.name} · {v.submittedAt ? ago(v.submittedAt) : ''}</div></td>
+              </tr>
+            ))}
+          </tbody></table>
+        )}
+      </section>
+    )}
+    {can(u, 'content.edit') && (
+      <section class="a-card">
+        <h2>Mes propositions de contenu <a href="/admin/contenu">Contenu du site</a></h2>
+        {myDrafts.length === 0 ? <p class="a-empty">Aucune proposition en cours.</p> : (
+          <table class="a-table"><tbody>
+            {myDrafts.map((v) => (
+              <tr>
+                <td><a href={`/admin/contenu/${v.blockId}?lang=${v.locale}`}>{v.block.label}</a> <span class="a-pill">{v.locale.toUpperCase()}</span>{v.reviewComment && v.status === 'REJECTED' && <div class="a-faint">« {v.reviewComment} »</div>}</td>
+                <td class="num"><span class={`a-pill ${VERSION_STATUS[v.status].tone}`}>{VERSION_STATUS[v.status].label}</span></td>
+              </tr>
+            ))}
+          </tbody></table>
+        )}
+      </section>
+    )}
+    {can(u, 'messages.handle') && (
+      <section class="a-card">
+        <h2>Dernières questions des internautes <a href="/admin/messages">Tout voir</a></h2>
+        {messages.length === 0 ? <p class="a-empty">Aucun message pour le moment.</p> : (
+          <table class="a-table"><tbody>
+            {messages.map((m) => (
+              <tr>
+                <td><a href={`/admin/messages?org=${m.orgId}#m-${m.id}`}>{m.name}</a> <span class="a-faint">· {TOPIC_LABEL[m.topic] ?? m.topic}</span><div class="a-faint">{m.org.name} · {ago(m.createdAt)}</div></td>
+                <td class="num"><span class={`a-pill ${MESSAGE_STATUS[m.status].tone}`}>{MESSAGE_STATUS[m.status].label}</span></td>
+              </tr>
+            ))}
+          </tbody></table>
+        )}
+      </section>
+    )}
+    <section class="a-card a-wide">
+      <h2>Activité récente {can(u, 'audit.view') && <a href="/admin/journal">Journal</a>}</h2>
+      <Feed items={items} />
+    </section>
+  </div>
+</Admin>

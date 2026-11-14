@@ -1,0 +1,27 @@
+---
+import AdminAuth from '../../layouts/AdminAuth.astro';
+---
+<AdminAuth title="Récupérer votre accès" lead="Un code à 6 chiffres sera envoyé à votre adresse principale ou à votre adresse de secours.">
+  <form class="a-form" data-auth="/api/auth/code" data-payload='{"purpose":"recovery"}' id="step1">
+    <label class="a-field"><span>Adresse e-mail (principale ou de secours)</span><input name="email" type="email" autocomplete="email" required /></label>
+    <button class="a-btn primary" type="submit">Recevoir un code</button>
+  </form>
+  <form class="a-form" data-auth="/api/auth/reset" data-confirm-password="1" id="step2" hidden>
+    <input type="hidden" name="email" />
+    <label class="a-field"><span>Code reçu par e-mail</span><input class="a-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required /></label>
+    <label class="a-field"><span>Nouveau mot de passe</span><input name="password" type="password" autocomplete="new-password" minlength="10" required /></label>
+    <label class="a-field"><span>Confirmer</span><input name="password2" type="password" autocomplete="new-password" minlength="10" required /></label>
+    <button class="a-btn primary" type="submit">Enregistrer le nouveau mot de passe</button>
+    <p class="a-faint">Pour votre sécurité, la deuxième étape (application d’authentification) restera demandée.</p>
+  </form>
+  <div class="links"><a href="/admin/connexion">Retour à la connexion</a></div>
+  <script>
+    const s1 = document.getElementById('step1') as HTMLFormElement;
+    const s2 = document.getElementById('step2') as HTMLFormElement;
+    s1.addEventListener('auth:done', () => {
+      (s2.elements.namedItem('email') as HTMLInputElement).value = (s1.elements.namedItem('email') as HTMLInputElement).value;
+      s1.hidden = true;
+      s2.hidden = false;
+    });
+  </script>
+</AdminAuth>

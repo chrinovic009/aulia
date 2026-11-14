@@ -1,35 +1,10 @@
 ---
+import page from '../data/pages/privacy.ts';
+import { block } from '../data/site.ts';
 import LegalPage from '../components/LegalPage.astro';
 import type { Lang } from '../i18n.ts';
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
-const T = {
-  en: {
-    title: 'Privacy policy',
-    lead: 'How AULIA handles the information sent by visitors to this portal.',
-    sections: [
-      { title: 'Data collected', text: 'The portal only collects the information you voluntarily enter in the contact form: name, organisation, email, phone, subject and message.' },
-      { title: 'Purpose', text: 'This information is used solely to respond to your request and to follow up on the relationship you initiate with AULIA.' },
-      { title: 'Data separation', text: 'Commercial information from the portal is strictly separated from the operational data of the group’s companies (health data, industrial data). The public portal has no access to any of that data.' },
-      { title: 'Analytics and cookies', text: 'The portal uses no advertising cookies. It may store locally, in your browser, your language preference and the fact that the opening animation has already been shown during your session.' },
-      { title: 'Retention period', text: 'Information to be published.', pending: true },
-      { title: 'Your rights', text: 'You may request access to, correction or deletion of your information by writing to us via the Contact page.' },
-      { title: 'Data controller', text: 'Information to be published.', pending: true },
-    ],
-  },
-  fr: {
-    title: 'Politique de confidentialité',
-    lead: 'Comment AULIA traite les informations transmises par les visiteurs du portail.',
-    sections: [
-      { title: 'Données collectées', text: 'Le portail ne collecte que les informations que vous saisissez volontairement dans le formulaire de contact : nom, organisation, e-mail, téléphone, objet et message.' },
-      { title: 'Finalité', text: 'Ces informations servent uniquement à répondre à votre demande et à assurer le suivi de la relation que vous initiez avec AULIA.' },
-      { title: 'Séparation des données', text: "Les informations commerciales du portail sont strictement séparées des données opérationnelles des entreprises du groupe (données de santé, données industrielles). Le portail public n'a accès à aucune de ces données." },
-      { title: "Mesure d'audience et cookies", text: "Le portail n'utilise aucun cookie publicitaire. Il peut mémoriser localement, dans votre navigateur, votre préférence de langue et le fait que l'animation d'accueil a déjà été vue pendant votre session." },
-      { title: 'Durée de conservation', text: 'Information en cours de publication.', pending: true },
-      { title: 'Vos droits', text: "Vous pouvez demander l'accès, la rectification ou la suppression de vos informations en nous écrivant via la page Contact." },
-      { title: 'Responsable du traitement', text: 'Information en cours de publication.', pending: true },
-    ],
-  },
-}[lang];
+const T = block(Astro.locals, 'page:privacy', lang, page);
 ---
 <LegalPage lang={lang} route="privacy" title={T.title} lead={T.lead} sections={T.sections} />

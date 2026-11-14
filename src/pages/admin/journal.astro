@@ -1,0 +1,30 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import OrgPicker from '../../components/admin/OrgPicker.astro';
+import Feed from '../../components/admin/Feed.astro';
+import { db } from '../../lib/server/db.ts';
+import { can, isFounder } from '../../lib/server/authz.ts';
+import { orgOptions, pickOrg } from '../../lib/server/admin-view.ts';
+const u = Astro.locals.user!;
+if (!can(u, 'audit.view')) return Astro.redirect('/admin');
+const options = await orgOptions(db!, u, 'audit.view');
+const org = pickOrg(options, Astro.url.searchParams.get('org'), u, true);
+const before = Number(Astro.url.searchParams.get('avant')) || undefined;
+const items = await db!.auditLog.findMany({
+  where: {
+    ...(org ? { orgId: org.id } : isFounder(u) ? {} : { orgId: { in: options.map((o) => o.id) } }),
+    ...(before ? { id: { lt: BigInt(before) } } : {}),
+  },
+  include: { actor: { select: { name: true } } },
+  orderBy: { id: 'desc' },
+  take: 100,
+});
+const names = new Map(options.map((o) => [o.id, o.name]));
+const list = items.map((e) => ({ ...e, orgName: e.orgId ? names.get(e.orgId) : null }));
+const last = items[items.length - 1];
+---
+<Admin title="Journal" subtitle="Chaque action de l’espace est inscrite ici. Le journal ne peut être ni modifié ni effacé." active="journal">
+  <OrgPicker options={options} current={org} allowAll={isFounder(u)} />
+  <section class="a-card"><Feed items={list} /></section>
+  {items.length === 100 && last && <p style="margin-top:1rem"><a class="a-btn small" href={`?${new URLSearchParams({ org: org?.id ?? 'all', avant: String(last.id) })}`}>Plus ancien →</a></p>}
+</Admin>

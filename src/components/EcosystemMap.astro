@@ -1,4 +1,5 @@
 ---
+import { uiText } from '../data/site.ts';
 import { getContent } from '../data/site.ts';
 import { ui, path, type Lang } from '../i18n.ts';
 import Arrow from './Arrow.astro';
@@ -8,8 +9,8 @@ interface Props {
   lang: Lang;
 }
 const { interactive = false, lang } = Astro.props;
-const { entities, statusLabel } = getContent(lang);
-const t = ui[lang];
+const { entities, statusLabel } = getContent(lang, Astro.locals);
+const t = uiText(lang, Astro.locals);
 
 const pos: Record<string, { x: number; y: number }> = {
   care: { x: 300, y: 70 },

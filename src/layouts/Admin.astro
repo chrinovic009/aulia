@@ -1,0 +1,131 @@
+---
+/**
+ * Mise en page de l'espace interne : navigation selon les droits, indicateur temps réel.
+ */
+import '../styles/admin.css';
+import { db } from '../lib/server/db.ts';
+import { can, canPublish, isFounder, orgsWith, type UserCtx } from '../lib/server/authz.ts';
+
+interface Props {
+  title: string;
+  subtitle?: string;
+  active?: string;
+}
+const { title, subtitle, active } = Astro.props;
+const u = Astro.locals.user as UserCtx;
+const founder = isFounder(u);
+
+let pendingReviews = 0;
+let newMessages = 0;
+if (db && u) {
+  const msgOrgs = orgsWith(u, 'messages.handle');
+  [pendingReviews, newMessages] = await Promise.all([
+    canPublish(u) ? db.contentVersion.count({ where: { status: 'SUBMITTED' } }) : Promise.resolve(0),
+    msgOrgs === null || msgOrgs.length
+      ? db.contactMessage.count({ where: { status: 'NEW', ...(msgOrgs ? { orgId: { in: msgOrgs } } : {}) } })
+      : Promise.resolve(0),
+  ]);
+}
+
+const icon: Record<string, string> = {
+  home: '<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  orgs: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  team: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c.6-3.5 3-5.5 6-5.5s5.4 2 6 5.5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 14.6c2.6.2 4.4 2 5 5.4"/>',
+  people: '<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.8-4 3.6-6 7-6s6.2 2 7 6"/>',
+  content: '<path d="M5 4h10l4 4v12H5z"/><path d="M14 4v5h5M8 13h8M8 17h6"/>',
+  review: '<path d="M4 12l5 5L20 6"/>',
+  site: '<path d="M4 19V9M10 19V5M16 19v-7M22 19H2"/>',
+  messages: '<path d="M4 5h16v11H8l-4 4z"/>',
+  journal: '<path d="M6 3h11a2 2 0 0 1 2 2v16l-4-2-4 2-4-2-3 2V5a2 2 0 0 1 2-2z"/><path d="M9 8h7M9 12h5"/>',
+  roles: '<path d="M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7z"/>',
+  security: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+  public: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>',
+};
+
+type Link = { key: string; href: string; label: string; count?: number } | { sep: string };
+const links: Link[] = [{ key: 'home', href: '/admin', label: 'Tableau de bord' }];
+if (founder) {
+  links.push({ sep: 'Groupe' }, { key: 'orgs', href: '/admin/filiales', label: 'Filiales' }, { key: 'people', href: '/admin/personnes', label: 'Personnes' });
+}
+const teamOrgs = orgsWith(u, 'team.manage');
+const directory = founder || u.memberships.length > 0;
+links.push({ sep: founder ? 'Organisations' : u.memberships[0]?.orgName ?? 'Organisation' });
+if (directory) links.push({ key: 'team', href: '/admin/equipe', label: teamOrgs === null || teamOrgs.length ? 'Équipes' : 'Mon équipe' });
+links.push({ sep: 'Site public' });
+if (can(u, 'content.edit') || canPublish(u)) links.push({ key: 'content', href: '/admin/contenu', label: 'Contenu du site' });
+if (canPublish(u)) links.push({ key: 'review', href: '/admin/validation', label: 'Validation', count: pendingReviews });
+if (can(u, 'site.view')) links.push({ key: 'site', href: '/admin/site', label: 'Visites et interactions' });
+if (can(u, 'messages.handle')) links.push({ key: 'messages', href: '/admin/messages', label: 'Questions des internautes', count: newMessages });
+links.push({ sep: 'Suivi' });
+if (can(u, 'audit.view')) links.push({ key: 'journal', href: '/admin/journal', label: 'Journal' });
+links.push({ key: 'roles', href: '/admin/roles', label: 'Catalogue des rôles' }, { key: 'security', href: '/admin/securite', label: 'Sécurité du compte' });
+---
+
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>{title} — Espace AULIA</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" />
+  </head>
+  <body>
+    <div class="a-shell">
+      <nav class="a-nav" aria-label="Espace interne">
+        <a class="a-brand" href="/admin">
+          <img src="/images/aulia-mark.png" alt="" width="30" height="30" />
+          <span><b>AULIA</b><small>Espace interne</small></span>
+        </a>
+        <div class="a-links" id="a-links">
+          {links.map((l) =>
+            'sep' in l ? (
+              <div class="a-sep">{l.sep}</div>
+            ) : (
+              <a href={l.href} aria-current={active === l.key ? 'page' : undefined}>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icon[l.key]} />
+                {l.label}
+                {l.count ? <span class="a-count">{l.count}</span> : null}
+              </a>
+            ),
+          )}
+          <a href="/" target="_blank" rel="noopener">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" set:html={icon.public} />
+            Voir le site
+          </a>
+        </div>
+        <div class="a-me">
+          <strong>{u.name}</strong>
+          <span>{u.email}</span>
+          <div class="a-roles">
+            {u.memberships.map((m) => <span class="a-pill gold">{m.roleLabel} · {m.orgName}</span>)}
+          </div>
+          <button class="a-btn small" type="button" data-logout>Se déconnecter</button>
+        </div>
+      </nav>
+
+      <main class="a-main">
+        <div class="a-top">
+          <div>
+            <button class="a-btn small a-menu-btn" type="button" data-menu aria-label="Menu">☰</button>
+            <h1>{title}</h1>
+            {subtitle && <p>{subtitle}</p>}
+          </div>
+          <div class="a-actions">
+            <slot name="actions" />
+            <span class="a-live" data-live title="Les écrans se mettent à jour dès qu'une donnée change"><i></i>En direct</span>
+          </div>
+        </div>
+        <div id="a-main">
+          <slot />
+        </div>
+      </main>
+    </div>
+    <script>
+      import '../lib/client/admin.ts';
+    </script>
+  </body>
+</html>

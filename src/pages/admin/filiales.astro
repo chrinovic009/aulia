@@ -1,0 +1,81 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { db } from '../../lib/server/db.ts';
+import { isFounder } from '../../lib/server/authz.ts';
+import { ORG_STATUS, fmtDate } from '../../lib/server/admin-view.ts';
+const u = Astro.locals.user!;
+if (!isFounder(u)) return Astro.redirect('/admin');
+const orgs = await db!.organization.findMany({
+  orderBy: [{ kind: 'asc' }, { createdAt: 'asc' }],
+  include: {
+    memberships: { where: { status: 'ACTIVE' }, include: { user: { select: { name: true, email: true } } } },
+    invitations: { where: { status: 'PENDING', expiresAt: { gt: new Date() } } },
+    blocks: { select: { key: true } },
+  },
+});
+---
+<Admin title="Filiales" subtitle="Créez les filiales et nommez leur direction générale. Chaque DG gère ensuite son équipe." active="orgs">
+  <div class="a-table-wrap a-card">
+    <table class="a-table">
+      <thead><tr><th>Organisation</th><th>Direction</th><th class="num">Membres</th><th>Statut</th><th>Page publique</th><th></th></tr></thead>
+      <tbody>
+        {orgs.map((o) => {
+          const dg = o.memberships.find((m) => m.roleCode === (o.kind === 'HOLDING' ? 'founder' : 'dg'));
+          const dgInvite = o.invitations.find((i) => i.roleCode === 'dg');
+          const page = o.blocks.find((b) => b.key === `entity:${o.slug}`);
+          return (
+            <tr>
+              <td><strong>{o.name}</strong><div class="a-faint">{o.kind === 'HOLDING' ? 'Holding' : o.sector ?? 'Filiale'} · créée le {fmtDate(o.createdAt, false)}</div></td>
+              <td>
+                {dg ? <span>{dg.user.name}<div class="a-faint">{dg.user.email}</div></span>
+                  : dgInvite ? <span class="a-pill warn">Invitation envoyée à {dgInvite.email}</span>
+                  : <span class="a-pill err">Aucun DG</span>}
+              </td>
+              <td class="num">{o.memberships.length}</td>
+              <td>
+                {o.kind === 'HOLDING' ? <span class="a-pill ok">Active</span> : (
+                  <select name="status" data-auto="org-update" data-payload={JSON.stringify({ id: o.id })} aria-label={`Statut de ${o.name}`}>
+                    {Object.entries(ORG_STATUS).map(([k, s]) => <option value={k} selected={o.status === k}>{s.label}</option>)}
+                  </select>
+                )}
+              </td>
+              <td>{page ? <a class="a-pill ok" href={`/admin/contenu?bloc=${page.key}`}>Page reliée</a> : o.kind === 'HOLDING' ? <span class="a-faint">Site du groupe</span> : <span class="a-faint">—</span>}</td>
+              <td class="num"><a class="a-btn small" href={`/admin/equipe?org=${o.id}`}>Équipe</a></td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </div>
+
+  <div class="a-grid cols-2 a-section">
+    <section class="a-card">
+      <h2>Créer une filiale</h2>
+      <form class="a-form" data-action="org-create" data-ok="Filiale créée">
+        <label class="a-field"><span>Nom</span><input name="name" placeholder="AULIA Vigil" required /></label>
+        <label class="a-field"><span>Identifiant (adresse de sa page : /ecosystem/identifiant)</span><input name="slug" placeholder="vigil" pattern="[a-z][a-z0-9-]{1,30}" required /></label>
+        <label class="a-field"><span>Secteur</span><input name="sector" placeholder="Industrie" /></label>
+        <label class="a-field"><span>Statut</span>
+          <select name="status"><option value="PREPARING">En préparation</option><option value="ACTIVE">Active</option></select>
+        </label>
+        <button class="a-btn primary" type="submit">Créer la filiale</button>
+        <p class="a-faint">Si une page de cette filiale existe déjà sur le site (vigil, flow, vr), elle lui est automatiquement confiée.</p>
+      </form>
+    </section>
+    <section class="a-card">
+      <h2>Nommer un DG</h2>
+      <form class="a-form" data-action="member-invite" data-ok="Invitation envoyée au DG">
+        <input type="hidden" name="roleCode" value="dg" />
+        <label class="a-field"><span>Filiale</span>
+          <select name="orgId" required>
+            {orgs.filter((o) => o.kind === 'SUBSIDIARY' && o.status !== 'ARCHIVED').map((o) => <option value={o.id}>{o.name}</option>)}
+          </select>
+        </label>
+        <label class="a-field"><span>Adresse e-mail du DG</span><input name="email" type="email" required /></label>
+        <label class="a-field"><span>Intitulé (facultatif)</span><input name="title" placeholder="Directeur général" /></label>
+        <button class="a-btn primary" type="submit">Envoyer l’invitation</button>
+        <p class="a-faint">Le DG reçoit un e-mail, vérifie son adresse par un code à 6 chiffres et active sa double vérification.</p>
+      </form>
+    </section>
+  </div>
+</Admin>

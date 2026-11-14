@@ -1,0 +1,70 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { db } from '../../lib/server/db.ts';
+import { isFounder } from '../../lib/server/authz.ts';
+import { MEMBER_STATUS, ago } from '../../lib/server/admin-view.ts';
+const u = Astro.locals.user!;
+if (!isFounder(u)) return Astro.redirect('/admin');
+const q = (Astro.url.searchParams.get('q') ?? '').trim();
+const [people, orgs, roles] = await Promise.all([
+  db!.user.findMany({
+    where: q ? { OR: [{ name: { contains: q, mode: 'insensitive' } }, { email: { contains: q, mode: 'insensitive' } }] } : {},
+    include: { memberships: { include: { org: true, role: true }, orderBy: { role: { rank: 'asc' } } } },
+    orderBy: { name: 'asc' },
+    take: 300,
+  }),
+  db!.organization.findMany({ where: { status: { not: 'ARCHIVED' } }, orderBy: [{ kind: 'asc' }, { name: 'asc' }] }),
+  db!.role.findMany({ where: { code: { not: 'founder' } }, orderBy: { rank: 'asc' } }),
+]);
+---
+<Admin title="Personnes" subtitle="Toutes les personnes du groupe. Vous seul pouvez rattacher une personne à plusieurs organisations." active="people">
+  <form method="get" class="a-actions" style="margin-bottom:1rem">
+    <input name="q" value={q} placeholder="Rechercher un nom ou une adresse" style="max-width:22rem" />
+    <button class="a-btn" type="submit">Rechercher</button>
+  </form>
+  <section class="a-card a-table-wrap">
+    <table class="a-table">
+      <thead><tr><th>Personne</th><th>Organisations et rôles</th><th>Sécurité</th><th>Dernière connexion</th></tr></thead>
+      <tbody>
+        {people.map((p) => (
+          <tr>
+            <td><strong>{p.name}</strong><div class="a-faint">{p.email}</div></td>
+            <td>
+              <div class="a-actions">
+                {p.memberships.length === 0 ? <span class="a-faint">Aucune</span> : p.memberships.map((m) => (
+                  <a class={`a-pill ${m.status === 'ACTIVE' ? 'gold' : ''}`} href={`/admin/equipe?org=${m.orgId}`} title={MEMBER_STATUS[m.status].label}>{m.org.name} · {m.role.labelFr}{m.status !== 'ACTIVE' ? ` (${MEMBER_STATUS[m.status].label.toLowerCase()})` : ''}</a>
+                ))}
+              </div>
+            </td>
+            <td>
+              {p.totpEnabledAt ? <span class="a-pill ok">2e étape active</span> : <span class="a-pill warn">2e étape inactive</span>}
+              {p.githubLogin && <span class="a-pill">@{p.githubLogin}</span>}
+              {p.recoveryEmail && <span class="a-pill" title="Adresse de secours vérifiée">secours ✓</span>}
+            </td>
+            <td class="a-faint">{p.lastLoginAt ? ago(p.lastLoginAt) : 'jamais'}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </section>
+
+  <section class="a-card a-section">
+    <h2>Rattacher une personne à une organisation</h2>
+    <form class="a-form inline" data-action="member-invite" data-ok="Personne rattachée ou invitée">
+      <label class="a-field"><span>Adresse e-mail</span><input name="email" type="email" list="people-emails" required /></label>
+      <datalist id="people-emails">{people.map((p) => <option value={p.email}>{p.name}</option>)}</datalist>
+      <label class="a-field"><span>Organisation</span>
+        <select name="orgId" required>{orgs.map((o) => <option value={o.id}>{o.name}</option>)}</select>
+      </label>
+      <label class="a-field"><span>Rôle</span>
+        <select name="roleCode" required>
+          <optgroup label="Groupe (holding)">{roles.filter((r) => r.scope === 'GROUP').map((r) => <option value={r.code}>{r.labelFr}</option>)}</optgroup>
+          <optgroup label="Filiale">{roles.filter((r) => r.scope === 'SUBSIDIARY').map((r) => <option value={r.code}>{r.labelFr}</option>)}</optgroup>
+        </select>
+      </label>
+      <label class="a-field"><span>Intitulé</span><input name="title" /></label>
+      <button class="a-btn primary" type="submit">Rattacher</button>
+    </form>
+    <p class="a-faint" style="margin-top:.6rem">Les rôles « groupe » s’attribuent dans la holding AULIA, les rôles de filiale dans une filiale. Une adresse inconnue reçoit une invitation.</p>
+  </section>
+</Admin>

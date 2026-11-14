@@ -1,0 +1,67 @@
+---
+/**
+ * Champ d'édition générique (récursif) : texte, nombre, case à cocher, groupe ou liste.
+ * La structure du contenu est conservée : on ne peut changer que les valeurs, ajouter,
+ * retirer ou réordonner des éléments de liste.
+ */
+interface Props { k: string; value: unknown; item?: boolean; root?: boolean; }
+const { k, value, item, root } = Astro.props;
+const kind = Array.isArray(value) ? 'arr' : value !== null && typeof value === 'object' ? 'obj' : typeof value === 'number' ? 'num' : typeof value === 'boolean' ? 'bool' : 'str';
+
+const LABELS: Record<string, string> = {
+  title: 'Titre', text: 'Texte', lead: 'Chapô', eyebrow: 'Surtitre', name: 'Nom', short: 'Nom court', summary: 'Résumé',
+  description: 'Description', tagline: 'Accroche', signature: 'Signature', label: 'Libellé', meta: 'Description (moteurs de recherche)',
+  hero: 'Titre principal', h1: 'Titre principal', mission: 'Mission', vision: 'Vision', raison: 'Raison d’être', sector: 'Secteur',
+  status: 'Statut', presentation: 'Présentation', problems: 'Problèmes résolus', capabilities: 'Capacités', architecture: 'Architecture',
+  demo: 'Démonstration', href: 'Lien', note: 'Note', ecosystem: 'Place dans l’écosystème', animaLink: 'Lien avec ANIMA', word: 'Mot',
+  en: 'Anglais', long: 'Texte long', letters: 'Lettres', latin: 'Origine latine', motto: 'Devise', mottoEn: 'Devise (anglais)',
+  modules: 'Modules', scenarios: 'Scénarios', sovereignty: 'Souveraineté', context: 'Contexte', steps: 'Étapes', guard: 'Garde-fou',
+  systems: 'Systèmes', role: 'Rôle', sections: 'Sections', pending: 'En attente de publication', socials: 'Réseaux', key: 'Page',
+};
+const STATUS = ['live', 'dev', 'design', 'explore', 'target'];
+const STATUS_LABEL: Record<string, string> = { live: 'Disponible (avec preuve)', dev: 'En développement', design: 'En conception', explore: 'En exploration', target: 'Architecture cible' };
+const human = (s: string) => LABELS[s] ?? s.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
+const label = root ? '' : item ? `Élément ${Number(k) + 1}` : human(k);
+const str = kind === 'str' ? String(value ?? '') : '';
+const long = str.length > 70 || str.includes('\n') || /<\w+/.test(str);
+const fixed = ['slug', 'id', 'key'].includes(k);
+const isStatus = k === 'status' && STATUS.includes(str);
+const entries = kind === 'obj' ? Object.entries(value as Record<string, unknown>) : [];
+const items = kind === 'arr' ? (value as unknown[]) : [];
+---
+<div class={`f${item ? ' item' : ''}`} data-kind={kind} data-key={k}>
+  {!root && (
+    <div class="f-head">
+      <span>{label}</span>
+      {item && (
+        <span class="f-tools">
+          <button type="button" class="a-btn small" data-ed="up" aria-label="Monter">↑</button>
+          <button type="button" class="a-btn small" data-ed="down" aria-label="Descendre">↓</button>
+          <button type="button" class="a-btn small danger" data-ed="remove">Retirer</button>
+        </span>
+      )}
+    </div>
+  )}
+  {kind === 'obj' && <div class="f-body">{entries.map(([ck, cv]) => <Astro.self k={ck} value={cv} />)}</div>}
+  {kind === 'arr' && (
+    <div class="f-body">
+      {items.map((v, i) => <Astro.self k={String(i)} value={v} item />)}
+      {items.length > 0 && <div><button type="button" class="a-btn small" data-ed="add">+ Ajouter un élément</button></div>}
+    </div>
+  )}
+  {kind === 'str' && (
+    isStatus ? (
+      <select data-val>
+        {STATUS.map((s) => <option value={s} selected={s === str}>{STATUS_LABEL[s]}</option>)}
+      </select>
+    ) : fixed ? (
+      <input data-val value={str} readonly title="Identifiant technique : non modifiable" />
+    ) : long ? (
+      <textarea data-val rows={Math.min(10, Math.max(2, Math.ceil(str.length / 90)))}>{str}</textarea>
+    ) : (
+      <input data-val value={str} />
+    )
+  )}
+  {kind === 'num' && <input data-val type="number" value={String(value)} />}
+  {kind === 'bool' && <label class="a-actions"><input data-val type="checkbox" checked={value === true} /> <span class="a-faint">Oui</span></label>}
+</div>

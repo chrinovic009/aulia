@@ -1,0 +1,29 @@
+---
+import AdminAuth from '../../layouts/AdminAuth.astro';
+const u = Astro.locals.user;
+if (!u) return Astro.redirect('/admin/connexion');
+if (!u.totpEnabled) return Astro.redirect('/admin/securite?obligatoire=1');
+if (u.aal >= 2) return Astro.redirect('/admin');
+---
+<AdminAuth title="Deuxième étape" lead={`Saisissez le code à 6 chiffres affiché par votre application d’authentification (${u.email}).`}>
+  <form class="a-form" data-auth="/api/auth/verify" id="totp">
+    <label class="a-field"><span>Code de l’application</span><input class="a-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" required autofocus /></label>
+    <button class="a-btn primary" type="submit">Valider</button>
+  </form>
+  <details>
+    <summary class="a-muted" style="cursor:pointer">Téléphone perdu ? Utiliser un code de secours</summary>
+    <form class="a-form" data-auth="/api/auth/verify" style="margin-top:.8rem">
+      <label class="a-field"><span>Code de secours (ex. ABCD-EFGH)</span><input name="recoveryCode" autocomplete="off" required /></label>
+      <button class="a-btn" type="submit">Utiliser ce code</button>
+      <p class="a-faint">Chaque code ne sert qu’une fois. Sans code de secours, demandez au fondateur de réinitialiser votre double vérification.</p>
+    </form>
+  </details>
+  <div class="links"><button class="a-btn small" type="button" id="out">Changer de compte</button></div>
+  <script>
+    import { post } from '../../lib/client/admin-core.ts';
+    document.getElementById('out')?.addEventListener('click', async () => {
+      await post('/api/auth/logout', {}).catch(() => null);
+      location.href = '/admin/connexion';
+    });
+  </script>
+</AdminAuth>

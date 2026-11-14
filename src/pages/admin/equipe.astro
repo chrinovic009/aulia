@@ -1,0 +1,105 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import OrgPicker from '../../components/admin/OrgPicker.astro';
+import { db } from '../../lib/server/db.ts';
+import { can, canAssign, canManageMember, isFounder } from '../../lib/server/authz.ts';
+import { orgOptions, pickOrg, MEMBER_STATUS, fmtDate, ago } from '../../lib/server/admin-view.ts';
+
+const u = Astro.locals.user!;
+const options = await orgOptions(db!, u);
+const org = pickOrg(options, Astro.url.searchParams.get('org'), u);
+if (!org) return Astro.redirect('/admin');
+const [members, invites, roles] = await Promise.all([
+  db!.membership.findMany({
+    where: { orgId: org.id, ...(Astro.url.searchParams.get('anciens') ? {} : { status: { not: 'ENDED' } }) },
+    include: { user: { select: { id: true, name: true, email: true, lastLoginAt: true, totpEnabledAt: true } }, role: true },
+    orderBy: [{ role: { rank: 'asc' } }, { createdAt: 'asc' }],
+  }),
+  can(u, 'team.manage', org.id) ? db!.invitation.findMany({ where: { orgId: org.id, status: 'PENDING', expiresAt: { gt: new Date() } }, include: { role: true }, orderBy: { createdAt: 'desc' } }) : Promise.resolve([]),
+  db!.role.findMany({ orderBy: { rank: 'asc' } }),
+]);
+const assignable = roles.filter((r) => canAssign(u, org, r));
+const manage = can(u, 'team.manage', org.id);
+const founder = isFounder(u);
+---
+<Admin title={`Équipe — ${org.name}`} subtitle={manage ? 'Invitez vos collaborateurs et attribuez-leur un rôle du catalogue.' : 'Les membres de votre organisation.'} active="team">
+  <OrgPicker options={options} current={org} />
+
+  <section class="a-card a-table-wrap">
+    <h2>{members.filter((m) => m.status === 'ACTIVE').length} membre(s) actif(s) <a href={`?org=${org.id}${Astro.url.searchParams.get('anciens') ? '' : '&anciens=1'}`}>{Astro.url.searchParams.get('anciens') ? 'Masquer les départs' : 'Voir aussi les départs'}</a></h2>
+    <table class="a-table">
+      <thead><tr><th>Personne</th><th>Rôle</th><th>Intitulé</th><th>Statut</th><th>Dernière connexion</th></tr></thead>
+      <tbody>
+        {members.map((m) => {
+          const editable = canManageMember(u, org.id, { userId: m.userId, rank: m.role.rank, roleCode: m.roleCode });
+          const roleChoices = editable ? [m.role, ...assignable.filter((r) => r.code !== m.roleCode)] : [];
+          return (
+            <tr>
+              <td><strong>{m.user.name}</strong>{m.userId === u.id && <span class="a-pill gold">vous</span>}<div class="a-faint">{m.user.email}</div></td>
+              <td>
+                {editable && roleChoices.length > 1 ? (
+                  <select name="roleCode" data-auto="member-update" data-payload={JSON.stringify({ id: m.id })} data-ok="Rôle modifié" aria-label={`Rôle de ${m.user.name}`}>
+                    {roleChoices.map((r) => <option value={r.code} selected={r.code === m.roleCode}>{r.labelFr}</option>)}
+                  </select>
+                ) : <span class="a-pill gold">{m.role.labelFr}</span>}
+              </td>
+              <td>
+                {editable ? (
+                  <form data-action="member-update" data-payload={JSON.stringify({ id: m.id })} data-ok="Intitulé enregistré" data-reset="false" class="a-actions">
+                    <input name="title" value={m.title ?? ''} placeholder="—" aria-label="Intitulé" style="max-width:12rem" />
+                  </form>
+                ) : <span class="a-muted">{m.title ?? '—'}</span>}
+              </td>
+              <td>
+                {editable ? (
+                  <select name="status" data-auto="member-update" data-payload={JSON.stringify({ id: m.id })} data-ok="Statut modifié" aria-label="Statut">
+                    {Object.entries(MEMBER_STATUS).map(([k, s]) => <option value={k} selected={m.status === k}>{s.label}</option>)}
+                  </select>
+                ) : <span class={`a-pill ${MEMBER_STATUS[m.status].tone}`}>{MEMBER_STATUS[m.status].label}</span>}
+              </td>
+              <td class="a-faint">
+                {m.user.lastLoginAt ? ago(m.user.lastLoginAt) : 'jamais'}
+                {!m.user.totpEnabledAt && m.role.rank <= 20 && <div><span class="a-pill warn">2e étape à activer</span></div>}
+                {founder && m.user.totpEnabledAt && m.userId !== u.id && (
+                  <div><button class="a-btn small" type="button" data-action="reset-2fa" data-payload={JSON.stringify({ userId: m.userId })} data-confirm="Confirmer la réinitialisation" data-ok="Double vérification réinitialisée">Réinitialiser la 2e étape</button></div>
+                )}
+              </td>
+            </tr>
+          );
+        })}
+      </tbody>
+    </table>
+  </section>
+
+  {manage && (
+    <div class="a-grid cols-2 a-section">
+      <section class="a-card">
+        <h2>Inviter une personne</h2>
+        {assignable.length === 0 ? <p class="a-empty">Aucun rôle que vous pouvez attribuer ici.</p> : (
+          <form class="a-form" data-action="member-invite" data-payload={JSON.stringify({ orgId: org.id })} data-ok="Invitation envoyée">
+            <label class="a-field"><span>Adresse e-mail</span><input name="email" type="email" required /></label>
+            <label class="a-field"><span>Rôle</span>
+              <select name="roleCode" required>{assignable.map((r) => <option value={r.code}>{r.labelFr}</option>)}</select>
+            </label>
+            <label class="a-field"><span>Intitulé du poste (facultatif)</span><input name="title" placeholder="Infirmière coordinatrice" /></label>
+            <button class="a-btn primary" type="submit">Envoyer l’invitation</button>
+            <p class="a-faint">{founder ? 'Si la personne a déjà un accès dans une autre organisation, elle est rattachée directement.' : 'Une personne qui appartient déjà à une autre filiale du groupe ne peut être rattachée que par le fondateur.'}</p>
+          </form>
+        )}
+      </section>
+      <section class="a-card">
+        <h2>Invitations en attente</h2>
+        {invites.length === 0 ? <p class="a-empty">Aucune invitation en attente.</p> : (
+          <table class="a-table"><tbody>
+            {invites.map((i) => (
+              <tr>
+                <td>{i.email}<div class="a-faint">{i.role.labelFr} · expire le {fmtDate(i.expiresAt, false)}</div></td>
+                <td class="num"><button class="a-btn small danger" type="button" data-action="invite-revoke" data-payload={JSON.stringify({ id: i.id })} data-confirm="Annuler ?" data-ok="Invitation annulée">Annuler</button></td>
+              </tr>
+            ))}
+          </tbody></table>
+        )}
+      </section>
+    </div>
+  )}
+</Admin>

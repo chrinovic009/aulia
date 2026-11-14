@@ -1,0 +1,54 @@
+---
+import Admin from '../../../layouts/Admin.astro';
+import { db } from '../../../lib/server/db.ts';
+import { canPublish, orgsWith } from '../../../lib/server/authz.ts';
+import { VERSION_STATUS, ago } from '../../../lib/server/admin-view.ts';
+const u = Astro.locals.user!;
+const editOrgs = orgsWith(u, 'content.edit');
+const publisher = canPublish(u);
+if (!publisher && editOrgs !== null && editOrgs.length === 0) return Astro.redirect('/admin');
+const where = publisher || editOrgs === null ? {} : { orgId: { in: editOrgs } };
+const blocks = await db!.contentBlock.findMany({
+  where,
+  include: {
+    org: true,
+    live: { select: { locale: true, publishedAt: true } },
+    versions: { where: { status: { in: ['DRAFT', 'SUBMITTED', 'REJECTED'] } }, select: { id: true, locale: true, status: true, authorId: true, updatedAt: true } },
+  },
+  orderBy: [{ sort: 'asc' }],
+});
+const groups = new Map<string, typeof blocks>();
+for (const b of blocks) groups.set(b.org.name, [...(groups.get(b.org.name) ?? []), b]);
+const highlight = Astro.url.searchParams.get('bloc');
+---
+<Admin title="Contenu du site" subtitle={publisher ? 'Tout le contenu du site public, en anglais et en français. Vos modifications peuvent être publiées directement.' : 'Préparez le contenu public de votre filiale : il sera mis en ligne après validation du fondateur.'} active="content">
+  {[...groups.entries()].map(([name, list]) => (
+    <section class="a-card a-section a-table-wrap">
+      <h2>{name}</h2>
+      <table class="a-table">
+        <thead><tr><th>Bloc</th><th>Anglais</th><th>Français</th></tr></thead>
+        <tbody>
+          {list.map((b) => (
+            <tr style={highlight === b.key ? 'background:rgba(255,210,48,.06)' : undefined}>
+              <td><strong>{b.label}</strong><div class="a-faint">{b.pages.includes('*') ? 'Toutes les pages' : b.pages.join(' · ')}</div></td>
+              {(['en', 'fr'] as const).map((l) => {
+                const live = b.live.find((x) => x.locale === l);
+                const mine = b.versions.filter((v) => v.locale === l && v.authorId === u.id);
+                const others = b.versions.filter((v) => v.locale === l && v.authorId !== u.id && v.status === 'SUBMITTED');
+                return (
+                  <td>
+                    <a class="a-btn small" href={`/admin/contenu/${b.id}?lang=${l}`}>Modifier</a>
+                    <div class="a-faint" style="margin-top:.3rem">{live ? `En ligne · ${ago(live.publishedAt)}` : 'Pas encore en ligne'}</div>
+                    {mine.map((v) => <span class={`a-pill ${VERSION_STATUS[v.status].tone}`}>{VERSION_STATUS[v.status].label}</span>)}
+                    {publisher && others.length > 0 && <a class="a-pill warn" href="/admin/validation">{others.length} à valider</a>}
+                  </td>
+                );
+              })}
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </section>
+  ))}
+  {blocks.length === 0 && <p class="a-empty">Aucun contenu à gérer pour le moment.</p>}
+</Admin>

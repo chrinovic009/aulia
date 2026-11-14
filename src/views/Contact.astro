@@ -1,4 +1,6 @@
 ---
+import page from '../data/pages/contact.ts';
+import { block } from '../data/site.ts';
 import Layout from '../layouts/Layout.astro';
 import PageHero from '../components/PageHero.astro';
 import { getContent } from '../data/site.ts';
@@ -6,78 +8,9 @@ import { path, type Lang } from '../i18n.ts';
 
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
-const { site } = getContent(lang);
+const { site } = getContent(lang, Astro.locals);
 
-const T = {
-  en: {
-    title: 'Contact',
-    meta: 'Request a presentation, start a partnership or ask the AULIA group a question.',
-    hero: 'Get in touch <em>with AULIA.</em>',
-    lead: 'Tell us about your organisation and your need. We will answer with what is actually available and what is in preparation.',
-    before: 'Before you write',
-    tips: [
-      ['Your context.', 'Type of organisation, approximate size, current organisation.'],
-      ['Your main difficulty.', 'What costs you time, information or continuity.'],
-      ['Your objective.', 'What you would like to see change.'],
-    ],
-    direct: 'Or directly:',
-    subjects: [
-      ['presentation', 'Presentation of the AULIA group'],
-      ['care', 'AULIA Care — health'],
-      ['vigil', 'AULIA Vigil — industry'],
-      ['flow', 'AULIA Flow — organisations'],
-      ['vr', 'AULIA VR — immersion'],
-      ['anima', 'ANIMA'],
-      ['partnership', 'Partnership'],
-      ['research', 'Research & scientific collaboration'],
-      ['investment', 'Investment'],
-      ['other', 'Other request'],
-    ],
-    name: 'Full name *', org: 'Organisation', email: 'Work email *', phone: 'Phone', subject: 'Subject *', message: 'Your message *',
-    consentA: 'I agree that the information entered may be used by AULIA to respond to my request, in accordance with the',
-    consentB: 'privacy policy',
-    send: 'Send request',
-    msgInvalid: 'Please complete the required fields and accept the privacy policy.',
-    msgNoEndpoint: 'The form is not yet connected to our receiving service. Your message has not been sent; please try again soon.',
-    msgSending: 'Sending…',
-    msgOk: 'Thank you. Your request has been sent to the AULIA team.',
-    msgErr: 'Sending failed. Check your connection and try again.',
-  },
-  fr: {
-    title: 'Contact',
-    meta: 'Demander une présentation, initier un partenariat ou poser une question au groupe AULIA.',
-    hero: 'Entrer en relation <em>avec AULIA.</em>',
-    lead: 'Présentez-nous votre organisation et votre besoin. Nous vous répondrons avec ce qui est réellement disponible et ce qui est en préparation.',
-    before: "Avant d'écrire",
-    tips: [
-      ['Votre contexte.', "Type d'organisation, taille approximative, organisation actuelle."],
-      ['Votre difficulté principale.', "Ce qui vous fait perdre du temps, de l'information ou de la continuité."],
-      ['Votre objectif.', 'Ce que vous aimeriez voir changer.'],
-    ],
-    direct: 'Ou directement :',
-    subjects: [
-      ['presentation', 'Présentation du groupe AULIA'],
-      ['care', 'AULIA Care — santé'],
-      ['vigil', 'AULIA Vigil — industrie'],
-      ['flow', 'AULIA Flow — organisations'],
-      ['vr', 'AULIA VR — immersion'],
-      ['anima', 'ANIMA'],
-      ['partnership', 'Partenariat'],
-      ['research', 'Recherche & collaboration scientifique'],
-      ['investment', 'Investissement'],
-      ['other', 'Autre demande'],
-    ],
-    name: 'Nom complet *', org: 'Organisation', email: 'E-mail professionnel *', phone: 'Téléphone', subject: 'Objet *', message: 'Votre message *',
-    consentA: "J'accepte que les informations saisies soient utilisées par AULIA pour répondre à ma demande, conformément à la",
-    consentB: 'politique de confidentialité',
-    send: 'Envoyer la demande',
-    msgInvalid: "Merci de compléter les champs obligatoires et d'accepter la politique de confidentialité.",
-    msgNoEndpoint: "Le formulaire n'est pas encore raccordé à notre service de réception. Votre message n'a pas été envoyé ; merci de réessayer prochainement.",
-    msgSending: 'Envoi en cours…',
-    msgOk: "Merci. Votre demande a bien été transmise à l'équipe AULIA.",
-    msgErr: "L'envoi a échoué. Vérifiez votre connexion et réessayez.",
-  },
-}[lang];
+const T = block(Astro.locals, 'page:contact', lang, page);
 ---
 
 <Layout lang={lang} route="contact" title={T.title} description={T.meta}>
@@ -98,7 +31,7 @@ const T = {
       <form
         class="form reveal"
         data-form
-        data-endpoint={site.contactEndpoint}
+        data-endpoint={site.contactEndpoint || '/api/contact'}
         data-msg-invalid={T.msgInvalid}
         data-msg-noendpoint={T.msgNoEndpoint}
         data-msg-sending={T.msgSending}
@@ -107,6 +40,8 @@ const T = {
         novalidate
       >
         <input type="hidden" name="langue" value={lang} />
+        <!-- champ piège pour les robots : invisible et ignoré par les personnes -->
+        <label class="hp" aria-hidden="true">Website<input name="website" type="text" tabindex="-1" autocomplete="off" /></label>
         <div class="row">
           <label><span>{T.name}</span><input name="nom" type="text" autocomplete="name" required /></label>
           <label><span>{T.org}</span><input name="organisation" type="text" autocomplete="organization" /></label>
@@ -139,6 +74,7 @@ const T = {
 </Layout>
 
 <style>
+  .hp { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
   .grid {
     display: grid;
     grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.4fr);
@@ -309,8 +245,21 @@ const T = {
     btn?.setAttribute('disabled', '');
     setStatus(msg('sending'));
     try {
-      const res = await fetch(endpoint, { method: 'POST', body: new FormData(form), headers: { Accept: 'application/json' } });
-      if (!res.ok) throw new Error(String(res.status));
+      const f = new FormData(form);
+      const res = await fetch(endpoint, {
+        method: 'POST',
+        headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: f.get('nom'), organization: f.get('organisation'), email: f.get('email'), phone: f.get('telephone'),
+          topic: f.get('sujet'), message: f.get('message'), lang: f.get('langue'), consent: f.get('consentement') === 'on',
+          website: f.get('website'),
+        }),
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        if (data.error && res.status < 500) return setStatus(data.error, 'err');
+        throw new Error(String(res.status));
+      }
       form.reset();
       setStatus(msg('ok'), 'ok');
     } catch (_) {

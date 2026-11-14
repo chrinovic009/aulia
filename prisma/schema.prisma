@@ -1,0 +1,382 @@
+// AULIA — base de données du portail et de l'espace interne.
+//
+// Règles d'accès principales (appliquées dans src/lib/server/authz.ts ET, pour les verrous
+// critiques, directement dans la base par des déclencheurs : voir prisma/migrations/0001_init).
+//  1. Seul le fondateur nomme les DG et les rôles du groupe.
+//  2. Une personne déjà présente dans une filiale ne peut être ajoutée à une autre que par le fondateur.
+//  3. Rien n'apparaît sur le site public sans validation du fondateur (ou d'un validateur délégué).
+
+generator client {
+  provider      = "prisma-client-js"
+  // « native » pour votre ordinateur, « rhel-openssl-3.0.x » pour les serveurs Vercel
+  binaryTargets = ["native", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_UNPOOLED")
+}
+
+enum OrgKind {
+  HOLDING
+  SUBSIDIARY
+}
+
+enum OrgStatus {
+  ACTIVE
+  PREPARING
+  ARCHIVED
+}
+
+enum RoleScope {
+  GROUP
+  SUBSIDIARY
+}
+
+enum MemberStatus {
+  ACTIVE
+  SUSPENDED
+  ENDED
+}
+
+enum InvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
+enum VersionStatus {
+  DRAFT
+  SUBMITTED
+  REJECTED
+  PUBLISHED
+  ARCHIVED
+}
+
+enum Locale {
+  en
+  fr
+}
+
+enum OtpPurpose {
+  BOOTSTRAP
+  JOIN
+  RECOVERY
+}
+
+enum MessageStatus {
+  NEW
+  READ
+  HANDLED
+  ARCHIVED
+}
+
+enum SiteEventKind {
+  VIEW
+  CLICK
+}
+
+// ───────────────────────────── Personnes et sécurité ─────────────────────────────
+
+model User {
+  id              String    @id @default(cuid())
+  email           String    @unique
+  name            String
+  passwordHash    String?   @map("password_hash")
+  emailVerifiedAt DateTime? @map("email_verified_at")
+  /// secret TOTP chiffré (AES-256-GCM avec APP_SECRET)
+  totpSecret      String?   @map("totp_secret")
+  totpPending     String?   @map("totp_pending")
+  totpEnabledAt   DateTime? @map("totp_enabled_at")
+  githubId        String?   @unique @map("github_id")
+  githubLogin     String?   @map("github_login")
+  recoveryEmail   String?   @map("recovery_email")
+  disabledAt      DateTime? @map("disabled_at")
+  lastLoginAt     DateTime? @map("last_login_at")
+  createdAt       DateTime  @default(now()) @map("created_at")
+  updatedAt       DateTime  @updatedAt @map("updated_at")
+
+  memberships   Membership[]
+  sessions      Session[]
+  recoveryCodes RecoveryCode[]
+  authored      ContentVersion[] @relation("authored")
+  reviewed      ContentVersion[] @relation("reviewed")
+  audit         AuditLog[]
+
+  @@map("users")
+}
+
+model Session {
+  /// empreinte SHA-256 du jeton (le jeton lui-même n'est jamais stocké)
+  id         String   @id
+  userId     String   @map("user_id")
+  /// 1 = mot de passe ou GitHub ; 2 = deuxième étape validée
+  aal        Int      @default(1)
+  createdAt  DateTime @default(now()) @map("created_at")
+  lastSeenAt DateTime @default(now()) @map("last_seen_at")
+  expiresAt  DateTime @map("expires_at")
+  ip         String?
+  userAgent  String?  @map("user_agent")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("sessions")
+}
+
+model RecoveryCode {
+  id       String    @id @default(cuid())
+  userId   String    @map("user_id")
+  codeHash String    @map("code_hash")
+  usedAt   DateTime? @map("used_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("recovery_codes")
+}
+
+model OtpCode {
+  id         String     @id @default(cuid())
+  email      String
+  purpose    OtpPurpose
+  codeHash   String     @map("code_hash")
+  attempts   Int        @default(0)
+  expiresAt  DateTime   @map("expires_at")
+  consumedAt DateTime?  @map("consumed_at")
+  createdAt  DateTime   @default(now()) @map("created_at")
+
+  @@index([email, purpose])
+  @@map("otp_codes")
+}
+
+model LoginAttempt {
+  id    BigInt   @id @default(autoincrement())
+  email String
+  ok    Boolean
+  at    DateTime @default(now())
+
+  @@index([email, at])
+  @@map("login_attempts")
+}
+
+// ───────────────────────────── Groupe ─────────────────────────────
+
+model Organization {
+  id          String    @id @default(cuid())
+  slug        String    @unique
+  name        String
+  kind        OrgKind
+  status      OrgStatus @default(PREPARING)
+  sector      String?
+  createdById String?   @map("created_by_id")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  memberships Membership[]
+  invitations Invitation[]
+  blocks      ContentBlock[]
+  messages    ContactMessage[]
+
+  @@map("organizations")
+}
+
+model Role {
+  code        String    @id
+  scope       RoleScope
+  labelFr     String    @map("label_fr")
+  labelEn     String    @map("label_en")
+  description String
+  /// plus petit = plus d'autorité (fondateur 0, DG 10…)
+  rank        Int
+  permissions String[]
+
+  memberships Membership[]
+  invitations Invitation[]
+
+  @@map("roles")
+}
+
+model Membership {
+  id          String       @id @default(cuid())
+  userId      String       @map("user_id")
+  orgId       String       @map("org_id")
+  roleCode    String       @map("role_code")
+  title       String?
+  status      MemberStatus @default(ACTIVE)
+  createdById String?      @map("created_by_id")
+  updatedById String?      @map("updated_by_id")
+  createdAt   DateTime     @default(now()) @map("created_at")
+  updatedAt   DateTime     @updatedAt @map("updated_at")
+  endedAt     DateTime?    @map("ended_at")
+
+  user User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  role Role         @relation(fields: [roleCode], references: [code])
+
+  @@unique([userId, orgId])
+  @@index([orgId])
+  @@map("memberships")
+}
+
+model Invitation {
+  id          String           @id @default(cuid())
+  email       String
+  orgId       String           @map("org_id")
+  roleCode    String           @map("role_code")
+  title       String?
+  invitedById String           @map("invited_by_id")
+  status      InvitationStatus @default(PENDING)
+  expiresAt   DateTime         @map("expires_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  acceptedAt  DateTime?        @map("accepted_at")
+
+  org  Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  role Role         @relation(fields: [roleCode], references: [code])
+
+  @@index([email, status])
+  @@index([orgId])
+  @@map("invitations")
+}
+
+// ───────────────────────────── Contenu du site public ─────────────────────────────
+
+model ContentBlock {
+  id        String   @id @default(cuid())
+  /// ex. « site », « page:home », « entity:care »
+  key       String   @unique
+  orgId     String   @map("org_id")
+  label     String
+  /// pages publiques où le bloc apparaît (« * » = toutes)
+  pages     String[]
+  sort      Int      @default(0)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  org      Organization     @relation(fields: [orgId], references: [id])
+  versions ContentVersion[]
+  live     ContentLive[]
+
+  @@map("content_blocks")
+}
+
+model ContentVersion {
+  id            String        @id @default(cuid())
+  blockId       String        @map("block_id")
+  orgId         String        @map("org_id")
+  locale        Locale
+  data          Json
+  status        VersionStatus @default(DRAFT)
+  note          String?
+  authorId      String?       @map("author_id")
+  reviewerId    String?       @map("reviewer_id")
+  reviewComment String?       @map("review_comment")
+  baseVersionId String?       @map("base_version_id")
+  createdAt     DateTime      @default(now()) @map("created_at")
+  updatedAt     DateTime      @updatedAt @map("updated_at")
+  submittedAt   DateTime?     @map("submitted_at")
+  reviewedAt    DateTime?     @map("reviewed_at")
+  publishedAt   DateTime?     @map("published_at")
+
+  block    ContentBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+  author   User?        @relation("authored", fields: [authorId], references: [id])
+  reviewer User?        @relation("reviewed", fields: [reviewerId], references: [id])
+
+  @@index([blockId, locale, status])
+  @@index([orgId, status])
+  @@map("content_versions")
+}
+
+model ContentLive {
+  blockId       String   @map("block_id")
+  locale        Locale
+  orgId         String   @map("org_id")
+  versionId     String   @map("version_id")
+  data          Json
+  publishedAt   DateTime @default(now()) @map("published_at")
+  publishedById String?  @map("published_by_id")
+
+  block ContentBlock @relation(fields: [blockId], references: [id], onDelete: Cascade)
+
+  @@id([blockId, locale])
+  @@map("content_live")
+}
+
+// ───────────────────────────── Relation avec les internautes ─────────────────────────────
+
+model ContactMessage {
+  id           String        @id @default(cuid())
+  orgId        String        @map("org_id")
+  topic        String
+  name         String
+  email        String
+  organization String?
+  phone        String?
+  message      String
+  lang         Locale
+  status       MessageStatus @default(NEW)
+  note         String?
+  handledById  String?       @map("handled_by_id")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  org Organization @relation(fields: [orgId], references: [id])
+
+  @@index([orgId, status])
+  @@map("contact_messages")
+}
+
+model SiteEvent {
+  id           BigInt        @id @default(autoincrement())
+  at           DateTime      @default(now())
+  kind         SiteEventKind
+  path         String
+  orgId        String?       @map("org_id")
+  lang         String?
+  country      String?
+  referrerHost String?       @map("referrer_host")
+  device       String?
+  label        String?
+  /// empreinte quotidienne anonyme (aucune adresse IP ni cookie conservé)
+  visitorHash  String        @map("visitor_hash")
+
+  @@index([orgId, at])
+  @@index([at])
+  @@map("site_events")
+}
+
+// ───────────────────────────── Traçabilité et temps réel ─────────────────────────────
+
+model AuditLog {
+  id       BigInt   @id @default(autoincrement())
+  at       DateTime @default(now())
+  actorId  String?  @map("actor_id")
+  orgId    String?  @map("org_id")
+  action   String
+  entity   String
+  entityId String?  @map("entity_id")
+  summary  String?
+  before   Json?
+  after    Json?
+
+  actor User? @relation(fields: [actorId], references: [id])
+
+  @@index([orgId, at])
+  @@map("audit_log")
+}
+
+/// Alimentée uniquement par des déclencheurs de la base : chaque ajout, modification ou
+/// suppression produit un événement que les écrans ouverts reçoivent en direct.
+model ChangeEvent {
+  id     BigInt   @id @default(autoincrement())
+  at     DateTime @default(now())
+  scope  String
+  topic  String
+  action String
+  orgId  String?  @map("org_id")
+  ref    String?
+
+  @@index([scope, id])
+  @@map("change_events")
+}

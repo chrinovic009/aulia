@@ -1,0 +1,97 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import OrgPicker from '../../components/admin/OrgPicker.astro';
+import { db } from '../../lib/server/db.ts';
+import { can } from '../../lib/server/authz.ts';
+import { orgOptions, pickOrg } from '../../lib/server/admin-view.ts';
+
+const u = Astro.locals.user!;
+if (!can(u, 'site.view')) return Astro.redirect('/admin');
+const options = await orgOptions(db!, u, 'site.view');
+const org = pickOrg(options, Astro.url.searchParams.get('org'), u, true);
+const days = [7, 30, 90].includes(Number(Astro.url.searchParams.get('j'))) ? Number(Astro.url.searchParams.get('j')) : 30;
+const since = new Date(Date.now() - days * 864e5);
+since.setUTCHours(0, 0, 0, 0);
+const orgId = org?.id ?? null;
+const where = { at: { gte: since }, ...(orgId ? { orgId } : {}) };
+const d = db!;
+
+const top = (by: 'path' | 'country' | 'referrerHost' | 'device' | 'lang' | 'label', kind: 'VIEW' | 'CLICK', take = 8) =>
+  d.siteEvent.groupBy({ by: [by], where: { ...where, kind }, _count: { _all: true }, orderBy: { _count: { [by]: 'desc' } }, take });
+
+const [daily, totals, uniques, pages, countries, refs, devices, langs, clicks, presentNow] = await Promise.all([
+  d.$queryRaw<{ d: Date; n: number; u: number }[]>`
+    SELECT date_trunc('day', at) AS d, count(*)::int AS n, count(DISTINCT visitor_hash)::int AS u
+    FROM site_events WHERE kind = 'VIEW' AND at >= ${since} AND (${orgId}::text IS NULL OR org_id = ${orgId})
+    GROUP BY 1 ORDER BY 1`,
+  d.siteEvent.count({ where: { ...where, kind: 'VIEW' } }),
+  d.siteEvent.groupBy({ by: ['visitorHash'], where: { ...where, kind: 'VIEW' } }).then((r) => r.length),
+  top('path', 'VIEW', 10),
+  top('country', 'VIEW'),
+  top('referrerHost', 'VIEW'),
+  top('device', 'VIEW', 3),
+  top('lang', 'VIEW', 2),
+  top('label', 'CLICK', 10),
+  d.siteEvent.groupBy({ by: ['visitorHash'], where: { kind: 'VIEW', at: { gte: new Date(Date.now() - 5 * 60_000) }, ...(orgId ? { orgId } : {}) } }).then((r) => r.length),
+]);
+const clickTotal = clicks.reduce((s, c) => s + c._count._all, 0);
+
+// série complète (jours sans visite = 0)
+const series: { d: Date; n: number; u: number }[] = [];
+for (let t = since.getTime(); t <= Date.now(); t += 864e5) {
+  const day = new Date(t);
+  const hit = daily.find((r) => new Date(r.d).toISOString().slice(0, 10) === day.toISOString().slice(0, 10));
+  series.push({ d: day, n: hit?.n ?? 0, u: hit?.u ?? 0 });
+}
+const max = Math.max(1, ...series.map((s) => s.n));
+const fmtDay = (x: Date) => x.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+const COUNTRY: Record<string, string> = { CD: 'RD Congo', FR: 'France', BE: 'Belgique', US: 'États-Unis', CA: 'Canada', ZA: 'Afrique du Sud', CG: 'Congo', AO: 'Angola', ZM: 'Zambie', RW: 'Rwanda', KE: 'Kenya', NG: 'Nigeria', GB: 'Royaume-Uni', DE: 'Allemagne', CH: 'Suisse', CN: 'Chine', IN: 'Inde', AE: 'Émirats arabes unis' };
+const rank = <T extends { _count: { _all: number } }>(list: T[]) => {
+  const m = Math.max(1, ...list.map((x) => x._count._all));
+  return list.map((x) => ({ ...x, w: `${Math.round((x._count._all / m) * 100)}%` }));
+};
+const q = (extra: Record<string, string>) => {
+  const p = new URLSearchParams({ ...(org ? { org: org.id } : { org: 'all' }), j: String(days), ...extra });
+  return `?${p}`;
+};
+---
+<Admin title="Visites et interactions" subtitle={`${org ? org.name : 'Tout le groupe'} · mesure sans cookie, aucune donnée personnelle conservée`} active="site">
+  <OrgPicker options={options} current={org} allowAll />
+  <nav class="a-tabs">{[7, 30, 90].map((n) => <a href={q({ j: String(n) })} aria-current={n === days ? 'page' : undefined}>{n} jours</a>)}</nav>
+
+  <div class="a-grid cols-4">
+    <div class="a-card a-kpi gold"><b>{presentNow}</b><span>visiteur(s) en ce moment</span></div>
+    <div class="a-card a-kpi"><b>{uniques}</b><span>visiteurs uniques</span></div>
+    <div class="a-card a-kpi"><b>{totals}</b><span>pages vues</span></div>
+    <div class="a-card a-kpi"><b>{clickTotal}</b><span>interactions (demandes, liens, partenariats)</span></div>
+  </div>
+
+  <section class="a-card a-section">
+    <h2>Pages vues par jour</h2>
+    <div class="a-bars" role="img" aria-label="Pages vues par jour">
+      {series.map((s) => <div style={`height:${(s.n / max) * 100}%`} data-tip={`${fmtDay(s.d)} : ${s.n} vue(s), ${s.u} visiteur(s)`}></div>)}
+    </div>
+    <div class="a-bars-axis"><span>{fmtDay(series[0].d)}</span><span>{fmtDay(series[series.length - 1].d)}</span></div>
+  </section>
+
+  <div class="a-grid cols-2 a-section">
+    <section class="a-card"><h2>Pages les plus vues</h2>
+      {pages.length === 0 ? <p class="a-empty">Pas encore de visite.</p> : <ul class="a-rank">{rank(pages).map((p) => <li style={`--w:${p.w}`}><span>{p.path}</span><b>{p._count._all}</b></li>)}</ul>}
+    </section>
+    <section class="a-card"><h2>Interactions</h2>
+      {clicks.length === 0 ? <p class="a-empty">Aucune interaction sur la période.</p> : <ul class="a-rank">{rank(clicks).map((c) => <li style={`--w:${c.w}`}><span title={c.label ?? ''}>{c.label}</span><b>{c._count._all}</b></li>)}</ul>}
+    </section>
+    <section class="a-card"><h2>Pays</h2>
+      {countries.length === 0 ? <p class="a-empty">—</p> : <ul class="a-rank">{rank(countries).map((c) => <li style={`--w:${c.w}`}><span>{c.country ? COUNTRY[c.country] ?? c.country : 'Inconnu'}</span><b>{c._count._all}</b></li>)}</ul>}
+    </section>
+    <section class="a-card"><h2>Provenance</h2>
+      {refs.length === 0 ? <p class="a-empty">—</p> : <ul class="a-rank">{rank(refs).map((r) => <li style={`--w:${r.w}`}><span>{r.referrerHost ?? 'Accès direct'}</span><b>{r._count._all}</b></li>)}</ul>}
+    </section>
+    <section class="a-card"><h2>Appareils et langues</h2>
+      <ul class="a-rank">
+        {rank(devices).map((x) => <li style={`--w:${x.w}`}><span>{x.device ?? '—'}</span><b>{x._count._all}</b></li>)}
+        {rank(langs).map((x) => <li style={`--w:${x.w}`}><span>{x.lang === 'fr' ? 'Français' : 'Anglais'}</span><b>{x._count._all}</b></li>)}
+      </ul>
+    </section>
+  </div>
+</Admin>

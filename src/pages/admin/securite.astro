@@ -1,0 +1,167 @@
+---
+import Admin from '../../layouts/Admin.astro';
+import { db } from '../../lib/server/db.ts';
+import { env } from '../../lib/server/env.ts';
+import { needsStrongAuth } from '../../lib/server/authz.ts';
+const u = Astro.locals.user!;
+const user = db ? await db.user.findUnique({ where: { id: u.id } }) : null;
+const codesLeft = db ? await db.recoveryCode.count({ where: { userId: u.id, usedAt: null } }) : 0;
+const required = needsStrongAuth(u);
+const welcome = Astro.url.searchParams.has('bienvenue');
+const gh = Astro.url.searchParams.get('github');
+const strong = !u.totpEnabled || u.aal >= 2;
+const fmt = (d?: Date | null) => (d ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '');
+---
+<Admin title="Sécurité du compte" subtitle={u.email} active="security">
+  {welcome && <p class="a-note ok">Bienvenue, {u.name}. Votre adresse est vérifiée et votre accès est créé.</p>}
+  {required && !u.totpEnabled && (
+    <p class="a-note warn" style="margin-top:.8rem"><strong>Étape obligatoire :</strong> votre rôle donne accès à des fonctions de direction. Activez la double vérification pour continuer.</p>
+  )}
+  {gh === 'relie' && <p class="a-note ok">Compte GitHub relié.</p>}
+  {gh === 'deja-utilise' && <p class="a-note err">Ce compte GitHub est déjà relié à une autre personne.</p>}
+
+  <div class="a-grid cols-2 a-section">
+    <section class="a-card" data-live-skip>
+      <h2>Double vérification {u.totpEnabled ? <span class="a-pill ok">active depuis le {fmt(user?.totpEnabledAt)}</span> : <span class="a-pill warn">inactive</span>}</h2>
+      <p class="a-muted">Après le mot de passe, un code à 6 chiffres affiché par une application d’authentification installée sur votre téléphone est demandé. Applications compatibles : <strong>Google Authenticator</strong> ou <strong>Microsoft Authenticator</strong> (gratuites), 1Password.</p>
+      <div class="a-form" style="margin-top:1rem" id="totp">
+        {strong ? (
+          <button class="a-btn primary" type="button" id="totp-start">{u.totpEnabled ? 'Changer de téléphone' : 'Activer la double vérification'}</button>
+        ) : (
+          <p class="a-note">Validez d’abord votre code actuel.</p>
+        )}
+        <div id="totp-setup" hidden>
+          <ol class="a-muted" style="padding-left:1.1rem;display:grid;gap:.4rem">
+            <li>Installez <strong>Google Authenticator</strong> (ou Microsoft Authenticator) depuis Play Store ou App Store.</li>
+            <li>Ouvrez <strong>cette application</strong> (pas l’appareil photo), touchez « + » puis « Scanner un code QR ».</li>
+            <li>Si le scan ne fonctionne pas : « + » → « Saisir une clé de configuration », nom « AULIA », puis recopiez la clé affichée sous le QR code (type « basé sur l’heure »).</li>
+            <li>Entrez ci-dessous le code à 6 chiffres que l’application affiche pour AULIA.</li>
+          </ol>
+          <div style="display:grid;justify-items:center;gap:.6rem;margin:1rem 0">
+            <div id="totp-qr" style="background:#fff;padding:8px;border-radius:12px;line-height:0"></div>
+            <code id="totp-secret" style="letter-spacing:.12em;font-size:.95rem"></code>
+            <a class="a-btn small" id="totp-link" href="#">Ouvrir dans l’application (sur ce téléphone)</a>
+          </div>
+          <form class="a-form" id="totp-confirm">
+            <label class="a-field"><span>Code à 6 chiffres</span><input class="a-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required /></label>
+            <button class="a-btn primary" type="submit">Confirmer et activer</button>
+          </form>
+        </div>
+        <div id="codes" hidden>
+          <p class="a-note gold"><strong>Vos codes de secours.</strong> Imprimez-les ou notez-les et gardez-les en lieu sûr : chacun permet une connexion si vous perdez votre téléphone. Ils ne seront plus affichés.</p>
+          <div class="a-codes" id="codes-list"></div>
+          <div class="a-actions"><button class="a-btn small" type="button" onclick="window.print()">Imprimer</button><a class="a-btn small primary" href="/admin">Continuer vers l’espace</a></div>
+        </div>
+        {u.totpEnabled && strong && (
+          <p class="a-faint">Codes de secours restants : <strong>{codesLeft}</strong>. <button class="a-btn small" type="button" id="regen">Générer de nouveaux codes</button></p>
+        )}
+      </div>
+    </section>
+
+    <section class="a-card">
+      <h2>Adresse de secours</h2>
+      <p class="a-muted">Si vous perdez l’accès à {u.email}, un code de récupération peut être envoyé à cette seconde adresse.</p>
+      {user?.recoveryEmail ? (
+        <div class="a-actions" style="margin-top:1rem">
+          <span class="a-pill ok">{user.recoveryEmail}</span>
+          {strong && <button class="a-btn small danger" type="button" id="rec-remove" data-confirm="Retirer ?">Retirer</button>}
+        </div>
+      ) : strong ? (
+        <div data-live-skip>
+          <form class="a-form" id="rec-1" style="margin-top:1rem">
+            <label class="a-field"><span>Seconde adresse e-mail</span><input name="email" type="email" required /></label>
+            <button class="a-btn" type="submit">Envoyer un code de vérification</button>
+          </form>
+          <form class="a-form" id="rec-2" style="margin-top:1rem" hidden>
+            <label class="a-field"><span>Code reçu sur cette adresse</span><input class="a-code" name="code" inputmode="numeric" maxlength="7" required /></label>
+            <button class="a-btn primary" type="submit">Valider l’adresse</button>
+          </form>
+        </div>
+      ) : null}
+    </section>
+
+    <section class="a-card">
+      <h2>GitHub {user?.githubLogin ? <span class="a-pill ok">@{user.githubLogin}</span> : null}</h2>
+      <p class="a-muted">Reliez votre compte GitHub pour vous connecter avec lui. La double vérification reste demandée.</p>
+      <div class="a-actions" style="margin-top:1rem">
+        {!env('GITHUB_CLIENT_ID') ? (
+          <span class="a-faint">Connexion GitHub non configurée sur ce site.</span>
+        ) : user?.githubLogin ? (
+          strong && <button class="a-btn small danger" type="button" id="gh-unlink" data-confirm="Délier ?">Délier GitHub</button>
+        ) : (
+          strong && <a class="a-btn" href="/api/auth/github/start?mode=link">Relier mon compte GitHub</a>
+        )}
+      </div>
+    </section>
+
+    <section class="a-card" data-live-skip>
+      <h2>Mot de passe</h2>
+      <form class="a-form" id="pwd">
+        <label class="a-field"><span>Mot de passe actuel</span><input name="current" type="password" autocomplete="current-password" required /></label>
+        <label class="a-field"><span>Nouveau mot de passe (10 caractères minimum)</span><input name="next" type="password" autocomplete="new-password" minlength="10" required /></label>
+        <button class="a-btn" type="submit">Changer le mot de passe</button>
+      </form>
+    </section>
+  </div>
+
+  <script>
+    import { post, toast } from '../../lib/client/admin-core.ts';
+    const $ = (s: string) => document.querySelector(s) as HTMLElement | null;
+    const showCodes = (codes: string[]) => {
+      ($('#codes-list') as HTMLElement).innerHTML = codes.map((c) => `<span>${c}</span>`).join('');
+      $('#totp-setup')!.hidden = true;
+      $('#codes')!.hidden = false;
+      $('#totp-start')?.setAttribute('hidden', '');
+    };
+    $('#totp-start')?.addEventListener('click', async () => {
+      try {
+        const r = await post('/api/auth/totp/setup', {});
+        $('#totp-qr')!.innerHTML = String(r.qr);
+        $('#totp-secret')!.textContent = String(r.secret);
+        ($('#totp-link') as HTMLAnchorElement).href = String(r.uri);
+        $('#totp-setup')!.hidden = false;
+      } catch (e) { toast((e as Error).message, 'err'); }
+    });
+    $('#totp-confirm')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = ((e.target as HTMLFormElement).elements.namedItem('code') as HTMLInputElement).value;
+      try {
+        const r = await post('/api/auth/totp/enable', { code });
+        toast('Double vérification activée.', 'ok');
+        showCodes(r.recoveryCodes as string[]);
+      } catch (err) { toast((err as Error).message, 'err'); }
+    });
+    $('#regen')?.addEventListener('click', async () => {
+      try { showCodes((await post('/api/auth/recovery-codes', {})).recoveryCodes as string[]); } catch (e) { toast((e as Error).message, 'err'); }
+    });
+    $('#pwd')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const f = e.target as HTMLFormElement;
+      try {
+        await post('/api/auth/password', { current: (f.elements.namedItem('current') as HTMLInputElement).value, next: (f.elements.namedItem('next') as HTMLInputElement).value });
+        f.reset();
+        toast('Mot de passe modifié. Vos autres sessions ont été fermées.', 'ok');
+      } catch (err) { toast((err as Error).message, 'err'); }
+    });
+    let recEmail = '';
+    $('#rec-1')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      recEmail = ((e.target as HTMLFormElement).elements.namedItem('email') as HTMLInputElement).value;
+      try { await post('/api/auth/recovery-email', { email: recEmail }); $('#rec-1')!.hidden = true; $('#rec-2')!.hidden = false; toast('Code envoyé.', 'ok'); } catch (err) { toast((err as Error).message, 'err'); }
+    });
+    $('#rec-2')?.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = ((e.target as HTMLFormElement).elements.namedItem('code') as HTMLInputElement).value;
+      try { await post('/api/auth/recovery-email', { email: recEmail, code }); location.reload(); } catch (err) { toast((err as Error).message, 'err'); }
+    });
+    const confirmThen = (sel: string, fn: () => Promise<unknown>) => {
+      const b = $(sel);
+      b?.addEventListener('click', async () => {
+        if (!b.classList.contains('confirming')) { b.classList.add('confirming'); b.textContent = b.dataset.confirm ?? 'Confirmer ?'; return; }
+        try { await fn(); location.reload(); } catch (err) { toast((err as Error).message, 'err'); }
+      });
+    };
+    confirmThen('#rec-remove', () => post('/api/auth/recovery-email', { remove: true }));
+    confirmThen('#gh-unlink', () => post('/api/auth/github/unlink', {}));
+  </script>
+</Admin>
