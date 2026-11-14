@@ -8,9 +8,12 @@ import { env } from './env.ts';
 
 const g = globalThis as unknown as { __auliaDb?: PrismaClient };
 
-export const db: PrismaClient | null = env('DATABASE_URL')
+/** Adresse de la base : DATABASE_URL, ou les noms créés par l'intégration Neon/Postgres de Vercel. */
+export const databaseUrl = env('DATABASE_URL') ?? env('POSTGRES_PRISMA_URL') ?? env('POSTGRES_URL');
+
+export const db: PrismaClient | null = databaseUrl
   ? // l'adresse est passée explicitement : en développement, Astro lit .env sans le copier dans process.env
-    (g.__auliaDb ??= new PrismaClient({ log: ['error'], datasourceUrl: env('DATABASE_URL') }))
+    (g.__auliaDb ??= new PrismaClient({ log: ['error'], datasourceUrl: databaseUrl }))
   : null;
 
 export function requireDb(): PrismaClient {
