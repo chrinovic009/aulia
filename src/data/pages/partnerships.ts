@@ -7,6 +7,11 @@ const page = {
     meta: 'Building with AULIA: healthcare facilities, industry, organisations, researchers, technology partners and investors.',
     hero: "Let's build <em>what matters.</em>",
     lead: 'Collaborations that turn knowledge, resources and technology into useful, lasting solutions.',
+    pEyebrow: 'Partners', pTitle: 'They build <em>with us.</em>', pHint: 'Click a logo to visit our partner.',
+    partners: [
+      { name: 'ConnectMe', href: 'https://connectme-pro.com', logo: 'https://connectme-pro.com/static/site/assets/img/logo.png', inset: [0.364, 0.3475, 0.4435, 0.26], ratio: 1.44 },
+      { name: 'Mwinue Asimame', href: 'https://mwinue-asimame.vercel.app', logo: 'https://mwinue-asimame.vercel.app/img/logo-white.png', inset: [0.212, 0.043, 0.152, 0.061], ratio: 3.52 },
+    ],
     kEyebrow: 'With whom', kTitle: 'Who we <em>build with.</em>',
     kinds: [
       { icon: 'hospital', title: 'Healthcare facilities', text: 'with AULIA Care', topic: 'care' },
@@ -37,6 +42,11 @@ const page = {
     meta: 'Construire avec AULIA : établissements de santé, industries, organisations, chercheurs, partenaires technologiques et investisseurs.',
     hero: 'Construisons <em>ce qui compte.</em>',
     lead: 'Des collaborations qui transforment connaissances, ressources et technologies en solutions utiles et durables.',
+    pEyebrow: 'Partenaires', pTitle: 'Ils construisent <em>avec nous.</em>', pHint: 'Cliquez sur un logo pour découvrir notre partenaire.',
+    partners: [
+      { name: 'ConnectMe', href: 'https://connectme-pro.com', logo: 'https://connectme-pro.com/static/site/assets/img/logo.png', inset: [0.364, 0.3475, 0.4435, 0.26], ratio: 1.44 },
+      { name: 'Mwinue Asimame', href: 'https://mwinue-asimame.vercel.app', logo: 'https://mwinue-asimame.vercel.app/img/logo-white.png', inset: [0.212, 0.043, 0.152, 0.061], ratio: 3.52 },
+    ],
     kEyebrow: 'Avec qui', kTitle: 'Avec qui <em>nous construisons.</em>',
     kinds: [
       { icon: 'hospital', title: 'Établissements de santé', text: 'avec AULIA Care', topic: 'care' },

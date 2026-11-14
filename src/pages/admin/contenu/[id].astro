@@ -5,6 +5,7 @@ import { db } from '../../../lib/server/db.ts';
 import { can, canPublish } from '../../../lib/server/authz.ts';
 import { VERSION_STATUS, ago, fmtDate } from '../../../lib/server/admin-view.ts';
 import { blockCatalog } from '../../../data/blocks.ts';
+import { merge } from '../../../data/site.ts';
 import { path as sitePath } from '../../../i18n.ts';
 
 const u = Astro.locals.user!;
@@ -21,7 +22,8 @@ const [live, mine, history, othersPending] = await Promise.all([
   db!.contentVersion.count({ where: { blockId: block.id, locale: lang, status: 'SUBMITTED', authorId: { not: u.id } } }),
 ]);
 const fallback = blockCatalog().find((b) => b.key === block.key)?.data[lang];
-const data = (mine?.data ?? live?.data ?? fallback ?? {}) as unknown;
+// les champs ajoutés au site après l'import initial apparaissent aussi dans l'éditeur
+const data = (fallback !== undefined ? merge(fallback, mine?.data ?? live?.data) : (mine?.data ?? live?.data ?? {})) as unknown;
 const canSubmit = can(u, 'content.submit', block.orgId);
 
 const page = block.pages.find((p) => p !== '*' && !p.includes('*')) ?? '/';

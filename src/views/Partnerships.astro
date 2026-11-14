@@ -7,6 +7,7 @@ import Tiles from '../components/Tiles.astro';
 import Timeline from '../components/Timeline.astro';
 import SectionHead from '../components/SectionHead.astro';
 import CtaBand from '../components/CtaBand.astro';
+import PartnerMarquee from '../components/PartnerMarquee.astro';
 import { contactPath, type Lang } from '../i18n.ts';
 
 interface Props { lang: Lang; }
@@ -18,6 +19,16 @@ const kinds = T.kinds.map((k) => ({ icon: k.icon, title: k.title, text: k.text, 
 
 <Layout lang={lang} route="partnerships" title={T.title} description={T.meta}>
   <PageHero eyebrow={T.title} title={T.hero} lead={T.lead} />
+
+  {T.partners?.length > 0 && (
+    <section class="section partners">
+      <div class="wrap">
+        <SectionHead eyebrow={T.pEyebrow} title={T.pTitle} center />
+      </div>
+      <PartnerMarquee partners={T.partners} label={T.pEyebrow} />
+      <p class="p-hint">{T.pHint}</p>
+    </section>
+  )}
 
   <section class="section">
     <div class="wrap">
@@ -42,3 +53,14 @@ const kinds = T.kinds.map((k) => ({ icon: k.icon, title: k.title, text: k.text, 
 
   <CtaBand eyebrow={T.ctaEyebrow} title={T.ctaTitle} href={contactPath(lang, 'partnership')} label={T.ctaLabel} />
 </Layout>
+
+<style>
+  .partners {
+    padding-bottom: 2rem;
+  }
+  .p-hint {
+    text-align: center;
+    color: var(--faint);
+    font-size: 0.85rem;
+  }
+</style>
