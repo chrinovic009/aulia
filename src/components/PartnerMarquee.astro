@@ -17,22 +17,24 @@ const list = (partners ?? []).filter((p) => p && p.name && p.href && p.logo);
 const reps = list.length ? Math.max(1, Math.ceil(8 / list.length)) : 0;
 const sequence = Array.from({ length: reps }, () => list).flat();
 const duration = Math.max(24, sequence.length * 4.5);
+// tous les logos ont la même largeur : la hauteur de la zone logo s'adapte au plus haut d'entre eux
+const ratioOf = (p: Partner) => (Number(p.ratio) > 0 ? Number(p.ratio) : 2);
+const minRatio = list.length ? Math.min(...list.map(ratioOf)) : 2;
 
 function frame(p: Partner) {
   const [t = 0, r = 0, b = 0, l = 0] = (p.inset ?? []).map(Number);
   const fw = 1 - l - r;
   const fh = 1 - t - b;
   if (!(fw > 0 && fh > 0) || (t === 0 && r === 0 && b === 0 && l === 0)) return null;
-  const ratio = Number(p.ratio) > 0 ? Number(p.ratio) : 2;
   return {
-    box: `aspect-ratio:${ratio};width:min(100%, calc(var(--pm-h) * ${ratio}))`,
+    box: `aspect-ratio:${ratioOf(p)}`,
     img: `width:${(100 / fw).toFixed(3)}%;height:${(100 / fh).toFixed(3)}%;left:${((-l / fw) * 100).toFixed(3)}%;top:${((-t / fh) * 100).toFixed(3)}%`,
   };
 }
 const safeHref = (h: string) => (/^https?:\/\//i.test(h) ? h : '#');
 ---
 {list.length > 0 && (
-  <div class="pm" style={`--pm-dur:${duration}s`} aria-label={label} role="region">
+  <div class="pm" style={`--pm-dur:${duration}s;--pm-ratio:${minRatio}`} aria-label={label} role="region">
     <ul class="pm-track">
       {[0, 1].map((copy) =>
         sequence.map((p, i) => {
@@ -104,6 +106,7 @@ const safeHref = (h: string) => (/^https?:\/\//i.test(h) ? h : '#');
   }
   .pm-item {
     flex: none;
+    display: flex;
     animation: pm-float 6s ease-in-out infinite;
   }
   .pm-item:nth-child(2n) {
@@ -120,9 +123,9 @@ const safeHref = (h: string) => (/^https?:\/\//i.test(h) ? h : '#');
   }
   .pm-card {
     position: relative;
-    --pm-h: 4.2rem;
+    --pm-w: 10.5rem;
     display: grid;
-    grid-template-rows: var(--pm-h) auto;
+    grid-template-rows: calc(var(--pm-w) / var(--pm-ratio, 2)) auto;
     justify-items: center;
     align-items: center;
     gap: 0.7rem;
@@ -166,25 +169,22 @@ const safeHref = (h: string) => (/^https?:\/\//i.test(h) ? h : '#');
   .pm-logo {
     position: relative;
     display: block;
-    height: var(--pm-h);
-    width: 100%;
+    width: var(--pm-w);
+    align-self: center;
   }
   .pm-logo img {
+    display: block;
     width: 100%;
-    height: 100%;
-    object-fit: contain;
+    height: auto;
     filter: saturate(0.92);
     transition: filter 0.4s ease;
   }
   .pm-logo.crop {
-    height: auto;
     overflow: hidden;
-    align-self: center;
   }
   .pm-logo.crop img {
     position: absolute;
     max-width: none;
-    object-fit: fill;
   }
   .pm-card:hover .pm-logo img {
     filter: saturate(1.1);
@@ -193,9 +193,11 @@ const safeHref = (h: string) => (/^https?:\/\//i.test(h) ? h : '#');
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    max-width: 100%;
     font-size: 0.78rem;
     font-weight: 600;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
     color: #6b5a2e;
     opacity: 0.75;
     transition: opacity 0.3s ease, color 0.3s ease;
@@ -206,7 +208,7 @@ const safeHref = (h: string) => (/^https?:\/\//i.test(h) ? h : '#');
   }
   @media (max-width: 640px) {
     .pm-card {
-      --pm-h: 3.4rem;
+      --pm-w: 8.5rem;
       width: 12rem;
     }
   }

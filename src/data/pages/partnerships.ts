@@ -11,7 +11,7 @@ const page = {
     partners: [
       { name: 'ConnectMe', href: 'https://connectme-pro.com', logo: 'https://connectme-pro.com/static/site/assets/img/logo.png', inset: [0.364, 0.3475, 0.4435, 0.26], ratio: 1.44 },
       { name: 'Mwinue Asimame', href: 'https://mwinue-asimame.vercel.app', logo: 'https://mwinue-asimame.vercel.app/img/logo-white.png', inset: [0.212, 0.043, 0.152, 0.061], ratio: 3.52 },
-      { name: 'G20 — Journée Volley Ball', href: 'https://whatsapp.com/channel/0029VbDz6wq3gvWWVZhlQr3X', logo: '/images/partners/g20.webp' },
+      { name: 'G20 — Journée Volley Ball', href: 'https://whatsapp.com/channel/0029VbDz6wq3gvWWVZhlQr3X', logo: '/images/partners/g20.webp', ratio: 2.39 },
     ],
     kEyebrow: 'With whom', kTitle: 'Who we <em>build with.</em>',
     kinds: [
@@ -47,7 +47,7 @@ const page = {
     partners: [
       { name: 'ConnectMe', href: 'https://connectme-pro.com', logo: 'https://connectme-pro.com/static/site/assets/img/logo.png', inset: [0.364, 0.3475, 0.4435, 0.26], ratio: 1.44 },
       { name: 'Mwinue Asimame', href: 'https://mwinue-asimame.vercel.app', logo: 'https://mwinue-asimame.vercel.app/img/logo-white.png', inset: [0.212, 0.043, 0.152, 0.061], ratio: 3.52 },
-      { name: 'G20 — Journée Volley Ball', href: 'https://whatsapp.com/channel/0029VbDz6wq3gvWWVZhlQr3X', logo: '/images/partners/g20.webp' },
+      { name: 'G20 — Journée Volley Ball', href: 'https://whatsapp.com/channel/0029VbDz6wq3gvWWVZhlQr3X', logo: '/images/partners/g20.webp', ratio: 2.39 },
     ],
     kEyebrow: 'Avec qui', kTitle: 'Avec qui <em>nous construisons.</em>',
     kinds: [
