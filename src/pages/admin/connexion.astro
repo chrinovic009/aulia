@@ -8,6 +8,7 @@ const errors: Record<string, string> = {
   'github-refus': 'GitHub a refusé la connexion.',
   'github-profil': 'Impossible de lire le profil GitHub.',
   'github-session': 'Connectez-vous d’abord pour relier GitHub.',
+  'github-mot-de-passe': 'GitHub est votre deuxième étape : connectez-vous d’abord avec votre adresse et votre mot de passe, puis confirmez avec GitHub.',
 };
 const err = errors[Astro.url.searchParams.get('erreur') ?? ''];
 const github = !!env('GITHUB_CLIENT_ID');

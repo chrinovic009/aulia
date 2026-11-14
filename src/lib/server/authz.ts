@@ -46,6 +46,12 @@ export const needsStrongAuth = (u: UserCtx) =>
 
 export const strongEnough = (u: UserCtx) => !needsStrongAuth(u) || u.aal >= 2;
 
+/** Deuxième étape disponible : application de codes (TOTP) ou compte GitHub relié. */
+export const hasSecondFactor = (u: UserCtx) => u.totpEnabled || !!u.githubLogin;
+
+/** Une deuxième étape existe mais n'a pas encore été validée dans cette session. */
+export const stepUpPending = (u: UserCtx) => hasSecondFactor(u) && u.aal < 2;
+
 /** Droit `perm` dans l'organisation `orgId`. Le fondateur a tous les droits partout. */
 export function can(u: UserCtx | null | undefined, perm: Perm, orgId?: string | null): boolean {
   if (!u || !strongEnough(u)) return false;

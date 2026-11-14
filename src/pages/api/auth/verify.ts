@@ -12,8 +12,8 @@ export const POST = handle(async (ctx) => {
   const key = `2fa:${u.id}`;
   if (await loginLocked(db, key)) throw new HttpError(429, 'Trop d’essais. Réessayez dans 15 minutes.');
   const user = await db.user.findUniqueOrThrow({ where: { id: u.id } });
-  if (!user.totpSecret) throw new HttpError(409, 'La double vérification n’est pas activée.');
   const body = await readJson(ctx);
+  if (!body.recoveryCode && !user.totpSecret) throw new HttpError(409, 'Aucune application de codes n’est activée : utilisez GitHub ou un code de secours.');
   let ok = false;
   let usedRecovery = false;
   if (body.recoveryCode) {
@@ -24,7 +24,7 @@ export const POST = handle(async (ctx) => {
       ok = usedRecovery = true;
     }
   } else {
-    ok = verifyTotp(decrypt(user.totpSecret, appSecret()), str(body.code, 12));
+    ok = verifyTotp(decrypt(user.totpSecret!, appSecret()), str(body.code, 12));
   }
   await recordLogin(db, key, ok);
   if (!ok) throw new HttpError(401, 'Code incorrect.');

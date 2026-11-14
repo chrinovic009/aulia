@@ -23,5 +23,5 @@ export const POST = handle(async (ctx) => {
   await audit(db, user.id, { action: 'security.password_reset', entity: 'user', entityId: user.id, summary: `Mot de passe réinitialisé par code envoyé à ${email === user.email ? 'l’adresse principale' : 'l’adresse de secours'}` });
   await createSession(db, ctx.cookies, user.id, 1, ctx.request);
   // la deuxième étape reste exigée : le mot de passe seul ne suffit pas
-  return json({ next: user.totpEnabledAt ? '/admin/verification' : '/admin' });
+  return json({ next: user.totpEnabledAt || user.githubId ? '/admin/verification' : '/admin' });
 });

@@ -12,7 +12,7 @@ if (!org) return Astro.redirect('/admin');
 const [members, invites, roles] = await Promise.all([
   db!.membership.findMany({
     where: { orgId: org.id, ...(Astro.url.searchParams.get('anciens') ? {} : { status: { not: 'ENDED' } }) },
-    include: { user: { select: { id: true, name: true, email: true, lastLoginAt: true, totpEnabledAt: true } }, role: true },
+    include: { user: { select: { id: true, name: true, email: true, lastLoginAt: true, totpEnabledAt: true, githubId: true } }, role: true },
     orderBy: [{ role: { rank: 'asc' } }, { createdAt: 'asc' }],
   }),
   can(u, 'team.manage', org.id) ? db!.invitation.findMany({ where: { orgId: org.id, status: 'PENDING', expiresAt: { gt: new Date() } }, include: { role: true }, orderBy: { createdAt: 'desc' } }) : Promise.resolve([]),
@@ -59,8 +59,8 @@ const founder = isFounder(u);
               </td>
               <td class="a-faint">
                 {m.user.lastLoginAt ? ago(m.user.lastLoginAt) : 'jamais'}
-                {!m.user.totpEnabledAt && m.role.rank <= 20 && <div><span class="a-pill warn">2e étape à activer</span></div>}
-                {founder && m.user.totpEnabledAt && m.userId !== u.id && (
+                {!m.user.totpEnabledAt && !m.user.githubId && m.role.rank <= 20 && <div><span class="a-pill warn">2e étape à activer</span></div>}
+                {founder && (m.user.totpEnabledAt || m.user.githubId) && m.userId !== u.id && (
                   <div><button class="a-btn small" type="button" data-action="reset-2fa" data-payload={JSON.stringify({ userId: m.userId })} data-confirm="Confirmer la réinitialisation" data-ok="Double vérification réinitialisée">Réinitialiser la 2e étape</button></div>
                 )}
               </td>

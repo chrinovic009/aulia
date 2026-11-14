@@ -37,7 +37,7 @@ const [people, orgs, roles] = await Promise.all([
               </div>
             </td>
             <td>
-              {p.totpEnabledAt ? <span class="a-pill ok">2e étape active</span> : <span class="a-pill warn">2e étape inactive</span>}
+              {p.totpEnabledAt || p.githubId ? <span class="a-pill ok">2e étape active</span> : <span class="a-pill warn">2e étape inactive</span>}
               {p.githubLogin && <span class="a-pill">@{p.githubLogin}</span>}
               {p.recoveryEmail && <span class="a-pill" title="Adresse de secours vérifiée">secours ✓</span>}
             </td>

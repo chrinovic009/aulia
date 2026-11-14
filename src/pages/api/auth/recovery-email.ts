@@ -2,12 +2,13 @@
 import { handle, json, readJson, str } from '../../../lib/server/http.ts';
 import { requireDb, HttpError } from '../../../lib/server/db.ts';
 import { issueOtp, normEmail, validEmail, verifyOtp } from '../../../lib/server/auth.ts';
+import { stepUpPending } from '../../../lib/server/authz.ts';
 import { audit } from '../../../lib/server/audit.ts';
 
 export const POST = handle(async (ctx) => {
   const db = requireDb();
   const u = ctx.locals.user;
-  if (!u || (u.totpEnabled && u.aal < 2)) throw new HttpError(403, 'Deuxième étape requise.');
+  if (!u || stepUpPending(u)) throw new HttpError(403, 'Deuxième étape requise.');
   const body = await readJson(ctx);
   if (body.remove) {
     await db.user.update({ where: { id: u.id }, data: { recoveryEmail: null } });

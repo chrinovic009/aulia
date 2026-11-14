@@ -72,3 +72,12 @@ export function handle(fn: Handler, opts: { origin?: boolean } = {}): Handler {
 }
 
 export const str = (v: unknown, max = 500) => String(v ?? '').trim().slice(0, max);
+
+/** Adresse publique du site (derrière Vercel, l'adresse interne de la requête peut différer). */
+export function publicOrigin(ctx: { url: URL; request: Request }): string {
+  const h = ctx.request.headers;
+  const host = (h.get('x-forwarded-host') ?? h.get('host') ?? '').split(',')[0].trim();
+  if (!host) return ctx.url.origin;
+  const proto = (h.get('x-forwarded-proto') ?? ctx.url.protocol.replace(':', '')).split(',')[0].trim();
+  return `${proto}://${host}`;
+}

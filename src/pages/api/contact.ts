@@ -1,5 +1,5 @@
 // Formulaire de contact du site : enregistré dans la base, transmis à la filiale concernée.
-import { handle, json, readJson, str } from '../../lib/server/http.ts';
+import { handle, json, readJson, str, publicOrigin } from '../../lib/server/http.ts';
 import { requireDb, HttpError } from '../../lib/server/db.ts';
 import { normEmail, validEmail, loginLocked, recordLogin } from '../../lib/server/auth.ts';
 import { orgForTopic, visitorHash } from '../../lib/server/visitors.ts';
@@ -33,7 +33,7 @@ export const POST = handle(async (ctx) => {
   });
 
   // alertes : boîte de contact du groupe + direction de la filiale concernée
-  const url = `${ctx.url.origin}/admin/messages?org=${orgId}`;
+  const url = `${publicOrigin(ctx)}/admin/messages?org=${orgId}`;
   const to = new Set<string>();
   const inbox = env('CONTACT_INBOX');
   if (inbox) to.add(inbox);

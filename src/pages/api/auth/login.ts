@@ -16,5 +16,5 @@ export const POST = handle(async (ctx) => {
   if (!user || !ok || user.disabledAt) throw new HttpError(401, 'Adresse ou mot de passe incorrect.');
   await acceptPendingInvitations(db, user.id, user.email);
   await createSession(db, ctx.cookies, user.id, 1, ctx.request);
-  return json({ next: user.totpEnabledAt ? '/admin/verification' : '/admin' });
+  return json({ next: user.totpEnabledAt || user.githubId ? '/admin/verification' : '/admin' });
 });

@@ -2,31 +2,64 @@
 import Admin from '../../layouts/Admin.astro';
 import { db } from '../../lib/server/db.ts';
 import { env } from '../../lib/server/env.ts';
-import { needsStrongAuth } from '../../lib/server/authz.ts';
+import { hasSecondFactor, needsStrongAuth, stepUpPending } from '../../lib/server/authz.ts';
 const u = Astro.locals.user!;
 const user = db ? await db.user.findUnique({ where: { id: u.id } }) : null;
 const codesLeft = db ? await db.recoveryCode.count({ where: { userId: u.id, usedAt: null } }) : 0;
 const required = needsStrongAuth(u);
 const welcome = Astro.url.searchParams.has('bienvenue');
 const gh = Astro.url.searchParams.get('github');
-const strong = !u.totpEnabled || u.aal >= 2;
+const strong = !stepUpPending(u);
+const any2fa = hasSecondFactor(u);
+const githubReady = !!env('GITHUB_CLIENT_ID');
 const fmt = (d?: Date | null) => (d ? d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }) : '');
 ---
 <Admin title="Sécurité du compte" subtitle={u.email} active="security">
   {welcome && <p class="a-note ok">Bienvenue, {u.name}. Votre adresse est vérifiée et votre accès est créé.</p>}
-  {required && !u.totpEnabled && (
-    <p class="a-note warn" style="margin-top:.8rem"><strong>Étape obligatoire :</strong> votre rôle donne accès à des fonctions de direction. Activez la double vérification pour continuer.</p>
+  {required && !any2fa && (
+    <p class="a-note warn" style="margin-top:.8rem"><strong>Étape obligatoire :</strong> votre rôle donne accès à des fonctions de direction. Choisissez votre deuxième étape : <strong>GitHub</strong> ou une <strong>application de codes</strong>.</p>
   )}
-  {gh === 'relie' && <p class="a-note ok">Compte GitHub relié.</p>}
+  {gh === 'relie' && <p class="a-note ok" style="margin-top:.8rem"><strong>GitHub est maintenant votre deuxième étape.</strong> Générez vos codes de secours ci-dessous et gardez-les en lieu sûr.</p>}
   {gh === 'deja-utilise' && <p class="a-note err">Ce compte GitHub est déjà relié à une autre personne.</p>}
+  {gh === 'sans-2fa' && <p class="a-note err">Votre compte GitHub n’a pas sa propre double vérification. Activez-la sur github.com (Settings → Password and authentication → Two-factor authentication), puis réessayez.</p>}
+
+  <div class="a-grid cols-2 a-section">
+    <section class="a-card">
+      <h2>Deuxième étape avec GitHub {user?.githubLogin ? <span class="a-pill ok">@{user.githubLogin}</span> : <span class="a-pill">non relié</span>}</h2>
+      <p class="a-muted">Après votre mot de passe, vous confirmez votre identité avec votre compte GitHub (protégé par sa propre double vérification).</p>
+      <div class="a-actions" style="margin-top:1rem">
+        {!githubReady ? (
+          <span class="a-faint">GitHub n’est pas encore configuré sur ce site (variables GITHUB_CLIENT_ID et GITHUB_CLIENT_SECRET).</span>
+        ) : user?.githubLogin ? (
+          strong && <button class="a-btn small danger" type="button" id="gh-unlink" data-confirm="Délier ?">Délier GitHub</button>
+        ) : (
+          strong && <a class="a-btn primary" href="/api/auth/github/start?mode=link">Utiliser GitHub comme deuxième étape</a>
+        )}
+      </div>
+    </section>
+    <section class="a-card">
+      <h2>Codes de secours</h2>
+      <p class="a-muted">Dix codes à usage unique, pour entrer si vous perdez l’accès à GitHub ou à votre téléphone.</p>
+      {any2fa && strong ? (
+        <p class="a-faint" style="margin-top:1rem">Codes restants : <strong>{codesLeft}</strong>. <button class={`a-btn small ${codesLeft === 0 ? 'primary' : ''}`} type="button" id="regen">{codesLeft === 0 ? 'Générer mes codes de secours' : 'Générer de nouveaux codes'}</button></p>
+      ) : (
+        <p class="a-faint" style="margin-top:1rem">Disponibles après l’activation d’une deuxième étape.</p>
+      )}
+      <div id="codes2" hidden>
+        <p class="a-note gold" style="margin-top:1rem"><strong>Vos codes de secours.</strong> Imprimez-les ou notez-les : ils ne seront plus affichés.</p>
+        <div class="a-codes" id="codes-list2"></div>
+        <div class="a-actions" style="margin-top:.6rem"><button class="a-btn small" type="button" onclick="window.print()">Imprimer</button><a class="a-btn small primary" href="/admin">Continuer vers l’espace</a></div>
+      </div>
+    </section>
+  </div>
 
   <div class="a-grid cols-2 a-section">
     <section class="a-card" data-live-skip>
-      <h2>Double vérification {u.totpEnabled ? <span class="a-pill ok">active depuis le {fmt(user?.totpEnabledAt)}</span> : <span class="a-pill warn">inactive</span>}</h2>
+      <h2>Ou : application de codes {u.totpEnabled ? <span class="a-pill ok">active depuis le {fmt(user?.totpEnabledAt)}</span> : <span class="a-pill">inactive</span>}</h2>
       <p class="a-muted">Après le mot de passe, un code à 6 chiffres affiché par une application d’authentification installée sur votre téléphone est demandé. Applications compatibles : <strong>Google Authenticator</strong> ou <strong>Microsoft Authenticator</strong> (gratuites), 1Password.</p>
       <div class="a-form" style="margin-top:1rem" id="totp">
         {strong ? (
-          <button class="a-btn primary" type="button" id="totp-start">{u.totpEnabled ? 'Changer de téléphone' : 'Activer la double vérification'}</button>
+          <button class={`a-btn ${any2fa ? '' : 'primary'}`} type="button" id="totp-start">{u.totpEnabled ? 'Changer de téléphone' : 'Activer l’application de codes'}</button>
         ) : (
           <p class="a-note">Validez d’abord votre code actuel.</p>
         )}
@@ -52,9 +85,6 @@ const fmt = (d?: Date | null) => (d ? d.toLocaleDateString('fr-FR', { day: 'nume
           <div class="a-codes" id="codes-list"></div>
           <div class="a-actions"><button class="a-btn small" type="button" onclick="window.print()">Imprimer</button><a class="a-btn small primary" href="/admin">Continuer vers l’espace</a></div>
         </div>
-        {u.totpEnabled && strong && (
-          <p class="a-faint">Codes de secours restants : <strong>{codesLeft}</strong>. <button class="a-btn small" type="button" id="regen">Générer de nouveaux codes</button></p>
-        )}
       </div>
     </section>
 
@@ -80,19 +110,6 @@ const fmt = (d?: Date | null) => (d ? d.toLocaleDateString('fr-FR', { day: 'nume
       ) : null}
     </section>
 
-    <section class="a-card">
-      <h2>GitHub {user?.githubLogin ? <span class="a-pill ok">@{user.githubLogin}</span> : null}</h2>
-      <p class="a-muted">Reliez votre compte GitHub pour vous connecter avec lui. La double vérification reste demandée.</p>
-      <div class="a-actions" style="margin-top:1rem">
-        {!env('GITHUB_CLIENT_ID') ? (
-          <span class="a-faint">Connexion GitHub non configurée sur ce site.</span>
-        ) : user?.githubLogin ? (
-          strong && <button class="a-btn small danger" type="button" id="gh-unlink" data-confirm="Délier ?">Délier GitHub</button>
-        ) : (
-          strong && <a class="a-btn" href="/api/auth/github/start?mode=link">Relier mon compte GitHub</a>
-        )}
-      </div>
-    </section>
 
     <section class="a-card" data-live-skip>
       <h2>Mot de passe</h2>
@@ -132,7 +149,12 @@ const fmt = (d?: Date | null) => (d ? d.toLocaleDateString('fr-FR', { day: 'nume
       } catch (err) { toast((err as Error).message, 'err'); }
     });
     $('#regen')?.addEventListener('click', async () => {
-      try { showCodes((await post('/api/auth/recovery-codes', {})).recoveryCodes as string[]); } catch (e) { toast((e as Error).message, 'err'); }
+      try {
+        const codes = (await post('/api/auth/recovery-codes', {})).recoveryCodes as string[];
+        ($('#codes-list2') as HTMLElement).innerHTML = codes.map((c) => `<span>${c}</span>`).join('');
+        $('#codes2')!.hidden = false;
+        $('#regen')?.setAttribute('hidden', '');
+      } catch (e) { toast((e as Error).message, 'err'); }
     });
     $('#pwd')?.addEventListener('submit', async (e) => {
       e.preventDefault();

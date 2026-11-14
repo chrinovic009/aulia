@@ -1,23 +1,45 @@
 ---
 import AdminAuth from '../../layouts/AdminAuth.astro';
+import { db } from '../../lib/server/db.ts';
+import { env } from '../../lib/server/env.ts';
+import { hasSecondFactor } from '../../lib/server/authz.ts';
 const u = Astro.locals.user;
 if (!u) return Astro.redirect('/admin/connexion');
-if (!u.totpEnabled) return Astro.redirect('/admin/securite?obligatoire=1');
+if (!hasSecondFactor(u)) return Astro.redirect('/admin/securite?obligatoire=1');
 if (u.aal >= 2) return Astro.redirect('/admin');
+const github = !!u.githubLogin && !!env('GITHUB_CLIENT_ID');
+const codesLeft = db ? await db.recoveryCode.count({ where: { userId: u.id, usedAt: null } }) : 0;
+const err = Astro.url.searchParams.get('erreur') === 'github-autre-compte'
+  ? `Ce n’est pas le compte GitHub relié (@${u.githubLogin}). Déconnectez-vous de GitHub puis réessayez avec le bon compte.`
+  : null;
 ---
-<AdminAuth title="Deuxième étape" lead={`Saisissez le code à 6 chiffres affiché par votre application d’authentification (${u.email}).`}>
-  <form class="a-form" data-auth="/api/auth/verify" id="totp">
-    <label class="a-field"><span>Code de l’application</span><input class="a-code" name="code" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" required autofocus /></label>
-    <button class="a-btn primary" type="submit">Valider</button>
-  </form>
-  <details>
-    <summary class="a-muted" style="cursor:pointer">Téléphone perdu ? Utiliser un code de secours</summary>
-    <form class="a-form" data-auth="/api/auth/verify" style="margin-top:.8rem">
-      <label class="a-field"><span>Code de secours (ex. ABCD-EFGH)</span><input name="recoveryCode" autocomplete="off" required /></label>
-      <button class="a-btn" type="submit">Utiliser ce code</button>
-      <p class="a-faint">Chaque code ne sert qu’une fois. Sans code de secours, demandez au fondateur de réinitialiser votre double vérification.</p>
-    </form>
-  </details>
+<AdminAuth title="Deuxième étape" lead={`Confirmez votre identité pour accéder à l’espace (${u.email}).`}>
+  {err && <p class="a-note err">{err}</p>}
+  {github && (
+    <a class="a-btn primary" href="/api/auth/github/start?mode=stepup">
+      <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor" aria-hidden="true"><path d="M12 .5a11.5 11.5 0 0 0-3.6 22.4c.6.1.8-.3.8-.6v-2c-3.2.7-3.9-1.5-3.9-1.5-.5-1.3-1.3-1.7-1.3-1.7-1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.7-1.6-2.6-.3-5.3-1.3-5.3-5.7 0-1.3.5-2.3 1.2-3.1-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.2 1.2a11 11 0 0 1 5.8 0C17.3 4.7 18.3 5 18.3 5c.6 1.6.2 2.8.1 3.1.8.8 1.2 1.8 1.2 3.1 0 4.4-2.7 5.4-5.3 5.7.4.4.8 1.1.8 2.2v3.2c0 .3.2.7.8.6A11.5 11.5 0 0 0 12 .5z"/></svg>
+      Confirmer avec GitHub (@{u.githubLogin})
+    </a>
+  )}
+  {u.totpEnabled && (
+    <>
+      {github && <div class="a-or">ou</div>}
+      <form class="a-form" data-auth="/api/auth/verify">
+        <label class="a-field"><span>Code de l’application d’authentification</span><input class="a-code" name="code" inputmode="numeric" autocomplete="one-time-code" maxlength="7" required autofocus={!github} /></label>
+        <button class={`a-btn ${github ? '' : 'primary'}`} type="submit">Valider</button>
+      </form>
+    </>
+  )}
+  {codesLeft > 0 && (
+    <details>
+      <summary class="a-muted" style="cursor:pointer">Accès perdu ? Utiliser un code de secours</summary>
+      <form class="a-form" data-auth="/api/auth/verify" style="margin-top:.8rem">
+        <label class="a-field"><span>Code de secours (ex. ABCD-EFGH)</span><input name="recoveryCode" autocomplete="off" required /></label>
+        <button class="a-btn" type="submit">Utiliser ce code</button>
+        <p class="a-faint">Chaque code ne sert qu’une fois. Sans code de secours, le fondateur peut réinitialiser votre deuxième étape.</p>
+      </form>
+    </details>
+  )}
   <div class="links"><button class="a-btn small" type="button" id="out">Changer de compte</button></div>
   <script>
     import { post } from '../../lib/client/admin-core.ts';

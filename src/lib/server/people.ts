@@ -172,7 +172,7 @@ export async function resetTwoFactor(db: PrismaClient, u: UserCtx, userId: strin
   const target = await db.user.findUnique({ where: { id: userId } });
   if (!target) throw new HttpError(404, 'Personne introuvable.');
   await db.$transaction([
-    db.user.update({ where: { id: userId }, data: { totpSecret: null, totpPending: null, totpEnabledAt: null } }),
+    db.user.update({ where: { id: userId }, data: { totpSecret: null, totpPending: null, totpEnabledAt: null, githubId: null, githubLogin: null } }),
     db.recoveryCode.deleteMany({ where: { userId } }),
     db.session.deleteMany({ where: { userId } }),
   ]);

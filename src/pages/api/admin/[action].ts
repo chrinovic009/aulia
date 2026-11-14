@@ -1,7 +1,7 @@
 // Actions de l'espace interne. Chaque action vérifie les droits (authz.ts) ; la base
 // applique en plus ses propres verrous.
 import type { MemberStatus, MessageStatus, OrgStatus } from '@prisma/client';
-import { handle, json, readJson, str } from '../../../lib/server/http.ts';
+import { handle, json, readJson, str, publicOrigin } from '../../../lib/server/http.ts';
 import { requireDb, HttpError } from '../../../lib/server/db.ts';
 import { can, inScope, strongEnough } from '../../../lib/server/authz.ts';
 import { createOrg, inviteMember, resetTwoFactor, revokeInvitation, updateMember, updateOrg } from '../../../lib/server/people.ts';
@@ -19,7 +19,7 @@ export const POST = handle(async (ctx) => {
   if (!u) throw new HttpError(401, 'Session expirée : reconnectez-vous.');
   if (!strongEnough(u)) throw new HttpError(403, 'Deuxième étape requise.');
   const b = await readJson(ctx);
-  const base = ctx.url.origin;
+  const base = publicOrigin(ctx);
 
   switch (ctx.params.action) {
     // ── filiales ──

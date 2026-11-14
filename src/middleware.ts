@@ -8,7 +8,7 @@ import { defineMiddleware } from 'astro:middleware';
 import { db } from './lib/server/db.ts';
 import { readSession } from './lib/server/auth.ts';
 import { loadLive } from './lib/server/content.ts';
-import { needsStrongAuth } from './lib/server/authz.ts';
+import { hasSecondFactor, needsStrongAuth, stepUpPending } from './lib/server/authz.ts';
 
 /** Pages de l'espace interne accessibles sans être connecté. */
 const PUBLIC_ADMIN = ['/admin/connexion', '/admin/rejoindre', '/admin/recuperation'];
@@ -37,8 +37,8 @@ export const onRequest = defineMiddleware(async (ctx, next) => {
       if (!u) return ctx.redirect(`/admin/connexion?suite=${encodeURIComponent(pathname + ctx.url.search)}`);
       const stepUp = STEP_UP.some((p) => pathname.startsWith(p));
       if (!stepUp) {
-        if (u.totpEnabled && u.aal < 2) return ctx.redirect('/admin/verification');
-        if (!u.totpEnabled && needsStrongAuth(u)) return ctx.redirect('/admin/securite?obligatoire=1');
+        if (stepUpPending(u)) return ctx.redirect('/admin/verification');
+        if (!hasSecondFactor(u) && needsStrongAuth(u)) return ctx.redirect('/admin/securite?obligatoire=1');
       }
       if (u.memberships.length === 0 && pathname !== '/admin/securite') {
         // compte sans appartenance active (suspendu ou départ) : aucun accès aux données
