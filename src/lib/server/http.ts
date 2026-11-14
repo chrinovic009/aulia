@@ -1,7 +1,7 @@
 /** Outils communs aux points d'accès /api. */
 import type { APIContext } from 'astro';
 import { HttpError } from './db.ts';
-import { isProd } from './env.ts';
+import { env, isProd } from './env.ts';
 
 export const json = (data: unknown, status = 200, headers: Record<string, string> = {}) =>
   new Response(JSON.stringify(data, (_k, v) => (typeof v === 'bigint' ? Number(v) : v)), {
@@ -18,7 +18,20 @@ export function assertSameOrigin(ctx: APIContext) {
     if (site && site !== 'same-origin' && site !== 'none') throw new HttpError(403, 'Requête refusée.');
     return;
   }
-  if (new URL(origin).host !== ctx.url.host) throw new HttpError(403, 'Requête refusée (origine).');
+  let host = '';
+  try {
+    host = new URL(origin).host;
+  } catch {}
+  // derrière Vercel, l'adresse interne de la requête peut différer du domaine public :
+  // on accepte le domaine réellement demandé (en-têtes du proxy) et les domaines officiels
+  const h = ctx.request.headers;
+  const allowed = new Set(
+    [ctx.url.host, h.get('host'), h.get('x-forwarded-host'), 'www.aulia-holding.com', 'aulia-holding.com', env('VERCEL_URL'), env('VERCEL_BRANCH_URL')]
+      .flatMap((v) => (v ?? '').split(','))
+      .map((v) => v.trim())
+      .filter(Boolean),
+  );
+  if (!allowed.has(host)) throw new HttpError(403, 'Requête refusée (origine).');
 }
 
 export async function readJson<T = Record<string, unknown>>(ctx: APIContext, max = 300_000): Promise<T> {
