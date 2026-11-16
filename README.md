@@ -129,11 +129,22 @@ tests/                          ← tests automatiques
 Anglais par défaut à la racine, français sous `/fr`. Choix mémorisé dans le navigateur (`aulia-lang`),
 balises `hreflang` et `sitemap.xml` (`public/`). L'espace interne est en français.
 
-## Introduction ANIMA (chargement)
+## Thèmes clair et sombre
 
-- Moteur : `public/scripts/anima-intro.js` — WebGL procédural (shaders, particules GPU), sans dépendance.
-- Amorce et transition vers le site : `src/components/Preloader.astro` ; réglages : objet `CONFIG`.
-- Passer (bouton, Échap), « réduire les animations » respecté, repli sans WebGL, site jamais bloqué (25 s).
+- Par défaut, le site et l'espace interne suivent le **thème de l'appareil** (et ses changements en direct).
+- Le visiteur peut choisir **clair** ou **sombre** avec le bouton de thème (en-tête du site, bas du menu de
+  l'espace interne, coin des pages de connexion) : Appareil → Clair → Sombre. Le choix est mémorisé dans son navigateur.
+- Mécanisme : `src/components/ThemeScript.astro` (dans le `<head>`, avant l'affichage) pose `data-theme` sur `<html>` ;
+  les couleurs viennent de variables CSS (`src/styles/global.css`, `src/styles/admin.css`), redéfinies pour le clair.
+- Logos : versions pour fond clair `public/images/*-light.png`, affichées automatiquement (`.theme-light-only`).
+
+## Écran d'ouverture — « l'éveil de l'emblème »
+
+- `src/components/Preloader.astro` : seul l'emblème AULIA est animé, dans l'esprit d'ANIMA. Un point de lumière naît
+  au cœur du cercle, une comète d'or trace le cercle, une constellation dessine le A, le cœur s'élève et devient
+  le point d'or, la vague se déploie, une onde royale part du point d'or ; l'emblème rejoint ensuite l'accueil.
+- SVG (le logo) + canvas 2D (la lumière), sans bibliothèque ; environ 4 s, une fois par session.
+- Bouton et touche Échap pour passer, « réduire les animations » respecté, jamais plus de 8 s.
 
 ## Principes (cahier de vision)
 

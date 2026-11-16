@@ -3,6 +3,8 @@
  * Mise en page de l'espace interne : navigation selon les droits, indicateur temps réel.
  */
 import '../styles/admin.css';
+import ThemeScript from '../components/ThemeScript.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 import { db } from '../lib/server/db.ts';
 import { can, canPublish, isFounder, orgsWith, type UserCtx } from '../lib/server/authz.ts';
 
@@ -68,6 +70,8 @@ links.push({ key: 'roles', href: '/admin/roles', label: 'Catalogue des rôles' }
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <title>{title} — Espace AULIA</title>
+    <meta name="theme-color" content="#11100d" />
+    <ThemeScript />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -77,7 +81,7 @@ links.push({ key: 'roles', href: '/admin/roles', label: 'Catalogue des rôles' }
     <div class="a-shell">
       <nav class="a-nav" aria-label="Espace interne">
         <a class="a-brand" href="/admin">
-          <img src="/images/aulia-mark.png" alt="" width="30" height="30" />
+          <img class="theme-dark-only" src="/images/aulia-mark.png" alt="" width="30" height="30" /><img class="theme-light-only" src="/images/aulia-mark-light.png" alt="" width="30" height="30" />
           <span><b>AULIA</b><small>Espace interne</small></span>
         </a>
         <div class="a-links" id="a-links">
@@ -116,6 +120,7 @@ links.push({ key: 'roles', href: '/admin/roles', label: 'Catalogue des rôles' }
           </div>
           <div class="a-actions">
             <slot name="actions" />
+            <ThemeToggle class="a-theme-top" labels={{ label: 'Thème : appareil, clair ou sombre', auto: 'Thème de l’appareil', light: 'Thème clair', dark: 'Thème sombre' }} />
             <span class="a-live" data-live title="Les écrans se mettent à jour dès qu'une donnée change"><i></i>En direct</span>
           </div>
         </div>

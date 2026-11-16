@@ -77,13 +77,14 @@ const f = (n: number) => n.toFixed(1);
     <!-- Emblème : coordonnées d'origine 186 × 185, mises à l'échelle -->
     <g class="mark" transform="translate(151 151) scale(1.6)">
       <path class="ring" d="M110.9 176.1 A86 86 0 1 1 165.1 138.8" fill="none" stroke="url(#ring)" stroke-width="2.6" stroke-linecap="round" pathLength="1" />
-      <path class="letter" d="M88 57 L101 57 L146 139 L135 137 L96 76 L61 141 L44 141 Z" fill="#f3f1eb" />
+      <path class="letter" d="M88 57 L101 57 L146 139 L135 137 L96 76 L61 141 L44 141 Z" style="fill: var(--emblem-letter)" />
       <circle class="dot" cx="98" cy="40" r="9.5" fill="url(#dotfill)" />
       <path class="wave" d="M76 130 C88 120 103 119 117 131 C131 144 146 158 167 165 C148 168 131 162 119 151 C106 139 93 131 76 130 Z" fill="url(#goldfill)" />
       <circle class="spark" r="2.2" cx="0" cy="0" />
     </g>
 
-    <image class="wordmark" href="/images/aulia-wordmark.png" x="210" y="616" width="180" height="42" preserveAspectRatio="xMidYMid meet" />
+    <image class="wordmark theme-dark-only" href="/images/aulia-wordmark.png" x="210" y="616" width="180" height="42" preserveAspectRatio="xMidYMid meet" />
+    <image class="wordmark theme-light-only" href="/images/aulia-wordmark-light.png" x="210" y="616" width="180" height="42" preserveAspectRatio="xMidYMid meet" />
   </svg>
 
   <button type="button" class="skip" data-skip>{t.skipAnimation}</button>

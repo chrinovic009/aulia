@@ -39,7 +39,7 @@ const doctrineTiles = doctrine.map((d, i) => ({ icon: doctrineIcons[i], title: d
           </li>
         ))}
       </ol>
-      <p class="equation reveal" aria-hidden="true"><span>AU</span>+<span>LI</span>+<span>A</span>=<img src="/images/aulia-mark.png" alt="" width="186" height="185" /></p>
+      <p class="equation reveal" aria-hidden="true"><span>AU</span>+<span>LI</span>+<span>A</span>=<img class="theme-dark-only" src="/images/aulia-mark.png" alt="" width="186" height="185" /><img class="theme-light-only" src="/images/aulia-mark-light.png" alt="" width="186" height="185" /></p>
     </div>
   </section>
 
@@ -95,7 +95,7 @@ const doctrineTiles = doctrine.map((d, i) => ({ icon: doctrineIcons[i], title: d
   <!-- Ambition -->
   <section class="section quote-sec">
     <div class="wrap reveal">
-      <img src="/images/aulia-mark.png" alt="" width="186" height="185" class="q-mark" />
+      <img src="/images/aulia-mark.png" alt="" width="186" height="185" class="q-mark theme-dark-only" /><img src="/images/aulia-mark-light.png" alt="" width="186" height="185" class="q-mark theme-light-only" />
       <blockquote set:html={T.quote} />
     </div>
   </section>
@@ -193,7 +193,7 @@ const doctrineTiles = doctrine.map((d, i) => ({ icon: doctrineIcons[i], title: d
     color: var(--gold-bright);
   }
   .pmv p {
-    color: #d1d5dc;
+    color: var(--text-soft);
     font-size: 0.98rem;
   }
   .gov-note {

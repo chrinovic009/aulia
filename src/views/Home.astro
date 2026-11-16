@@ -167,7 +167,7 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
     flex-wrap: wrap;
     justify-content: center;
     gap: 1rem 3rem;
-    border-block: 1px solid #1e2939;
+    border-block: 1px solid var(--card);
     width: 100%;
     max-width: 56rem;
   }
@@ -176,7 +176,7 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
     align-items: center;
     gap: 0.75rem;
     font-weight: 600;
-    color: #e5e7eb;
+    color: var(--text-soft);
   }
   .p-ico {
     width: 2.25rem;
@@ -218,7 +218,7 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
     overflow: hidden;
     background:
       radial-gradient(circle at 50% 130%, rgba(150, 114, 29, 0.55), transparent 62%),
-      linear-gradient(180deg, #243246, #1e2939);
+      linear-gradient(180deg, var(--card-hover), var(--card));
   }
   .uni-ico {
     position: relative;
@@ -229,7 +229,7 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
     place-items: center;
     border-radius: 50%;
     color: var(--gold-bright);
-    background: rgba(17, 16, 13, 0.55);
+    background: rgba(var(--bg-rgb), 0.55);
     border: 1px solid rgba(255, 210, 48, 0.3);
     transition: transform 0.5s var(--ease);
   }

@@ -1,6 +1,8 @@
 ---
 /** Pages d'accès à l'espace interne (connexion, invitation, récupération, deuxième étape). */
 import '../styles/admin.css';
+import ThemeScript from '../components/ThemeScript.astro';
+import ThemeToggle from '../components/ThemeToggle.astro';
 interface Props { title: string; lead?: string; }
 const { title, lead } = Astro.props;
 const dbReady = Astro.locals.dbReady;
@@ -12,16 +14,19 @@ const dbReady = Astro.locals.dbReady;
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <meta name="robots" content="noindex, nofollow" />
     <title>{title} — Espace AULIA</title>
+    <meta name="theme-color" content="#11100d" />
+    <ThemeScript />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Urbanist:wght@400;500;600;700;800&display=swap" />
   </head>
   <body>
+    <ThemeToggle class="a-auth-theme" labels={{ label: 'Thème : appareil, clair ou sombre', auto: 'Appareil', light: 'Clair', dark: 'Sombre' }} />
     <div class="a-auth">
       <section class="a-auth-card">
         <header>
-          <a href="/"><img src="/images/aulia-mark.png" alt="AULIA" width="54" height="54" /></a>
+          <a href="/"><img class="theme-dark-only" src="/images/aulia-mark.png" alt="AULIA" width="54" height="54" /><img class="theme-light-only" src="/images/aulia-mark-light.png" alt="AULIA" width="54" height="54" /></a>
           <h1>{title}</h1>
           {lead && <p class="a-muted">{lead}</p>}
         </header>

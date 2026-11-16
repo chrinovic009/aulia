@@ -1,0 +1,65 @@
+---
+/**
+ * Thème clair / sombre — à placer dans le <head> de chaque mise en page (avant l'affichage).
+ * Par défaut : le thème de l'appareil (et il suit ses changements). Le visiteur peut choisir
+ * « clair » ou « sombre » ; ce choix est mémorisé dans son navigateur (clé aulia-theme).
+ * Résultat : <html data-theme="light|dark" data-theme-pref="auto|light|dark">.
+ */
+---
+<meta name="color-scheme" content="dark light" />
+<script is:inline>
+  (function () {
+    var d = document.documentElement;
+    var mq = window.matchMedia ? window.matchMedia('(prefers-color-scheme: light)') : null;
+    var pref = null;
+    try { pref = localStorage.getItem('aulia-theme'); } catch (e) {}
+    if (pref !== 'light' && pref !== 'dark') pref = 'auto';
+    function resolved() { return pref === 'auto' ? (mq && mq.matches ? 'light' : 'dark') : pref; }
+    function apply() {
+      var t = resolved();
+      d.setAttribute('data-theme', t);
+      d.setAttribute('data-theme-pref', pref);
+      var m = document.querySelector('meta[name="theme-color"]');
+      if (m) m.setAttribute('content', t === 'light' ? '#faf7f0' : '#11100d');
+    }
+    apply();
+    if (mq) {
+      var onChange = function () { if (pref === 'auto') { apply(); notify(); } };
+      if (mq.addEventListener) mq.addEventListener('change', onChange); else if (mq.addListener) mq.addListener(onChange);
+    }
+    function notify() {
+      window.dispatchEvent(new CustomEvent('aulia:theme', { detail: { pref: pref, theme: d.getAttribute('data-theme') } }));
+    }
+    window.auliaTheme = {
+      get: function () { return pref; },
+      set: function (v) {
+        pref = v === 'light' || v === 'dark' ? v : 'auto';
+        try { if (pref === 'auto') localStorage.removeItem('aulia-theme'); else localStorage.setItem('aulia-theme', pref); } catch (e) {}
+        // transition douce des couleurs, uniquement au moment du changement
+        d.classList.add('theme-switching');
+        apply();
+        notify();
+        setTimeout(function () { d.classList.remove('theme-switching'); }, 450);
+      },
+    };
+    document.addEventListener('click', function (e) {
+      var b = e.target && e.target.closest ? e.target.closest('[data-theme-toggle]') : null;
+      if (!b) return;
+      var next = { auto: 'light', light: 'dark', dark: 'auto' }[pref];
+      window.auliaTheme.set(next);
+    });
+  })();
+</script>
+<style is:global>
+  html.theme-switching,
+  html.theme-switching *,
+  html.theme-switching *::before,
+  html.theme-switching *::after {
+    transition:
+      background-color 0.4s ease,
+      color 0.4s ease,
+      border-color 0.4s ease,
+      fill 0.4s ease,
+      stroke 0.4s ease !important;
+  }
+</style>

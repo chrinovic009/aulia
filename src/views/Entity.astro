@@ -161,7 +161,7 @@ const arch = e.architecture.map((a, i) => ({ icon: archIcons[i] ?? 'spark', titl
   .tagline {
     margin-top: 1rem;
     font-size: clamp(1.15rem, 1.8vw, 1.4rem);
-    color: #d1d5dc;
+    color: var(--text-soft);
     max-width: 32rem;
   }
   .meta {
@@ -190,7 +190,7 @@ const arch = e.architecture.map((a, i) => ({ icon: archIcons[i] ?? 'spark', titl
   .r2 {
     inset: 14%;
     border-style: solid;
-    border-color: rgba(255, 255, 255, 0.08);
+    border-color: rgba(var(--ink-rgb), 0.08);
     animation-direction: reverse;
   }
   .big-ico {
@@ -200,7 +200,7 @@ const arch = e.architecture.map((a, i) => ({ icon: archIcons[i] ?? 'spark', titl
     place-items: center;
     border-radius: 50%;
     color: var(--gold-bright);
-    background: radial-gradient(circle at 50% 30%, rgba(150, 114, 29, 0.5), rgba(30, 41, 57, 0.9) 70%);
+    background: radial-gradient(circle at 50% 30%, rgba(150, 114, 29, 0.5), rgba(var(--card-rgb), 0.9) 70%);
     border: 1px solid rgba(255, 210, 48, 0.35);
     box-shadow: 0 0 80px rgba(150, 114, 29, 0.35);
   }

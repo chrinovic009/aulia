@@ -1,22 +1,32 @@
 /* AULIA — système de design global */
 
 :root {
-  /* Palette du template AULIA (fond #11100d, primary #96721d, accents amber-300, cartes gray-800) */
+  /* Thème sombre (par défaut sans préférence) — palette du template AULIA */
   --black: #11100d;
   --graphite: #17150f;
   --surface: #1e2939;
   --card: #1e2939;
   --card-hover: #243246;
+  --card-deep: #17202d;
+  --card-rgb: 30, 41, 57;
   --primary: #96721d;
   --secondary: #7d5e16;
   --gold: #c6a45c;
   --gold-bright: #ffd230;
+  --gold-text: #fcd34d;
   --gold-dim: rgba(198, 164, 92, 0.35);
+  --gold-deep-bg: #2a2412;
   --ivory: #ffffff;
+  --text: #ffffff;
+  --text-soft: #d1d5dc;
+  --text-warm: #c9c8c3;
   --muted: #99a1af;
   --faint: #6a7282;
   --line: rgba(255, 255, 255, 0.08);
   --line-strong: #364153;
+  --ink-rgb: 255, 255, 255;
+  --bg-rgb: 17, 16, 13;
+  --emblem-letter: #f3f1eb;
 
   --font-display: 'Urbanist', 'Inter', 'Segoe UI', system-ui, sans-serif;
   --font-sans: 'Urbanist', 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -27,6 +37,46 @@
   --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 
   color-scheme: dark;
+}
+
+/* Thème clair : ivoire, encre et or profond. Appliqué par l'attribut data-theme (préférence du
+   visiteur, ou thème de l'appareil par défaut — voir src/components/ThemeScript.astro). */
+:root[data-theme='light'] {
+  --black: #faf7f0;
+  --graphite: #f2ede2;
+  --surface: #ffffff;
+  --card: #ffffff;
+  --card-hover: #f8f2e6;
+  --card-deep: #f4efe4;
+  --card-rgb: 255, 255, 255;
+  --primary: #96721d;
+  --secondary: #7d5e16;
+  --gold: #a8842f;
+  --gold-bright: #9a6f0f;
+  --gold-text: #8a6514;
+  --gold-dim: rgba(150, 114, 29, 0.3);
+  --gold-deep-bg: #f6ecd2;
+  --ivory: #17150f;
+  --text: #17150f;
+  --text-soft: #3b3f47;
+  --text-warm: #4a4538;
+  --muted: #5f6673;
+  --faint: #8a8f99;
+  --line: rgba(17, 16, 13, 0.1);
+  --line-strong: #ddd5c4;
+  --ink-rgb: 17, 16, 13;
+  --bg-rgb: 250, 247, 240;
+  --emblem-letter: #17150f;
+
+  color-scheme: light;
+}
+
+/* logos : version claire ou sombre selon le thème */
+:root:not([data-theme='light']) .theme-light-only {
+  display: none !important;
+}
+:root[data-theme='light'] .theme-dark-only {
+  display: none !important;
 }
 
 *,
@@ -135,7 +185,7 @@ h4 {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #fcd34d;
+  color: var(--gold-text);
 }
 .eyebrow::before {
   content: '';
@@ -173,7 +223,7 @@ h4 {
 .lead {
   font-size: clamp(1.05rem, 1.4vw, 1.2rem);
   line-height: 1.75;
-  color: #d1d5dc;
+  color: var(--text-soft);
   max-width: 40rem;
 }
 
@@ -182,7 +232,7 @@ h4 {
 }
 
 .prose {
-  color: #c9c8c3;
+  color: var(--text-warm);
   max-width: 42rem;
 }
 .prose p + p {
@@ -203,7 +253,7 @@ h4 {
   font-family: var(--font-sans);
   font-size: 1rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--text);
   background: none;
   border: 0;
   border-radius: 999px;
@@ -233,12 +283,15 @@ h4 {
 .btn:hover svg {
   transform: translateX(4px);
 }
+.btn-primary {
+  color: #fff;
+}
 .btn-primary::before {
   background: var(--primary);
 }
 .btn-ghost::before {
-  background: #1e2939;
-  border-color: #364153;
+  background: var(--card);
+  border-color: var(--line-strong);
 }
 .btn[aria-disabled='true'] {
   cursor: default;
@@ -263,7 +316,7 @@ h4 {
   transition: transform 0.3s var(--ease);
 }
 .link-arrow:hover {
-  color: #fff;
+  color: var(--text);
 }
 .link-arrow:hover svg {
   transform: translateX(4px);
@@ -291,11 +344,11 @@ h4 {
   gap: 0.75rem;
   align-items: flex-start;
   padding: 1rem 1.25rem;
-  border: 1px solid #364153;
+  border: 1px solid var(--line-strong);
   border-radius: 1.25rem;
   background: var(--card);
   font-size: 0.875rem;
-  color: #d1d5dc;
+  color: var(--text-soft);
   max-width: 46rem;
 }
 

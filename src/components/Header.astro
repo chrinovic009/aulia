@@ -1,6 +1,7 @@
 ---
 import { uiText } from '../data/site.ts';
 import { getContent } from '../data/site.ts';
+import ThemeToggle from './ThemeToggle.astro';
 import { ui, path, routes, type Lang, type RouteKey } from '../i18n.ts';
 
 interface Props {
@@ -22,7 +23,8 @@ const isActive = (key: RouteKey) => {
 <header class="site-header" data-header>
   <div class="bar wrap">
     <a href={path(lang, 'home')} class="brand" aria-label="AULIA">
-      <img src="/images/aulia-logo.png" alt="AULIA" width="591" height="179" />
+      <img class="theme-dark-only" src="/images/aulia-logo.png" alt="AULIA" width="591" height="179" />
+      <img class="theme-light-only" src="/images/aulia-logo-light.png" alt="AULIA" width="591" height="179" />
     </a>
 
     <nav class="links" aria-label={t.mainNav}>
@@ -32,6 +34,8 @@ const isActive = (key: RouteKey) => {
         </a>
       ))}
     </nav>
+
+    <ThemeToggle class="theme-btn" labels={{ label: t.theme, auto: t.themeAuto, light: t.themeLight, dark: t.themeDark }} />
 
     <a href={altHref} class="lang" hreflang={other} lang={other} data-set-lang={other} title={t.switchLabel} aria-label={t.switchLabel}>
       <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.3" aria-hidden="true"><circle cx="10" cy="10" r="7.5" /><path d="M2.5 10h15M10 2.5c2 2.2 3 4.7 3 7.5s-1 5.3-3 7.5c-2-2.2-3-4.7-3-7.5s1-5.3 3-7.5z" /></svg>
@@ -57,6 +61,7 @@ const isActive = (key: RouteKey) => {
       <a href={path(lang, 'contact')} class:list={[{ active: isActive('contact') }]}>
         <span class="index">{String(nav.length + 1).padStart(2, '0')}</span>{t.contact}
       </a>
+      <ThemeToggle class="m-theme" labels={{ label: t.theme, auto: t.themeAuto, light: t.themeLight, dark: t.themeDark }} />
       <a href={altHref} class="m-lang" hreflang={other} lang={other} data-set-lang={other}>
         <span class="index">{other.toUpperCase()}</span>{t.switchTo}
       </a>
@@ -77,7 +82,7 @@ const isActive = (key: RouteKey) => {
   }
   .site-header.scrolled,
   .site-header.open {
-    background: rgba(17, 16, 13, 0.86);
+    background: rgba(var(--bg-rgb), 0.86);
     backdrop-filter: blur(14px);
     -webkit-backdrop-filter: blur(14px);
     border-bottom-color: var(--line);
@@ -102,7 +107,7 @@ const isActive = (key: RouteKey) => {
     font-size: 0.875rem;
     font-weight: 500;
     letter-spacing: 0.02em;
-    color: #d1d5dc;
+    color: var(--text-soft);
     padding-block: 0.4rem;
     transition: color 0.3s var(--ease);
   }
@@ -143,12 +148,12 @@ const isActive = (key: RouteKey) => {
     align-items: center;
     gap: 0.4rem;
     padding: 0.45rem 0.8rem;
-    border: 1px solid #364153;
+    border: 1px solid var(--line-strong);
     border-radius: 999px;
     font-size: 0.8rem;
     font-weight: 600;
     letter-spacing: 0.06em;
-    color: #d1d5dc;
+    color: var(--text-soft);
     transition:
       border-color 0.3s var(--ease),
       color 0.3s var(--ease);
@@ -159,10 +164,48 @@ const isActive = (key: RouteKey) => {
   }
   .lang:hover {
     border-color: var(--gold-bright);
-    color: #fff;
+    color: var(--text);
   }
   .m-lang {
     color: var(--gold-bright);
+  }
+  /* bouton de thème dans le menu mobile : même présentation que les liens du menu */
+  .mobile :global(.m-theme) {
+    gap: 1.25rem;
+    padding: 1.05rem 0;
+    border-bottom: 1px solid var(--line);
+    font-family: var(--font-display);
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--text);
+    text-align: left;
+  }
+  .mobile :global(.m-theme svg) {
+    width: 1.35rem;
+    height: 1.35rem;
+    color: var(--gold-bright);
+  }
+  .site-header :global(.theme-btn) {
+    width: 2.25rem;
+    height: 2.25rem;
+    justify-content: center;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    color: var(--text-soft);
+    transition:
+      border-color 0.3s var(--ease),
+      color 0.3s var(--ease);
+  }
+  .site-header :global(.theme-btn:hover) {
+    border-color: var(--gold-bright);
+    color: var(--gold-bright);
+  }
+  .site-header :global(.theme-btn .tt-text) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
   }
   .menu-btn {
     display: none;
@@ -231,7 +274,7 @@ const isActive = (key: RouteKey) => {
     .contact-btn {
       display: none;
     }
-    .lang {
+    .site-header :global(.theme-btn) {
       margin-left: auto;
     }
     .menu-btn {

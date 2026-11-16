@@ -13,7 +13,8 @@ const year = new Date().getFullYear();
   <div class="wrap">
     <div class="top">
       <div class="intro">
-        <img src="/images/aulia-logo.png" alt="AULIA" width="591" height="179" loading="lazy" />
+        <img class="theme-dark-only" src="/images/aulia-logo.png" alt="AULIA" width="591" height="179" loading="lazy" />
+        <img class="theme-light-only" src="/images/aulia-logo-light.png" alt="AULIA" width="591" height="179" loading="lazy" />
         <p>{t.footerIntro}</p>
         <p class="doctrine">{t.doctrine}</p>
       </div>
@@ -107,7 +108,7 @@ const year = new Date().getFullYear();
     gap: 0.6rem;
   }
   a {
-    color: #c9c8c3;
+    color: var(--text-warm);
     transition: color 0.3s var(--ease);
   }
   a:hover {

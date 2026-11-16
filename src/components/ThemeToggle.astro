@@ -1,0 +1,45 @@
+---
+/**
+ * Bouton de thème : Auto (thème de l'appareil) → Clair → Sombre.
+ * L'icône et le libellé suivent le choix courant (attribut data-theme-pref sur <html>).
+ */
+interface Props { labels: { label: string; auto: string; light: string; dark: string }; class?: string; }
+const { labels, class: cls } = Astro.props;
+---
+<button type="button" class:list={['theme-toggle', cls]} data-theme-toggle aria-label={labels.label} title={labels.label}>
+  <svg class="tt-auto" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="8.5" /><path d="M12 3.5v17a8.5 8.5 0 0 0 0-17z" fill="currentColor" /></svg>
+  <svg class="tt-light" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4" /><path d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.6 1.6M17.1 17.1l1.6 1.6M5.3 18.7l1.6-1.6M17.1 6.9l1.6-1.6" /></svg>
+  <svg class="tt-dark" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z" /></svg>
+  <span class="tt-text">
+    <span class="tt-auto">{labels.auto}</span><span class="tt-light">{labels.light}</span><span class="tt-dark">{labels.dark}</span>
+  </span>
+</button>
+
+<style is:global>
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    font: inherit;
+    color: inherit;
+    background: none;
+    border: 0;
+    cursor: pointer;
+  }
+  .theme-toggle .tt-auto,
+  .theme-toggle .tt-light,
+  .theme-toggle .tt-dark {
+    display: none;
+  }
+  html:not([data-theme-pref]) .theme-toggle .tt-auto,
+  html[data-theme-pref='auto'] .theme-toggle .tt-auto,
+  html[data-theme-pref='light'] .theme-toggle .tt-light,
+  html[data-theme-pref='dark'] .theme-toggle .tt-dark {
+    display: inline;
+  }
+  .theme-toggle svg.tt-auto,
+  .theme-toggle svg.tt-light,
+  .theme-toggle svg.tt-dark {
+    flex: none;
+  }
+</style>

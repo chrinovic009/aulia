@@ -86,6 +86,10 @@ export const ui = {
     legalEyebrow: 'Legal information',
     loading: 'AULIA introduction',
     skipIntro: 'Skip intro',
+    theme: 'Theme: device, light or dark',
+    themeAuto: 'Device theme',
+    themeLight: 'Light theme',
+    themeDark: 'Dark theme',
     verbs: ['Understand', 'Anticipate', 'Create', 'Protect', 'Transform'],
   },
   fr: {
@@ -138,6 +142,10 @@ export const ui = {
     legalEyebrow: 'Informations légales',
     loading: 'Introduction AULIA',
     skipIntro: 'Passer l’introduction',
+    theme: 'Thème : appareil, clair ou sombre',
+    themeAuto: 'Thème de l’appareil',
+    themeLight: 'Thème clair',
+    themeDark: 'Thème sombre',
     verbs: ['Comprendre', 'Anticiper', 'Créer', 'Protéger', 'Transformer'],
   },
 } as const;
