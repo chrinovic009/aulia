@@ -62,15 +62,31 @@ async function callEngine(e: Engine, messages: ChatMessage[], tools: ToolSpec[],
 
 const FALLBACK_GEMINI = 'gemini-2.5-flash';
 
-/** Auto-diagnostic : un très court appel au moteur, pour lire l'erreur exacte. */
-export async function probe(): Promise<{ ok: boolean; moteur?: string; detail?: string }> {
+/** Auto-diagnostic : modèles disponibles pour la clé + un très court appel chronométré. */
+export async function probe(): Promise<Record<string, unknown>> {
+  const out: Record<string, unknown> = {};
+  const e = engines()[0];
+  if (e) {
+    out.modele_configure = e.model;
+    try {
+      const r = await fetch(`${e.base}/models`, { headers: { Authorization: `Bearer ${e.key}` }, signal: AbortSignal.timeout(10_000) });
+      const data = (await r.json().catch(() => ({}))) as { data?: { id: string }[] };
+      out.modeles_disponibles = r.ok
+        ? (data.data ?? []).map((m) => m.id.replace(/^models\//, '')).filter((id) => /flash|lite|gemma/i.test(id)).slice(0, 30)
+        : `HTTP ${r.status}`;
+    } catch (err) {
+      out.modeles_disponibles = String((err as Error)?.message ?? err).slice(0, 200);
+    }
+  }
+  const t0 = Date.now();
   try {
-    const r = await chat([{ role: 'user', content: 'Réponds seulement : OK' }], [], 20, 15_000);
-    return { ok: true, moteur: r.engine, detail: r.content.slice(0, 40) };
+    const r = await chat([{ role: 'user', content: 'Réponds seulement : OK' }], [], 50, 40_000);
+    Object.assign(out, { ok: true, moteur: r.engine, reponse: r.content.slice(0, 40), duree_ms: Date.now() - t0 });
   } catch (err) {
     // le message d'erreur du fournisseur ne contient jamais la clé
-    return { ok: false, detail: String((err as Error)?.message ?? err).slice(0, 400) };
+    Object.assign(out, { ok: false, detail: String((err as Error)?.message ?? err).slice(0, 400), duree_ms: Date.now() - t0 });
   }
+  return out;
 }
 
 async function callOnce(e: Engine, messages: ChatMessage[], tools: ToolSpec[], maxTokens: number, timeoutMs: number): Promise<ChatResult> {
@@ -97,7 +113,7 @@ async function callOnce(e: Engine, messages: ChatMessage[], tools: ToolSpec[], m
 }
 
 /** Interroge le moteur principal, puis le moteur de secours en cas d'échec. */
-export async function chat(messages: ChatMessage[], tools: ToolSpec[], maxTokens = 600, timeoutMs = 22_000): Promise<ChatResult> {
+export async function chat(messages: ChatMessage[], tools: ToolSpec[], maxTokens = 600, timeoutMs = 25_000): Promise<ChatResult> {
   const list = engines();
   if (!list.length) throw new Error('ANIMA : aucun moteur de langage configuré (ANIMA_LLM_API_KEY).');
   let last: unknown;
