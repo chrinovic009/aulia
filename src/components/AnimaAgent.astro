@@ -1,0 +1,13 @@
+---
+// Agent Aulia d'ANIMA : orbe en bas à droite + conversation texte et voix.
+// Le widget est servi par le site (/scripts/anima-widget.js, copie du projet « Anima ») ;
+// les messages partent vers l'API ANIMA. Tant que PUBLIC_ANIMA_API_URL n'est pas renseignée,
+// rien n'est chargé et le site reste identique.
+import type { Lang } from '../i18n.ts';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const api = (import.meta.env.PUBLIC_ANIMA_API_URL || '').replace(/\/$/, '');
+---
+
+{api && <script is:inline src="/scripts/anima-widget.js" data-api={api} data-lang={lang} defer></script>}

@@ -4,6 +4,7 @@ import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import Preloader from '../components/Preloader.astro';
 import ThemeScript from '../components/ThemeScript.astro';
+import AnimaAgent from '../components/AnimaAgent.astro';
 import { getContent } from '../data/site.ts';
 import { ui, path, langs, type Lang, type RouteKey } from '../i18n.ts';
 import '../styles/global.css';
@@ -95,6 +96,7 @@ const ogImage = abs(image);
       <slot />
     </main>
     <Footer lang={lang} />
+    <AnimaAgent lang={lang} />
 
     <script>
       import '../lib/client/site-live.ts';

@@ -16,6 +16,8 @@ const { anima } = getContent(lang, Astro.locals);
 const mod = Object.fromEntries(anima.modules.map((m) => [m.id, m]));
 
 const T = block(Astro.locals, 'page:anima', lang, page);
+// L'expérience ANIMA s'active dès que l'API de l'agent Aulia est branchée.
+const animaLive = Boolean(import.meta.env.PUBLIC_ANIMA_API_URL);
 
 const mottoIcons = ['wave', 'message', 'trend', 'network', 'bolt'];
 const capIcons = ['wave', 'message', 'database', 'branch', 'trend', 'network', 'bolt'];
@@ -254,8 +256,12 @@ const orbit = anima.capabilities.map((c, i) => {
     <div class="wrap reveal">
       <blockquote set:html={T.quote} />
       <div class="demo">
-        <span class="btn btn-ghost" aria-disabled="true"><Icon name="play" size={16} />{T.demo}</span>
-        <span class="muted">{T.demoNote}</span>
+        {animaLive ? (
+          <button type="button" class="btn btn-ghost" data-anima-voice><Icon name="play" size={16} />{T.demo}</button>
+        ) : (
+          <span class="btn btn-ghost" aria-disabled="true"><Icon name="play" size={16} />{T.demo}</span>
+        )}
+        <span class="muted">{animaLive ? (T.demoLive ?? T.demoNote) : T.demoNote}</span>
       </div>
     </div>
   </section>
