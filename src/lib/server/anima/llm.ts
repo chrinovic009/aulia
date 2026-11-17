@@ -42,6 +42,38 @@ function engines(): Engine[] {
 export const animaConfigured = () => engines().length > 0;
 
 async function callEngine(e: Engine, messages: ChatMessage[], tools: ToolSpec[], maxTokens: number, timeoutMs: number): Promise<ChatResult> {
+  try {
+    return await callOnce(e, messages, tools, maxTokens, timeoutMs);
+  } catch (err) {
+    const msg = String((err as Error)?.message ?? err);
+    // Repli 1 : certains modèles refusent le réglage de réflexion → on réessaie sans.
+    if (e.reasoning && /HTTP 400/.test(msg)) {
+      console.warn('[ANIMA llm] nouvel essai sans reasoning_effort :', msg.slice(0, 200));
+      return await callEngine({ ...e, reasoning: undefined }, messages, tools, maxTokens, timeoutMs);
+    }
+    // Repli 2 : modèle inconnu chez Gemini → modèle stable de secours.
+    if (e.base.includes('generativelanguage') && /HTTP 404|not found|is not supported/i.test(msg) && e.model !== FALLBACK_GEMINI) {
+      console.warn(`[ANIMA llm] modèle ${e.model} indisponible, essai avec ${FALLBACK_GEMINI}`);
+      return await callEngine({ ...e, model: FALLBACK_GEMINI }, messages, tools, maxTokens, timeoutMs);
+    }
+    throw err;
+  }
+}
+
+const FALLBACK_GEMINI = 'gemini-2.5-flash';
+
+/** Auto-diagnostic : un très court appel au moteur, pour lire l'erreur exacte. */
+export async function probe(): Promise<{ ok: boolean; moteur?: string; detail?: string }> {
+  try {
+    const r = await chat([{ role: 'user', content: 'Réponds seulement : OK' }], [], 20, 15_000);
+    return { ok: true, moteur: r.engine, detail: r.content.slice(0, 40) };
+  } catch (err) {
+    // le message d'erreur du fournisseur ne contient jamais la clé
+    return { ok: false, detail: String((err as Error)?.message ?? err).slice(0, 400) };
+  }
+}
+
+async function callOnce(e: Engine, messages: ChatMessage[], tools: ToolSpec[], maxTokens: number, timeoutMs: number): Promise<ChatResult> {
   const res = await fetch(`${e.base}/chat/completions`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${e.key}`, 'Content-Type': 'application/json' },
