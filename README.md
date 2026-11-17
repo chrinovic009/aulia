@@ -155,3 +155,21 @@ balises `hreflang` et `sitemap.xml` (`public/`). L'espace interne est en frança
 
 - `prepared statement … already exists` avec Neon : ajouter `&pgbouncer=true` à `DATABASE_URL`.
 - Moteur Prisma introuvable sur Vercel : vérifier `binaryTargets` dans `prisma/schema.prisma` et redéployer.
+
+## ANIMA — agent Aulia (orbe du site)
+
+L'orbe dorée en bas à droite est l'agent **Aulia** d'ANIMA. Son cerveau tourne dans le site :
+
+- `src/lib/server/anima/` : catalogue réel des filiales (statuts), gouvernance (score des prospects,
+  confidentialité), moteur de langage interchangeable, agent Aulia, orchestrateur, page personnalisée ;
+- routes : `/api/anima/chat`, `/api/anima/health`, `/api/anima/page/<id>` ;
+- Mémoire du Royaume : tables `anima_*` (migration `0002_anima`) ; les prospects prioritaires et les
+  demandes de présentation arrivent aussi dans **Messages** de l'espace d'administration et par e-mail ;
+- widget : `public/scripts/anima-widget.js` (copie de `Anima/web/anima-widget.js`).
+
+Mise en service : `ANIMA_LLM_API_KEY` (clé Gemini gratuite : https://aistudio.google.com/apikey) dans
+Vercel et dans `.env`, puis `npm run db:migrate`. Sans clé, l'orbe reste en **veille** : le visiteur
+laisse un message, transmis comme un message du formulaire de contact.
+
+Confidentialité : les e-mails et téléphones des visiteurs sont masqués avant tout envoi au moteur externe.
+Pour changer de moteur (Groq, Mistral, modèle hébergé par AULIA…), modifier `ANIMA_LLM_BASE_URL` et `ANIMA_LLM_MODEL`.

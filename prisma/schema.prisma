@@ -380,3 +380,88 @@ model ChangeEvent {
   @@index([scope, id])
   @@map("change_events")
 }
+
+// ───────────────────────────── ANIMA — Mémoire du Royaume ─────────────────────────────
+// Conversations de l'agent Aulia (orbe du site), prospects, pages personnalisées, journal.
+
+model AnimaConversation {
+  id        String   @id @default(cuid())
+  agent     String
+  visitorId String   @map("visitor_id")
+  lang      String
+  channel   String   @default("web")
+  /// emails et téléphones laissés par le visiteur (jamais transmis au moteur de langage)
+  contact   Json     @default("{}")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  messages AnimaMessage[]
+  lead     AnimaLead?
+  pages    AnimaPage[]
+
+  @@index([visitorId])
+  @@map("anima_conversations")
+}
+
+model AnimaMessage {
+  id             BigInt   @id @default(autoincrement())
+  conversationId String   @map("conversation_id")
+  role           String
+  content        String
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation AnimaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId, id])
+  @@map("anima_messages")
+}
+
+model AnimaLead {
+  id             String   @id @default(cuid())
+  conversationId String   @unique @map("conversation_id")
+  agent          String
+  nom            String   @default("")
+  organisation   String   @default("")
+  fonction       String   @default("")
+  secteur        String   @default("")
+  besoin         String   @default("")
+  taille         String   @default("")
+  interets       String   @default("")
+  contact        String   @default("")
+  score          Int      @default(0)
+  priorite       String   @default("basse")
+  raisons        String[] @default([])
+  alerted        Boolean  @default(false)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  conversation AnimaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([score])
+  @@map("anima_leads")
+}
+
+model AnimaPage {
+  id             String   @id @default(cuid())
+  conversationId String   @map("conversation_id")
+  lang           String
+  data           Json
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  conversation AnimaConversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+  @@map("anima_pages")
+}
+
+model AnimaEvent {
+  id             BigInt   @id @default(autoincrement())
+  at             DateTime @default(now())
+  agent          String
+  kind           String
+  conversationId String?  @map("conversation_id")
+  detail         Json     @default("{}")
+
+  @@index([kind, at])
+  @@map("anima_events")
+}

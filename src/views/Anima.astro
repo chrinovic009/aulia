@@ -9,6 +9,7 @@ import SectionHead from '../components/SectionHead.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { getContent } from '../data/site.ts';
 import { path, type Lang } from '../i18n.ts';
+import { animaConfigured } from '../lib/server/anima/llm.ts';
 
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
@@ -16,8 +17,8 @@ const { anima } = getContent(lang, Astro.locals);
 const mod = Object.fromEntries(anima.modules.map((m) => [m.id, m]));
 
 const T = block(Astro.locals, 'page:anima', lang, page);
-// L'expérience ANIMA s'active dès que l'API de l'agent Aulia est branchée.
-const animaLive = Boolean(import.meta.env.PUBLIC_ANIMA_API_URL);
+// L'expérience ANIMA s'active dès qu'un moteur de langage est configuré (ANIMA_LLM_API_KEY).
+const animaLive = animaConfigured();
 
 const mottoIcons = ['wave', 'message', 'trend', 'network', 'bolt'];
 const capIcons = ['wave', 'message', 'database', 'branch', 'trend', 'network', 'bolt'];

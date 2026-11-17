@@ -19,6 +19,9 @@
   var API = ((script && script.getAttribute("data-api")) || "").replace(/\/$/, "") ||
             (script ? new URL(script.src).origin : location.origin);
   var CONTACT = (script && script.getAttribute("data-contact")) || "";
+  // adresses des points d'accès (par défaut : API ANIMA autonome ; sur le site : /api/anima/…)
+  var CHAT_URL = (script && script.getAttribute("data-chat")) || API + "/api/chat";
+  var HEALTH_URL = (script && script.getAttribute("data-health")) || API + "/health";
   var PRIVACY = (script && script.getAttribute("data-privacy")) || "";
   var LANG = (script && script.getAttribute("data-lang")) ||
              ((document.documentElement.lang || navigator.language || "fr").slice(0, 2) === "en" ? "en" : "fr");
@@ -326,10 +329,10 @@ box-shadow:0 24px 70px rgba(0,0,0,.5);overflow:hidden;backdrop-filter:blur(14px)
   function checkAnima() {
     if (checked) return;
     checked = true;
-    if (API === "aucune") { enterVeille(); return; }  // aucune API ANIMA configurée sur ce site
+    if (API === "aucune" && !script.getAttribute("data-health")) { enterVeille(); return; }  // aucune API ANIMA configurée sur ce site
     var ctrl = window.AbortController ? new AbortController() : null;
     var timer = ctrl && setTimeout(function () { ctrl.abort(); }, 6000);
-    fetch(API + "/health", { headers: { "ngrok-skip-browser-warning": "1" }, signal: ctrl ? ctrl.signal : undefined })
+    fetch(HEALTH_URL, { headers: { "ngrok-skip-browser-warning": "1" }, signal: ctrl ? ctrl.signal : undefined })
       .then(function (r) { return r.ok ? r.json() : null; })
       .then(function (d) { if (!d || d.statut !== "ok") enterVeille(); })
       .catch(enterVeille)
@@ -346,13 +349,17 @@ box-shadow:0 24px 70px rgba(0,0,0,.5);overflow:hidden;backdrop-filter:blur(14px)
     setMode("thinking", T.thinking);
     var ctrl = window.AbortController ? new AbortController() : null;
     var guard = ctrl && setTimeout(function () { ctrl.abort(); }, 180000);
-    fetch(API + "/api/chat", {
+    fetch(CHAT_URL, {
       signal: ctrl ? ctrl.signal : undefined,
       method: "POST", headers: { "Content-Type": "application/json", "ngrok-skip-browser-warning": "1" },
       body: JSON.stringify({ message: text, agent: "aulia", visitor_id: state.visitor,
                              conversation_id: state.conversation, language: LANG,
                              channel: fromVoice ? "voix" : "web" })
-    }).then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    }).then(function (r) {
+        if (r.status === 429) return r.json().then(function (d) { var e = new Error(d.error || T.slow); e.name = "Limite"; throw e; });
+        if (!r.ok) throw new Error(r.status);
+        return r.json();
+      })
       .then(function (d) {
         state.visitor = d.visitor_id; save("visitor", d.visitor_id);
         state.conversation = d.conversation_id; save("conversation", d.conversation_id);
@@ -370,6 +377,7 @@ box-shadow:0 24px 70px rgba(0,0,0,.5);overflow:hidden;backdrop-filter:blur(14px)
       })
       .catch(function (e) {
         if (e && e.name === "AbortError") { addMsg(T.slow, "bot"); setMode("idle"); }
+        else if (e && e.name === "Limite") { addMsg(e.message, "bot"); setMode("idle"); }
         else enterVeille();
       })
       .then(function () { state.busy = false; clearTimeout(guard); });
