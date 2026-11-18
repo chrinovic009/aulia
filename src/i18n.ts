@@ -11,6 +11,7 @@ export const defaultLang: Lang = 'en';
 /** Clé de page → chemin par langue. */
 export const routes = {
   home: { en: '/', fr: '/fr' },
+  about: { en: '/about', fr: '/fr/a-propos' },
   vision: { en: '/vision', fr: '/fr/vision' },
   ecosystem: { en: '/ecosystem', fr: '/fr/ecosysteme' },
   anima: { en: '/anima', fr: '/fr/anima' },

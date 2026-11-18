@@ -18,8 +18,8 @@ const LABELS: Record<string, string> = {
   modules: 'Modules', scenarios: 'Scénarios', sovereignty: 'Souveraineté', context: 'Contexte', steps: 'Étapes', guard: 'Garde-fou',
   systems: 'Systèmes', role: 'Rôle', partners: 'Partenaires', logo: 'Logo (adresse de l’image)', inset: 'Recadrage du logo (haut, droite, bas, gauche)', ratio: 'Proportion du logo (largeur ÷ hauteur)', pEyebrow: 'Surtitre partenaires', pTitle: 'Titre partenaires', pHint: 'Aide sous les logos', sections: 'Sections', pending: 'En attente de publication', socials: 'Réseaux', key: 'Page',
 };
-const STATUS = ['live', 'dev', 'design', 'explore', 'target'];
-const STATUS_LABEL: Record<string, string> = { live: 'Disponible (avec preuve)', dev: 'En développement', design: 'En conception', explore: 'En exploration', target: 'Architecture cible' };
+const STATUS = ['live', 'pilot', 'dev', 'design', 'explore', 'target'];
+const STATUS_LABEL: Record<string, string> = { live: 'Disponible (avec preuve)', pilot: 'En pilote (prêt, phase pilote)', dev: 'En développement', design: 'En conception', explore: 'En exploration', target: 'Architecture cible' };
 const human = (s: string) => LABELS[s] ?? s.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, (c) => c.toUpperCase());
 const label = root ? '' : item ? `Élément ${Number(k) + 1}` : human(k);
 const str = kind === 'str' ? String(value ?? '') : '';

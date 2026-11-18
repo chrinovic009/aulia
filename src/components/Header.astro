@@ -90,7 +90,7 @@ const isActive = (key: RouteKey) => {
   .bar {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: clamp(1rem, 1.8vw, 2rem);
     height: 5rem;
   }
   .brand img {
@@ -99,7 +99,7 @@ const isActive = (key: RouteKey) => {
   }
   .links {
     display: flex;
-    gap: 2rem;
+    gap: clamp(1.1rem, 1.6vw, 2rem);
     margin-left: auto;
   }
   .links a {
@@ -107,6 +107,7 @@ const isActive = (key: RouteKey) => {
     font-size: 0.875rem;
     font-weight: 500;
     letter-spacing: 0.02em;
+    white-space: nowrap;
     color: var(--text-soft);
     padding-block: 0.4rem;
     transition: color 0.3s var(--ease);
@@ -269,7 +270,7 @@ const isActive = (key: RouteKey) => {
     color: var(--gold-bright);
   }
 
-  @media (max-width: 1080px) {
+  @media (max-width: 1240px) {
     .links,
     .contact-btn {
       display: none;
@@ -283,7 +284,7 @@ const isActive = (key: RouteKey) => {
       margin-left: 0.5rem;
     }
   }
-  @media (min-width: 1081px) {
+  @media (min-width: 1241px) {
     .mobile {
       display: none;
     }

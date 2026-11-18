@@ -6,7 +6,7 @@ import type { PrismaClient, Prisma } from '@prisma/client';
 import { randomBytes } from 'node:crypto';
 import { HttpError } from '../db.ts';
 import { chat, type ChatMessage } from './llm.ts';
-import { detectLanguage, extractContacts, mergeContacts, redact, type Contacts } from './governance.ts';
+import { guessLanguage, extractContacts, mergeContacts, redact, type Contacts } from './governance.ts';
 import { runTool, systemPrompt, TOOLS, type ToolCtx } from './aulia.ts';
 import { ensureContact, findContact, markDelivered, memoryContext } from './memoire.ts';
 import type { Lang } from './catalogue.ts';
@@ -32,7 +32,8 @@ const newId = (p: string) => `${p}_${randomBytes(9).toString('base64url')}`;
 export async function handleChat(db: PrismaClient, input: ChatInput) {
   const started = Date.now();
   const message = input.message.trim().slice(0, 1500);
-  const lang: Lang = input.lang ?? detectLanguage(message);
+  // ANIMA répond dans la langue du message ; la langue de la page ne sert qu'en cas de doute
+  const lang: Lang = guessLanguage(message) ?? input.lang ?? 'fr';
 
   // limite d'usage : protège les quotas gratuits du moteur
   const recent = await db.animaEvent.count({

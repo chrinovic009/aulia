@@ -36,7 +36,7 @@
       idle: "À votre écoute", typing: "Je vous lis…", listening: "Je vous écoute…", thinking: "Je réfléchis…", writing: "Je vous réponds…", speaking: "Je vous parle…", sleep: "ANIMA se repose",
       page: "Voir votre page personnalisée", err: "Je n'arrive pas à joindre mon esprit pour le moment. Réessayez dans un instant.",
       slow: "Je mets trop de temps à répondre. Réessayez dans un instant.", note: "Intelligence artificielle · vérifiez les informations importantes",
-      teaser: "Je suis ANIMA. Parlons.", soon: "Tester Care — bientôt",
+      teaser: "Je suis ANIMA. Parlons.", soon: "AULIA Care — pilote ouvert aux établissements",
       vTap: "Touchez l'orbe pour parler", vEnd: "Terminer", vPause: "Pause", vResume: "Reprendre", vText: "Écrire",
       vNo: "La conversation vocale fonctionne dans Chrome, Edge ou Safari. Vous pouvez m'écrire ici.",
       vDenied: "Autorisez l'accès au micro dans votre navigateur (icône du cadenas), puis touchez l'orbe.",
@@ -53,7 +53,7 @@
       idle: "At your service", typing: "Reading you…", listening: "I'm listening…", thinking: "Thinking…", writing: "Replying…", speaking: "Speaking…", sleep: "ANIMA is resting",
       page: "See your personalised page", err: "I can't reach my mind right now. Please try again shortly.",
       slow: "I'm taking too long to reply. Please try again shortly.", note: "Artificial intelligence · check important information",
-      teaser: "I'm ANIMA. Let's talk.", soon: "Try Care — coming soon",
+      teaser: "I'm ANIMA. Let's talk.", soon: "AULIA Care — pilot open to facilities",
       vTap: "Tap the orb to speak", vEnd: "End", vPause: "Pause", vResume: "Resume", vText: "Type",
       vNo: "Voice conversation works in Chrome, Edge or Safari. You can write to me here.",
       vDenied: "Allow microphone access in your browser (padlock icon), then tap the orb.",
@@ -89,7 +89,7 @@
     ".anima-launch canvas{width:84px;height:84px;display:block}",
     ".anima-open .anima-launch{transform:scale(.82)}",
     ".anima-teaser{position:absolute;right:92px;bottom:26px;white-space:nowrap;padding:10px 16px;border-radius:999px;background:var(--a-bg2);border:1px solid var(--a-line);box-shadow:var(--a-shadow);font-size:14px;letter-spacing:.02em;opacity:0;transform:translateX(10px);pointer-events:none;transition:opacity .8s,transform .8s cubic-bezier(.22,.61,.36,1)}",
-    ".anima-teaser.on{opacity:1;transform:none}.anima-teaser b{color:var(--a-gold);font-weight:600;letter-spacing:.18em;margin-right:6px}",
+    ".anima-teaser.on{opacity:1;transform:none;pointer-events:auto;cursor:pointer}.anima-teaser.on:hover{border-color:var(--a-gold)}.anima-teaser b{color:var(--a-gold);font-weight:600;letter-spacing:.18em;margin-right:6px}",
     /* fenêtre */
     "@property --a-ang{syntax:'<angle>';initial-value:0deg;inherits:false}",
     ".anima-frame{position:absolute;right:0;bottom:100px;width:min(420px,calc(100vw - 32px));height:min(660px,calc(100dvh - 140px));border-radius:30px;padding:1px;",
@@ -390,6 +390,8 @@
       }, function () { if (!state.veille) { setMode("idle"); addMsg(T.hello, "bot", true, addChips); } });
   }
   $(".anima-launch").addEventListener("click", function () { root.classList.contains("anima-open") ? close() : open(false); });
+  // la bulle d'accueil ouvre aussi la conversation
+  $(".anima-teaser").addEventListener("click", function () { open(false); });
   $(".anima-x").addEventListener("click", close);
   $(".anima-tovoice").addEventListener("click", function () { startVoice(); });
   $(".anima-mic").addEventListener("click", function () { startVoice(); });

@@ -1,0 +1,196 @@
+---
+import page from '../data/pages/about.ts';
+import { block } from '../data/site.ts';
+import Layout from '../layouts/Layout.astro';
+import PageHero from '../components/PageHero.astro';
+import SectionHead from '../components/SectionHead.astro';
+import Timeline from '../components/Timeline.astro';
+import Tiles from '../components/Tiles.astro';
+import CtaBand from '../components/CtaBand.astro';
+import Arrow from '../components/Arrow.astro';
+import { path, contactPath, type Lang } from '../i18n.ts';
+
+interface Props { lang: Lang; }
+const { lang } = Astro.props;
+const T = block(Astro.locals, 'page:about', lang, page);
+---
+
+<Layout lang={lang} route="about" title={T.title} description={T.meta}>
+  <PageHero eyebrow={T.title} title={T.hero} lead={T.lead} />
+
+  <!-- FONDATEUR -->
+  <section class="section">
+    <div class="wrap founder">
+      <figure class="portrait reveal">
+        <img src="/images/team/tumba-nyembo-chrinovic.webp" alt={T.fName} width="640" height="800" loading="eager" />
+        <figcaption><b>{T.fName}</b><span>{T.fRole}</span></figcaption>
+      </figure>
+      <div class="f-text reveal">
+        <p class="eyebrow">{T.fEyebrow}</p>
+        <h2 class="display display-m">{T.fName}</h2>
+        <p class="lead">{T.fIntro}</p>
+        <h3 class="path-title">{T.pathTitle}</h3>
+        <Timeline items={T.path} />
+      </div>
+    </div>
+  </section>
+
+  <!-- POURQUOI AULIA -->
+  <section class="section">
+    <div class="wrap narrow">
+      <SectionHead eyebrow={T.whyEyebrow} title={T.whyTitle} center />
+      <div class="letter reveal">
+        {T.why.map((p) => <p>{p}</p>)}
+      </div>
+    </div>
+  </section>
+
+  <!-- POURQUOI LA RDC -->
+  <section class="section rdc">
+    <div class="wrap narrow">
+      <SectionHead eyebrow={T.rdcEyebrow} title={T.rdcTitle} center />
+      <div class="letter reveal">
+        {T.rdc.map((p, i) => <p class:list={[{ first: i === 0 }]}>{p}</p>)}
+        <p class="sign">{T.sign}</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- OÙ NOUS EN SOMMES -->
+  <section class="section">
+    <div class="wrap">
+      <SectionHead eyebrow={T.nowEyebrow} title={T.nowTitle} center />
+      <Tiles items={T.now} cols={3} lang={lang} />
+      <p class="links reveal">
+        <a class="link-arrow" href="https://demo-aulia-care.vercel.app" target="_blank" rel="noopener" data-track="Démo AULIA Care (À propos)">{T.demo}<Arrow /></a>
+        <a class="link-arrow" href={path(lang, 'partnerships')}>{T.partners}<Arrow /></a>
+      </p>
+    </div>
+  </section>
+
+  <CtaBand eyebrow={T.ctaEyebrow} title={T.ctaTitle} href={contactPath(lang, 'presentation')} label={T.ctaLabel} />
+</Layout>
+
+<style>
+  .founder {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(2rem, 5vw, 5rem);
+    align-items: start;
+  }
+  .portrait {
+    margin: 0;
+    position: relative;
+    border-radius: 1.5rem;
+    overflow: hidden;
+    border: 1px solid var(--line-strong);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.25);
+  }
+  .portrait::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, transparent 55%, rgba(17, 16, 13, 0.75));
+    pointer-events: none;
+  }
+  .portrait img {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+  .portrait figcaption {
+    position: absolute;
+    left: 1.4rem;
+    right: 1.4rem;
+    bottom: 1.2rem;
+    z-index: 1;
+    display: grid;
+    gap: 0.2rem;
+    color: #fff;
+  }
+  .portrait figcaption b {
+    font-size: 1.15rem;
+    font-weight: 700;
+  }
+  .portrait figcaption span {
+    font-size: 0.8rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #ffd230;
+  }
+  .f-text h2 {
+    margin-top: 1rem;
+  }
+  .f-text .lead {
+    margin-top: 1.25rem;
+  }
+  .path-title {
+    margin: 2.5rem 0 1.5rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+  .f-text :global(.tl) {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 2rem;
+  }
+  .f-text :global(.tl::before) {
+    display: none;
+  }
+  .narrow {
+    max-width: 52rem;
+  }
+  .letter {
+    display: grid;
+    gap: 1.25rem;
+    margin-top: 2.5rem;
+    font-size: 1.12rem;
+    line-height: 1.8;
+    color: var(--text-soft);
+  }
+  .letter .first::first-letter {
+    float: left;
+    font-family: var(--font-display);
+    font-size: 3.6rem;
+    line-height: 0.9;
+    padding: 0.25rem 0.6rem 0 0;
+    color: var(--gold-bright);
+    font-weight: 700;
+  }
+  .rdc .letter {
+    position: relative;
+    padding: clamp(1.5rem, 4vw, 2.75rem);
+    border-radius: 1.5rem;
+    border: 1px solid var(--line-strong);
+    background:
+      radial-gradient(ellipse at 100% 0%, rgba(150, 114, 29, 0.14), transparent 60%),
+      var(--card);
+  }
+  .sign {
+    margin-top: 0.5rem;
+    font-weight: 600;
+    color: var(--gold-bright);
+  }
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1rem 2.5rem;
+    margin-top: 2.5rem;
+  }
+  @media (max-width: 860px) {
+    .founder {
+      grid-template-columns: 1fr;
+    }
+    .portrait {
+      max-width: 26rem;
+      margin-inline: auto;
+    }
+  }
+  @media (max-width: 560px) {
+    .f-text :global(.tl) {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

@@ -14,6 +14,8 @@ import SectionHead from '../components/SectionHead.astro';
 import CtaBand from '../components/CtaBand.astro';
 import { getContent } from '../data/site.ts';
 import { path, contactPath, type Lang } from '../i18n.ts';
+import partnersPage from '../data/pages/partnerships.ts';
+import PartnerMarquee from '../components/PartnerMarquee.astro';
 
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
@@ -26,6 +28,8 @@ const researchIcons = ['cpu', 'atom', 'cog', 'factory', 'server', 'box', 'link',
 
 const T = block(Astro.locals, 'page:home', lang, page);
 
+const P = block(Astro.locals, 'page:partnerships', lang, partnersPage);
+const roadmap = entities.filter((e) => e.slug !== 'care');
 const doctrineTiles = doctrine.map((d, i) => ({ icon: doctrineIcons[i], title: d.word, text: d.short }));
 const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r.title }));
 ---
@@ -50,6 +54,49 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
     </div>
   </section>
 
+  <!-- PREUVES : AULIA CARE + PARTENAIRES -->
+  <section class="section care-first">
+    <div class="wrap care-grid">
+      <div class="care-text reveal">
+        <p class="eyebrow">{T.careEyebrow}</p>
+        <h2 class="display display-l" set:html={T.careTitle} />
+        <p class="lead">{T.careText}</p>
+        <div class="care-actions">
+          <a class="btn btn-primary" href="https://demo-aulia-care.vercel.app" target="_blank" rel="noopener" data-track="Démo AULIA Care (accueil)">{T.careDemo}<Arrow /></a>
+          <a class="btn btn-ghost" href={contactPath(lang, 'care')}>{T.carePilot}</a>
+        </div>
+      </div>
+      <a class="care-card reveal" href={path(lang, 'ecosystem', 'care')}>
+        <span class="care-badge"><i aria-hidden="true"></i>{T.careStatus}</span>
+        <span class="care-ico" aria-hidden="true"><Icon name="medical" size={44} /></span>
+        <b>AULIA Care</b>
+        <ul>
+          {T.careList.map((c, i) => <li class:list={[{ on: i === 0 }]}>{c}</li>)}
+        </ul>
+        <span class="go"><Arrow /></span>
+      </a>
+    </div>
+    {P.partners?.length > 0 && (
+      <div class="proof">
+        <p class="proof-label">{T.partnersLabel}</p>
+        <PartnerMarquee partners={P.partners} label={T.partnersLabel} />
+      </div>
+    )}
+  </section>
+
+  <!-- FONDATEUR -->
+  <section class="section founder-band">
+    <div class="wrap founder-row reveal">
+      <img class="f-photo" src="/images/team/tumba-nyembo-chrinovic-carre.webp" alt={T.founderName} width="480" height="480" loading="lazy" />
+      <div>
+        <p class="eyebrow">{T.founderEyebrow}</p>
+        <blockquote>« {T.founderQuote} »</blockquote>
+        <p class="f-who"><b>{T.founderName}</b> · {T.founderRole}</p>
+        <a class="link-arrow" href={path(lang, 'about')}>{T.founderLink}<Arrow /></a>
+      </div>
+    </div>
+  </section>
+
   <!-- DOCTRINE -->
   <section class="section">
     <div class="wrap">
@@ -61,9 +108,9 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
   <!-- ÉCOSYSTÈME -->
   <section class="section">
     <div class="wrap">
-      <SectionHead eyebrow={T.ecoEyebrow} title={T.ecoTitle} center />
-      <div class="uni">
-        {entities.map((e, i) => (
+      <SectionHead eyebrow={T.roadEyebrow} title={T.roadTitle} center />
+      <div class="uni uni-3">
+        {roadmap.map((e, i) => (
           <a href={path(lang, 'ecosystem', e.slug)} class="uni-card reveal" style={`transition-delay:${i * 80}ms`}>
             <div class="uni-top" aria-hidden="true">
               <span class="uni-ico"><Icon name={entityIcon[e.slug] ?? 'layers'} size={40} /></span>
@@ -193,6 +240,172 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 1.25rem;
+  }
+  .uni.uni-3 {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* AULIA Care en premier */
+  .care-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+    gap: clamp(2rem, 5vw, 4.5rem);
+    align-items: center;
+  }
+  .care-text .display {
+    margin-top: 1rem;
+  }
+  .care-text .lead {
+    margin-top: 1.25rem;
+  }
+  .care-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-top: 2rem;
+  }
+  .care-card {
+    position: relative;
+    display: grid;
+    gap: 1rem;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    border-radius: 1.5rem;
+    border: 1px solid var(--line-strong);
+    background:
+      radial-gradient(ellipse at 100% 0%, rgba(150, 114, 29, 0.22), transparent 60%),
+      var(--card);
+    transition:
+      transform 0.4s var(--ease),
+      border-color 0.4s var(--ease);
+  }
+  .care-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+  }
+  .care-badge {
+    justify-self: start;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: #2f7d4a;
+    background: rgba(156, 199, 154, 0.16);
+    border: 1px solid rgba(156, 199, 154, 0.45);
+  }
+  :global(html:not([data-theme='light'])) .care-badge {
+    color: #9cc79a;
+  }
+  .care-badge i {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+    animation: care-pulse 2s ease-in-out infinite;
+  }
+  @keyframes care-pulse {
+    50% {
+      box-shadow: 0 0 0 5px rgba(156, 199, 154, 0.25);
+    }
+  }
+  .care-ico {
+    color: var(--gold-bright);
+  }
+  .care-card b {
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .care-card ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+  .care-card li {
+    padding-left: 1.2rem;
+    position: relative;
+  }
+  .care-card li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+  }
+  .care-card li.on {
+    color: var(--text);
+    font-weight: 600;
+  }
+  .care-card li.on::before {
+    background: var(--gold-bright);
+    border-color: var(--gold-bright);
+  }
+  .care-card .go {
+    position: absolute;
+    right: 1.25rem;
+    bottom: 1.25rem;
+    width: 2rem;
+    height: 2rem;
+    display: grid;
+    place-items: center;
+    border-radius: 50%;
+    background: var(--primary);
+    color: #fff;
+  }
+  .proof {
+    margin-top: clamp(3rem, 6vw, 4.5rem);
+  }
+  .proof-label {
+    text-align: center;
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Fondateur */
+  .founder-row {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: clamp(1.5rem, 4vw, 3.5rem);
+    align-items: center;
+    max-width: 62rem;
+  }
+  .f-photo {
+    width: clamp(9rem, 18vw, 13rem);
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--gold);
+    box-shadow: 0 0 0 8px rgba(150, 114, 29, 0.12);
+  }
+  .founder-row blockquote {
+    margin: 1rem 0 1.25rem;
+    font-family: var(--font-display);
+    font-size: clamp(1.25rem, 2.4vw, 1.75rem);
+    font-weight: 600;
+    line-height: 1.35;
+    color: var(--text);
+  }
+  .f-who {
+    margin-bottom: 1rem;
+    color: var(--muted);
+  }
+  .f-who b {
+    color: var(--text);
   }
   .uni-card {
     position: relative;
@@ -331,8 +544,12 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
   }
 
   @media (max-width: 1080px) {
-    .uni {
+    .uni,
+    .uni.uni-3 {
       grid-template-columns: repeat(2, 1fr);
+    }
+    .care-grid {
+      grid-template-columns: 1fr;
     }
   }
   @media (max-width: 640px) {
@@ -347,8 +564,14 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
     }
   }
   @media (max-width: 520px) {
-    .uni {
+    .uni,
+    .uni.uni-3 {
       grid-template-columns: 1fr;
+    }
+    .founder-row {
+      grid-template-columns: 1fr;
+      justify-items: center;
+      text-align: center;
     }
     .uni-top {
       height: 8rem;

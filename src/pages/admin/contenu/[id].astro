@@ -27,7 +27,7 @@ const data = (fallback !== undefined ? merge(fallback, mine?.data ?? live?.data)
 const canSubmit = can(u, 'content.submit', block.orgId);
 
 const page = block.pages.find((p) => p !== '*' && !p.includes('*')) ?? '/';
-const routeKey = ({ '/': 'home', '/vision': 'vision', '/ecosystem': 'ecosystem', '/anima': 'anima', '/research': 'research', '/partnerships': 'partnerships', '/contact': 'contact', '/legal-notice': 'legal', '/privacy': 'privacy' } as const)[page as '/'];
+const routeKey = ({ '/': 'home', '/about': 'about', '/vision': 'vision', '/ecosystem': 'ecosystem', '/anima': 'anima', '/research': 'research', '/partnerships': 'partnerships', '/contact': 'contact', '/legal-notice': 'legal', '/privacy': 'privacy' } as const)[page as '/'];
 const ent = page.match(/^\/ecosystem\/(.+)$/);
 const preview = routeKey ? sitePath(lang, routeKey) : ent ? sitePath(lang, 'ecosystem', ent[1]) : lang === 'fr' ? '/fr' : '/';
 ---

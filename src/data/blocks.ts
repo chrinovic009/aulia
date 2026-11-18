@@ -17,6 +17,7 @@ import partnerships from './pages/partnerships.ts';
 import contact from './pages/contact.ts';
 import legal from './pages/legal.ts';
 import privacy from './pages/privacy.ts';
+import about from './pages/about.ts';
 
 export type BlockDef = {
   key: string;
@@ -38,6 +39,7 @@ export function blockCatalog(): BlockDef[] {
     { key: 'statusLabel', label: 'Libellés des statuts', org: 'aulia', pages: ['*'], sort: 3, data: both('statusLabel') },
     { key: 'page:home', label: 'Accueil — textes de la page', org: 'aulia', pages: ['/'], sort: 10, data: home },
     { key: 'doctrine', label: 'Doctrine (les cinq verbes)', org: 'aulia', pages: ['/', '/vision'], sort: 11, data: both('doctrine') },
+    { key: 'page:about', label: 'À propos — fondateur, pourquoi la RDC', org: 'aulia', pages: ['/about'], sort: 15, data: about },
     { key: 'page:vision', label: 'Notre vision — textes de la page', org: 'aulia', pages: ['/vision'], sort: 20, data: vision },
     { key: 'purpose', label: 'Raison d’être, mission, vision', org: 'aulia', pages: ['/vision'], sort: 21, data: both('purpose') },
     { key: 'name', label: 'Le nom AULIA', org: 'aulia', pages: ['/vision'], sort: 22, data: both('name') },

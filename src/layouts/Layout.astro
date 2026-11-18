@@ -74,13 +74,24 @@ const ogImage = abs(image);
       ...(Astro.site ? { url: Astro.site.href, logo: new URL('/images/aulia-logo.png', Astro.site).href } : {}),
     })} />
     <script is:inline>document.documentElement.classList.remove('no-js');</script>
-    <!-- Préférence de langue : si le visiteur a choisi une langue, on l'y ramène. -->
+    <!-- Langue : choix du visiteur s'il en a fait un ; sinon, à l'arrivée sur l'accueil, langue de son navigateur. -->
     <script is:inline define:vars={{ lang, altHref }}>
       try {
         var pref = localStorage.getItem('aulia-lang');
-        if (pref && pref !== lang && (pref === 'en' || pref === 'fr')) location.replace(altHref + location.search + location.hash);
-        // Écran de chargement : une fois par session.
-        else if (!sessionStorage.getItem('aulia-intro')) {
+        var target = null;
+        if (pref === 'en' || pref === 'fr') target = pref;
+        else if (location.pathname === '/' || location.pathname === '/fr' || location.pathname === '/fr/') {
+          // français pour un navigateur francophone ou réglé sur un pays francophone (RDC, Congo, France, Belgique…)
+          var langs = (navigator.languages && navigator.languages.length ? navigator.languages : [navigator.language || 'en']).map(function (l) { return String(l).toLowerCase(); });
+          var first = langs[0] || 'en';
+          var FR_REGIONS = /-(cd|cg|fr|be|ch|lu|mc|ci|sn|cm|ga|bi|rw|bj|bf|ml|ne|tg|td|cf|gn|mg|dj|km|ht|ca)$/;
+          if (first.indexOf('fr') === 0 || FR_REGIONS.test(first)) target = 'fr';
+          else if (first.indexOf('en') === 0) target = 'en';
+          else target = langs.some(function (l) { return l.indexOf('fr') === 0; }) ? 'fr' : 'en';
+        }
+        if (target && target !== lang) location.replace(altHref + location.search + location.hash);
+        // Écran d'ouverture : une seule fois par visiteur (mémorisé dans son navigateur).
+        else if (!localStorage.getItem('aulia-intro')) {
           document.documentElement.classList.add('preloading');
           // Sécurité : l'introduction ne peut jamais bloquer l'accès au site.
           setTimeout(function () { document.documentElement.classList.remove('preloading', 'preloaded'); }, 25000);

@@ -27,6 +27,9 @@ const { statusLabel } = getContent(lang, Astro.locals);
   }
   .s-live { color: #9cc79a; }
   .s-live i { background: currentColor; }
+  .s-pilot { color: #9cc79a; }
+  .s-pilot i { background: currentColor; box-shadow: 0 0 0 3px rgba(156, 199, 154, 0.2); }
+  :global(html[data-theme='light']) .s-pilot { color: #2f7d4a; }
   .s-dev { color: var(--gold-bright); }
   .s-dev i { background: currentColor; }
   .s-design { color: var(--text-warm); }

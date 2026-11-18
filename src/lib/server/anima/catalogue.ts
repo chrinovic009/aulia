@@ -4,10 +4,11 @@
  * À mettre à jour dès qu'une filiale change de statut.
  */
 export type Lang = 'fr' | 'en';
-export type Statut = 'disponible' | 'en_developpement' | 'en_conception' | 'en_exploration' | 'conceptuel';
+export type Statut = 'disponible' | 'pilote' | 'en_developpement' | 'en_conception' | 'en_exploration' | 'conceptuel';
 
 export const STATUTS: Record<Statut, Record<Lang, string>> = {
   disponible: { fr: 'Disponible', en: 'Available' },
+  pilote: { fr: 'Couche Core prête, en phase pilote', en: 'Core layer ready, in pilot phase' },
   en_developpement: { fr: 'En développement', en: 'In development' },
   en_conception: { fr: 'En conception', en: 'In design' },
   en_exploration: { fr: 'En exploration', en: 'Exploratory' },
@@ -25,10 +26,10 @@ export type Filiale = {
 
 export const FILIALES: Record<string, Filiale> = {
   CARE: {
-    nom: 'AULIA Care', slug: 'care', statut: 'en_developpement',
+    nom: 'AULIA Care', slug: 'care', statut: 'pilote',
     domaine: { fr: "Systèmes d'information de santé et médicaux", en: 'Health and medical information systems' },
     pourQui: 'hôpitaux, cliniques, centres de santé, laboratoires, pharmacies',
-    note: 'Première preuve terrain du groupe.',
+    note: "Première preuve terrain du groupe : la couche Core est prête à fonctionner dans une clinique et en phase pilote ; les autres composantes (Diagnostic Agent, Connected Care) sont en développement. Démonstration : demo-aulia-care.vercel.app.",
   },
   VIGIL: {
     nom: 'AULIA Vigil', slug: 'vigil', statut: 'en_conception',
@@ -76,4 +77,12 @@ Accroche : « Building Intelligence. Transforming Systems. » Doctrine : compren
 protéger, transformer. Parcours : Care d'abord (preuve terrain), puis Vigil et Flow, puis ANIMA. \
 ANIMA = intelligence transversale sous contrôle humain ; tu en es le premier agent. \
 Pour avancer : demander une présentation, lancer un partenariat (établissement pilote, partenaire \
-technique, institution, investisseur) ou écrire à l'équipe. Adresse et téléphone ne sont pas publiés.`;
+technique, institution, investisseur) ou écrire à l'équipe. Adresse et téléphone ne sont pas publiés. \
+FONDATEUR (information publique, à donner volontiers) : TUMBA NYEMBO Chrinovic, fondateur d'AULIA, né en 2003, \
+congolais. Humanités en biochimie ; génie logiciel à l'ESIS (École Supérieure d'Informatique Salama, \
+aujourd'hui Université Don Bosco de Lubumbashi, UDBL) ; développeur full-stack chez ConnectMe ; puis \
+consultant en IT et programmation interne chez D7 Services. Il construit AULIA pour associer l'intelligence \
+humaine, la science et la technologie afin de transformer la manière de résoudre les problèmes, et il a \
+choisi la RDC pour que le pays ne soit pas seulement un marché pour les innovations étrangères, mais un \
+lieu de conception et de production de solutions. Page : aulia-holding.com/fr/a-propos. \
+PARTENAIRES RÉELS : ConnectMe, l'association Mwinue Asimame, G20 — Journée Volley Ball.`;

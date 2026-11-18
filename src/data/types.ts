@@ -3,12 +3,13 @@ import type { RouteKey } from '../i18n.ts';
 /**
  * Statuts de maturité :
  *  live    : disponible / opérationnel (uniquement avec preuve)
+ *  pilot   : prêt, en phase pilote
  *  dev     : en développement actif
  *  design  : en conception
  *  explore : en exploration
  *  target  : architecture cible (non opérationnelle)
  */
-export type Status = 'live' | 'dev' | 'design' | 'explore' | 'target';
+export type Status = 'live' | 'pilot' | 'dev' | 'design' | 'explore' | 'target';
 
 export type Entity = {
   slug: string;

@@ -59,6 +59,16 @@ export function uiText(lang: Lang, locals?: WithLive): (typeof ui)[Lang] {
   return merge(ui[lang], liveFor(locals, 'ui', lang)) as (typeof ui)[Lang];
 }
 
+/** Menu : version en ligne, complétée par les pages ajoutées au site depuis (à leur place). */
+function mergeNav(base: Content['nav'], live: unknown): Content['nav'] {
+  if (!Array.isArray(live)) return base;
+  const out = (live as Content['nav']).filter((l) => l && l.key && l.label);
+  base.forEach((b, i) => {
+    if (!out.some((l) => l.key === b.key)) out.splice(Math.min(i, out.length), 0, b);
+  });
+  return out;
+}
+
 /** Contenu institutionnel complet (filiales, doctrine, ANIMA…). */
 export function getContent(lang: Lang, locals?: WithLive): Content {
   const base = all[lang];
@@ -78,7 +88,7 @@ export function getContent(lang: Lang, locals?: WithLive): Content {
   return {
     statusLabel: pick('statusLabel'),
     site: pick('site'),
-    nav: pick('nav'),
+    nav: mergeNav(base.nav, liveFor(locals, 'nav', lang)),
     doctrine: pick('doctrine'),
     purpose: pick('purpose'),
     name: pick('name'),

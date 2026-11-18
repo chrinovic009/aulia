@@ -75,11 +75,19 @@ export function scoreLead(lead: LeadData): { score: number; priorite: 'haute' | 
   return { score, priorite: score >= 60 ? 'haute' : score >= 35 ? 'moyenne' : 'basse', raisons };
 }
 
-export function detectLanguage(text: string): 'fr' | 'en' {
-  const words = new Set(text.toLowerCase().match(/[a-zàâçéèêëîïôûùüÿœ']+/g) ?? []);
-  const en = ['the', 'and', 'is', 'are', 'you', 'what', 'how', 'we', 'our', 'hello', 'hi', 'please', 'want', 'need', 'can', 'my', 'with', 'for', 'your', "i'm", 'would'];
-  const fr = ['le', 'la', 'les', 'et', 'est', 'vous', 'nous', 'bonjour', 'je', 'un', 'une', 'des', 'pour', 'avec', 'mon', 'votre', 'quoi', 'comment', 'besoin', 'veux'];
+/** Langue d'un message : 'fr', 'en', ou null si le message ne permet pas de trancher. */
+export function guessLanguage(text: string): 'fr' | 'en' | null {
+  const raw = text.toLowerCase();
+  const words = new Set(raw.match(/[a-zàâçéèêëîïôûùüÿœ']+/g) ?? []);
+  const en = ['the', 'and', 'is', 'are', 'you', 'what', 'how', 'we', 'our', 'hello', 'hi', 'please', 'want', 'need', 'can', 'my', 'with', 'for', 'your', "i'm", 'would', 'who', 'which', 'why', 'where', 'does', 'do', 'of', 'to', 'many', 'much', 'use', 'founder', 'about'];
+  const fr = ['le', 'la', 'les', 'et', 'est', 'vous', 'nous', 'bonjour', 'je', 'un', 'une', 'des', 'pour', 'avec', 'mon', 'votre', 'quoi', 'comment', 'besoin', 'veux', 'qui', 'quel', 'quelle', 'quels', 'combien', 'pourquoi', 'où', 'du', 'de', 'au', 'aux', 'ce', 'cette', 'sont', 'utilisent', 'fondateur', 'merci', 'salut'];
+  let cf = fr.filter((w) => words.has(w)).length;
   const ce = en.filter((w) => words.has(w)).length;
-  const cf = fr.filter((w) => words.has(w)).length;
+  if (/[àâçéèêëîïôûùüœ]/.test(raw)) cf += 1;
+  if (ce === cf) return null;
   return ce > cf ? 'en' : 'fr';
+}
+
+export function detectLanguage(text: string): 'fr' | 'en' {
+  return guessLanguage(text) ?? 'fr';
 }

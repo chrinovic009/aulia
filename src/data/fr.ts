@@ -5,6 +5,7 @@ import { CONTACT_ENDPOINT, CONTACT_EMAIL, SOCIALS } from './config.ts';
 
 const statusLabel = {
   live: 'Disponible',
+  pilot: 'En pilote',
   dev: 'En développement',
   design: 'En conception',
   explore: 'En exploration',
@@ -30,6 +31,7 @@ const site = {
 };
 
 const nav: { key: RouteKey; label: string }[] = [
+  { key: 'about', label: 'À propos' },
   { key: 'vision', label: 'Notre vision' },
   { key: 'ecosystem', label: 'Écosystème' },
   { key: 'anima', label: 'ANIMA' },
@@ -107,7 +109,7 @@ const entities: Entity[] = [
     name: 'AULIA Care',
     short: 'CARE',
     sector: "Santé & systèmes d'information médicale",
-    status: 'dev',
+    status: 'pilot',
     tagline: "La technologie au service de l'intelligence médicale.",
     summary:
       "Des infrastructures pour que les établissements de santé organisent, protègent et exploitent leurs informations médicales et administratives.",
@@ -127,7 +129,7 @@ const entities: Entity[] = [
       {
         title: 'AULIA Care Core',
         text: "Le socle opérationnel : patients, dossiers médicaux, consultations, hospitalisations, utilisateurs, services et administration. Priorités : fiabilité, sécurité, traçabilité, cohérence des données.",
-        status: 'dev',
+        status: 'pilot',
       },
       {
         title: 'Diagnostic Agent',

@@ -360,7 +360,7 @@ const WAVE = 'M76 130 C88 120 103 119 117 131 C131 144 146 158 167 165 C148 168 
     function finish(fast) {
       if (done) return;
       done = true;
-      try { sessionStorage.setItem('aulia-intro', '1'); } catch (e) {}
+      try { localStorage.setItem('aulia-intro', '1'); } catch (e) {}
       if (fast) {
         stopLight();
         el.classList.add('out-fast');
@@ -380,7 +380,16 @@ const WAVE = 'M76 130 C88 120 103 119 117 131 C131 144 146 158 167 165 C148 168 
     }
 
     el.querySelector('.pl-skip').addEventListener('click', function () { finish(true); });
-    window.addEventListener('keydown', function (e) { if (e.key === 'Escape') finish(true); });
+    window.addEventListener('keydown', function (e) {
+      if (['Escape', ' ', 'Enter', 'ArrowDown', 'PageDown', 'End'].indexOf(e.key) >= 0) finish(true);
+    });
+    // le visiteur touche l'écran, fait défiler ou clique : l'introduction s'efface aussitôt
+    ['wheel', 'touchstart', 'pointerdown'].forEach(function (ev) {
+      window.addEventListener(ev, function (e) {
+        if (e.target && e.target.closest && e.target.closest('.pl-skip')) return;
+        finish(true);
+      }, { passive: true });
+    });
 
     if (reduced || !L || !ctx) {
       finalState();
