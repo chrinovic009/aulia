@@ -7,7 +7,8 @@ import { randomBytes } from 'node:crypto';
 import { HttpError } from '../db.ts';
 import { chat, type ChatMessage } from './llm.ts';
 import { detectLanguage, extractContacts, mergeContacts, redact, type Contacts } from './governance.ts';
-import { runTool, systemPrompt, TOOLS } from './aulia.ts';
+import { runTool, systemPrompt, TOOLS, type ToolCtx } from './aulia.ts';
+import { ensureContact, findContact, markDelivered, memoryContext } from './memoire.ts';
 import type { Lang } from './catalogue.ts';
 
 const MAX_ROUNDS = 3;
@@ -54,14 +55,26 @@ export async function handleChat(db: PrismaClient, input: ChatInput) {
   await db.animaMessage.create({ data: { conversationId: conv.id, role: 'user', content: message } });
   await db.animaEvent.create({ data: { agent: 'aulia', kind: 'msg', conversationId: conv.id, detail: { h: input.hash } } });
 
+  // mémoire : reconnaître la personne (même appareil, ou e-mail / téléphone déjà connus)
+  let contactId: string | null = conv.contactId ?? null;
+  if (!contactId) {
+    const known = await findContact(db, visitorId, contacts);
+    if (known || contacts.emails.length || contacts.phones.length) {
+      contactId = (await ensureContact(db, { conversationId: conv.id, visitorId, contacts, lang })).id;
+    }
+  } else if (contacts.emails.length || contacts.phones.length) {
+    await ensureContact(db, { conversationId: conv.id, visitorId, contacts, lang });
+  }
+  const memory = contactId ? await memoryContext(db, contactId, conv.id, lang) : { text: '', requestIds: [] as string[], appointmentIds: [] as string[] };
+
   const history = await db.animaMessage.findMany({ where: { conversationId: conv.id }, orderBy: { id: 'desc' }, take: HISTORY });
-  const msgs: ChatMessage[] = [{ role: 'system', content: systemPrompt(lang) }];
+  const msgs: ChatMessage[] = [{ role: 'system', content: systemPrompt(lang, memory.text) }];
   for (const m of history.reverse()) {
     // emails et téléphones ne quittent jamais AULIA
     msgs.push(m.role === 'user' ? { role: 'user', content: redact(m.content, lang) } : { role: 'assistant', content: m.content });
   }
 
-  const ctx = { db, conversationId: conv.id, lang, contacts, origin: input.origin };
+  const ctx: ToolCtx = { db, conversationId: conv.id, visitorId, lang, contacts, origin: input.origin, contactId };
   const actions: { outil: string; resultat: Record<string, unknown> }[] = [];
   let reply = '';
   let engine = '';
@@ -93,6 +106,8 @@ export async function handleChat(db: PrismaClient, input: ChatInput) {
     reply = lang === 'fr' ? 'Merci. Pouvez-vous m’en dire un peu plus sur votre organisation et votre besoin ?' : 'Thank you. Could you tell me a little more about your organisation and your needs?';
   }
   await db.animaMessage.create({ data: { conversationId: conv.id, role: 'assistant', content: reply } });
+  // les nouvelles présentes dans la mémoire viennent d'être annoncées
+  await markDelivered(db, memory.requestIds, memory.appointmentIds);
   await db.animaEvent.create({
     data: { agent: 'aulia', kind: 'reponse', conversationId: conv.id, detail: { duree_ms: Date.now() - started, moteur: engine, actions: actions.map((a) => a.outil) } },
   });

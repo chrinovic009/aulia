@@ -3,7 +3,8 @@
 import type { MemberStatus, MessageStatus, OrgStatus } from '@prisma/client';
 import { handle, json, readJson, str, publicOrigin } from '../../../lib/server/http.ts';
 import { requireDb, HttpError } from '../../../lib/server/db.ts';
-import { can, inScope, strongEnough } from '../../../lib/server/authz.ts';
+import { can, inScope, isFounder, strongEnough } from '../../../lib/server/authz.ts';
+import * as anima from '../../../lib/server/anima/admin.ts';
 import { createOrg, inviteMember, resetTwoFactor, revokeInvitation, updateMember, updateOrg } from '../../../lib/server/people.ts';
 import { discardDraft, publishVersion, rejectVersion, restoreVersion, saveDraft, submitVersion } from '../../../lib/server/content.ts';
 import { audit } from '../../../lib/server/audit.ts';
@@ -74,6 +75,23 @@ export const POST = handle(async (ctx) => {
       });
       await audit(db, u.id, { orgId: m.orgId, action: 'message.update', entity: 'contact_message', entityId: m.id, summary: `Message de ${m.name} → ${out.status}` });
       return json(out);
+    }
+    // ── ANIMA : demandes, agenda, disponibilités, mémoire ──
+    case 'anima-request-update':
+    case 'anima-appt-update':
+    case 'anima-appt-create':
+    case 'anima-dispo-save':
+    case 'anima-indispo-add':
+    case 'anima-indispo-remove':
+    case 'anima-contact-update': {
+      if (!(isFounder(u) || can(u, 'messages.handle'))) throw new HttpError(403, 'Action réservée au suivi des demandes.');
+      const fn = {
+        'anima-request-update': anima.updateRequest, 'anima-appt-update': anima.updateAppointment, 'anima-appt-create': anima.createAppointment,
+        'anima-dispo-save': anima.saveDispo, 'anima-indispo-add': anima.addIndispo, 'anima-indispo-remove': anima.removeIndispo, 'anima-contact-update': anima.updateContact,
+      }[ctx.params.action];
+      const out = await fn(db, b);
+      await audit(db, u.id, { orgId: null, action: ctx.params.action.replace('-', '.'), entity: 'anima', entityId: String(b.id ?? ''), summary: `ANIMA : ${ctx.params.action}` });
+      return json(out ?? { ok: true });
     }
   }
   throw new HttpError(404, 'Action inconnue.');

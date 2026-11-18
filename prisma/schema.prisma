@@ -395,11 +395,15 @@ model AnimaConversation {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
+  contactId String?  @map("contact_id")
+
   messages AnimaMessage[]
   lead     AnimaLead?
   pages    AnimaPage[]
+  fiche    AnimaContact? @relation(fields: [contactId], references: [id], onDelete: SetNull)
 
   @@index([visitorId])
+  @@index([contactId])
   @@map("anima_conversations")
 }
 
@@ -464,4 +468,91 @@ model AnimaEvent {
 
   @@index([kind, at])
   @@map("anima_events")
+}
+
+/// Personne mémorisée par ANIMA (reconnue d'une visite à l'autre).
+model AnimaContact {
+  id           String   @id @default(cuid())
+  visitorIds   String[] @default([]) @map("visitor_ids")
+  emails       String[] @default([])
+  phones       String[] @default([])
+  nom          String   @default("")
+  organisation String   @default("")
+  fonction     String   @default("")
+  secteur      String   @default("")
+  lang         String   @default("fr")
+  /// faits utiles retenus par ANIMA (visible par l'agent)
+  memo         String   @default("")
+  /// notes internes du fondateur (jamais montrées au visiteur, mais connues d'ANIMA)
+  notes        String   @default("")
+  lastSeenAt   DateTime @default(now()) @map("last_seen_at")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  conversations AnimaConversation[]
+  requests      AnimaRequest[]
+  appointments  AnimaAppointment[]
+
+  @@map("anima_contacts")
+}
+
+/// Demande transmise au fondateur par ANIMA, et suite donnée.
+model AnimaRequest {
+  id             String    @id @default(cuid())
+  contactId      String    @map("contact_id")
+  conversationId String?   @map("conversation_id")
+  kind           String
+  sujet          String
+  details        String    @default("")
+  /// nouvelle · en_cours · acceptee · refusee · traitee
+  status         String    @default("nouvelle")
+  /// réponse du fondateur, transmise par ANIMA au visiteur
+  reply          String    @default("")
+  replyDelivered Boolean   @default(false) @map("reply_delivered")
+  handledAt      DateTime? @map("handled_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  contact      AnimaContact       @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  appointments AnimaAppointment[]
+
+  @@index([status])
+  @@index([contactId])
+  @@map("anima_requests")
+}
+
+/// Rendez-vous de l'agenda (fixé par ANIMA dans les disponibilités, ou par le fondateur).
+model AnimaAppointment {
+  id            String   @id @default(cuid())
+  contactId     String   @map("contact_id")
+  requestId     String?  @map("request_id")
+  startsAt      DateTime @map("starts_at")
+  durationMin   Int      @default(45) @map("duration_min")
+  mode          String   @default("visio")
+  lieu          String   @default("")
+  sujet         String   @default("")
+  /// propose · confirme · annule · effectue
+  status        String   @default("confirme")
+  createdBy     String   @default("anima") @map("created_by")
+  notes         String   @default("")
+  /// le visiteur a-t-il été informé du dernier changement ?
+  newsDelivered Boolean  @default(false) @map("news_delivered")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  contact AnimaContact  @relation(fields: [contactId], references: [id], onDelete: Cascade)
+  request AnimaRequest? @relation(fields: [requestId], references: [id], onDelete: SetNull)
+
+  @@index([startsAt])
+  @@index([contactId])
+  @@map("anima_appointments")
+}
+
+/// Réglages d'ANIMA (disponibilités, indisponibilités…).
+model AnimaSetting {
+  key       String   @id
+  value     Json
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("anima_settings")
 }

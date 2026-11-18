@@ -19,6 +19,7 @@ const founder = isFounder(u);
 
 let pendingReviews = 0;
 let newMessages = 0;
+let animaNew = 0;
 if (db && u) {
   const msgOrgs = orgsWith(u, 'messages.handle');
   [pendingReviews, newMessages] = await Promise.all([
@@ -27,6 +28,12 @@ if (db && u) {
       ? db.contactMessage.count({ where: { status: 'NEW', ...(msgOrgs ? { orgId: { in: msgOrgs } } : {}) } })
       : Promise.resolve(0),
   ]);
+  if (founder || can(u, 'messages.handle')) {
+    animaNew = await Promise.all([
+      db.animaRequest.count({ where: { status: 'nouvelle' } }),
+      db.animaAppointment.count({ where: { status: 'propose', startsAt: { gte: new Date() } } }),
+    ]).then(([a, b]) => a + b).catch(() => 0);
+  }
 }
 
 const icon: Record<string, string> = {
@@ -41,6 +48,7 @@ const icon: Record<string, string> = {
   journal: '<path d="M6 3h11a2 2 0 0 1 2 2v16l-4-2-4 2-4-2-3 2V5a2 2 0 0 1 2-2z"/><path d="M9 8h7M9 12h5"/>',
   roles: '<path d="M12 3l8 4v5c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V7z"/>',
   security: '<rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/>',
+  anima: '<circle cx="12" cy="12" r="3.2"/><path d="M12 3a9 9 0 1 0 9 9"/><path d="M16 3.5l1.2 2.3 2.3 1.2-2.3 1.2L16 10.5l-1.2-2.3L12.5 7l2.3-1.2z"/>',
   public: '<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>',
 };
 
@@ -58,6 +66,7 @@ if (can(u, 'content.edit') || canPublish(u)) links.push({ key: 'content', href: 
 if (canPublish(u)) links.push({ key: 'review', href: '/admin/validation', label: 'Validation', count: pendingReviews });
 if (can(u, 'site.view')) links.push({ key: 'site', href: '/admin/site', label: 'Visites et interactions' });
 if (can(u, 'messages.handle')) links.push({ key: 'messages', href: '/admin/messages', label: 'Questions des internautes', count: newMessages });
+if (founder || can(u, 'messages.handle')) links.push({ key: 'anima', href: '/admin/anima', label: 'ANIMA · Agenda et suivi', count: animaNew });
 links.push({ sep: 'Suivi' });
 if (can(u, 'audit.view')) links.push({ key: 'journal', href: '/admin/journal', label: 'Journal' });
 links.push({ key: 'roles', href: '/admin/roles', label: 'Catalogue des rôles' }, { key: 'security', href: '/admin/securite', label: 'Sécurité du compte' });

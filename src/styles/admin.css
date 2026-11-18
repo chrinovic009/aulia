@@ -1027,3 +1027,13 @@ input[type='checkbox'] {
   padding: 0 !important;
   background: none !important;
 }
+
+.a-check {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.6rem 0;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+.a-check input { accent-color: var(--a-gold, #c6a45c); width: 1.05rem; height: 1.05rem; }

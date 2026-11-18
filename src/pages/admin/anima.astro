@@ -1,0 +1,199 @@
+---
+/**
+ * ANIMA — suivi par le fondateur : demandes transmises par ANIMA, agenda, disponibilités,
+ * personnes mémorisées. Chaque suite donnée ici est rapportée au visiteur par ANIMA.
+ */
+import Admin from '../../layouts/Admin.astro';
+import { db } from '../../lib/server/db.ts';
+import { can, isFounder } from '../../lib/server/authz.ts';
+import { ago, fmtDate } from '../../lib/server/admin-view.ts';
+import { fmtSlot, freeSlots, getDispo, getIndispos } from '../../lib/server/anima/agenda.ts';
+
+const u = Astro.locals.user!;
+if (!db || !(isFounder(u) || can(u, 'messages.handle'))) return Astro.redirect('/admin');
+const vue = ['demandes', 'agenda', 'disponibilites', 'personnes'].includes(Astro.url.searchParams.get('vue') ?? '') ? Astro.url.searchParams.get('vue')! : 'demandes';
+const tout = Astro.url.searchParams.get('tout') === '1';
+
+const STATUT: Record<string, [string, string]> = {
+  nouvelle: ['Nouvelle', 'gold'], en_cours: ['En cours', 'info'], acceptee: ['Acceptée', 'ok'], refusee: ['Déclinée', 'err'], traitee: ['Traitée', 'ok'],
+  propose: ['À confirmer', 'gold'], confirme: ['Confirmé', 'ok'], annule: ['Annulé', 'err'], effectue: ['Effectué', ''],
+};
+const MODE: Record<string, string> = { visio: 'Visioconférence', appel: 'Appel', presentiel: 'Présentiel' };
+const JOURS = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+const localInput = (d: Date) => new Date(d.getTime() + 120 * 60_000).toISOString().slice(0, 16);
+const qui = (c: { nom: string; fonction: string; organisation: string }) => [c.nom || 'Personne sans nom', c.fonction, c.organisation].filter(Boolean).join(' · ');
+
+const [requests, appts, contacts, dispo, indispos, nbNew, nbPropose] = await Promise.all([
+  vue === 'demandes' ? db.animaRequest.findMany({ where: tout ? {} : { status: { in: ['nouvelle', 'en_cours'] } }, include: { contact: true, appointments: true }, orderBy: { createdAt: 'desc' }, take: 100 }) : Promise.resolve([]),
+  vue === 'agenda' ? db.animaAppointment.findMany({ where: tout ? {} : { startsAt: { gte: new Date(Date.now() - 86_400_000) } }, include: { contact: true }, orderBy: { startsAt: tout ? 'desc' : 'asc' }, take: 150 }) : Promise.resolve([]),
+  vue === 'personnes' || vue === 'agenda' ? db.animaContact.findMany({ orderBy: { lastSeenAt: 'desc' }, take: 200, include: { _count: { select: { conversations: true, requests: true, appointments: true } } } }) : Promise.resolve([]),
+  getDispo(db),
+  getIndispos(db),
+  db.animaRequest.count({ where: { status: 'nouvelle' } }),
+  db.animaAppointment.count({ where: { status: 'propose', startsAt: { gte: new Date() } } }),
+]);
+const prochains = vue === 'disponibilites' ? await freeSlots(db, { max: 6, parJour: 2 }) : [];
+const derniers = vue === 'personnes'
+  ? await db.animaMessage.findMany({ where: { conversation: { contactId: { in: contacts.map((c) => c.id) } } }, orderBy: { id: 'desc' }, take: 600, include: { conversation: { select: { contactId: true } } } })
+  : [];
+const fil = (id: string) => derniers.filter((m) => m.conversation.contactId === id).slice(0, 12).reverse();
+const tab = (v: string, extra = '') => `?vue=${v}${extra}`;
+---
+<Admin title="ANIMA" subtitle="Les demandes transmises par ANIMA, votre agenda et la mémoire des personnes. Vos réponses sont rapportées par ANIMA au visiteur." active="anima">
+  <nav class="a-tabs">
+    <a href={tab('demandes')} aria-current={vue === 'demandes' ? 'page' : undefined}>Demandes{nbNew ? ` (${nbNew})` : ''}</a>
+    <a href={tab('agenda')} aria-current={vue === 'agenda' ? 'page' : undefined}>Agenda{nbPropose ? ` (${nbPropose} à confirmer)` : ''}</a>
+    <a href={tab('disponibilites')} aria-current={vue === 'disponibilites' ? 'page' : undefined}>Disponibilités</a>
+    <a href={tab('personnes')} aria-current={vue === 'personnes' ? 'page' : undefined}>Personnes mémorisées</a>
+  </nav>
+
+  {vue === 'demandes' && (
+    <>
+      <p class="a-faint" style="margin:.2rem 0 1rem">{tout ? <a href={tab('demandes')}>Afficher seulement les demandes à traiter</a> : <a href={tab('demandes', '&tout=1')}>Afficher aussi les demandes traitées</a>}</p>
+      {requests.length === 0 && <p class="a-card a-empty">Aucune demande à traiter. Les nouvelles demandes d’ANIMA apparaîtront ici.</p>}
+      <div class="a-grid cols-2">
+        {requests.map((r) => (
+          <article class="a-card">
+            <h2><span>{r.sujet}</span><span class={`a-pill ${STATUT[r.status]?.[1] ?? ''}`}>{STATUT[r.status]?.[0] ?? r.status}</span></h2>
+            <p class="a-faint">{r.kind === 'rendez_vous' ? 'Rendez-vous' : 'Question'} · {qui(r.contact)} · {ago(r.createdAt)}</p>
+            <p class="a-faint">{[...r.contact.emails, ...r.contact.phones].join(' · ') || 'Aucun contact laissé'}</p>
+            {r.details && <p style="white-space:pre-wrap;margin:.7rem 0">{r.details}</p>}
+            {r.appointments.map((a) => <p class="a-faint">📅 {fmtSlot(a.startsAt, 'fr')} · {MODE[a.mode] ?? a.mode} · {STATUT[a.status]?.[0]}</p>)}
+            {r.reply && <p class="a-faint">Réponse {r.replyDelivered ? 'transmise par ANIMA ✓' : 'en attente de transmission (prochaine visite)'}</p>}
+            <form class="a-form" data-action="anima-request-update" data-payload={JSON.stringify({ id: r.id })} data-ok="Suite enregistrée — ANIMA la transmettra" data-reset="false">
+              <label class="a-field"><span>Votre réponse (ANIMA la transmettra fidèlement)</span><textarea name="reply" rows="3">{r.reply}</textarea></label>
+              <label class="a-field"><span>Statut</span>
+                <select name="status">{['nouvelle', 'en_cours', 'acceptee', 'refusee', 'traitee'].map((k) => <option value={k} selected={r.status === k}>{STATUT[k][0]}</option>)}</select>
+              </label>
+              <details><summary class="a-faint" style="cursor:pointer">Fixer un rendez-vous pour cette demande</summary>
+                <div class="a-grid cols-2" style="margin-top:.6rem">
+                  <label class="a-field"><span>Date et heure (Lubumbashi)</span><input type="datetime-local" name="rdv" /></label>
+                  <label class="a-field"><span>Durée (min)</span><input type="number" name="duree" min="15" max="480" value={dispo.dureeMin} /></label>
+                  <label class="a-field"><span>Forme</span><select name="mode">{Object.entries(MODE).map(([k, l]) => <option value={k} selected={k === dispo.modeParDefaut}>{l}</option>)}</select></label>
+                  <label class="a-field"><span>Lieu ou lien</span><input name="lieu" placeholder={dispo.lieu} /></label>
+                </div>
+              </details>
+              <label class="a-check"><input type="checkbox" name="mail" checked={r.contact.emails.length > 0} disabled={!r.contact.emails.length} /> Prévenir aussi par e-mail{!r.contact.emails.length && ' (aucun e-mail connu)'}</label>
+              <div class="a-actions"><button class="a-btn small primary" type="submit">Enregistrer la suite</button></div>
+            </form>
+          </article>
+        ))}
+      </div>
+    </>
+  )}
+
+  {vue === 'agenda' && (
+    <>
+      <p class="a-faint" style="margin:.2rem 0 1rem">{tout ? <a href={tab('agenda')}>Afficher seulement les rendez-vous à venir</a> : <a href={tab('agenda', '&tout=1')}>Afficher tout l’historique</a>}</p>
+      {appts.length === 0 && <p class="a-card a-empty">Aucun rendez-vous à venir. ANIMA réserve dans vos disponibilités ; vous pouvez aussi en ajouter un ci-dessous.</p>}
+      <div class="a-grid cols-2">
+        {appts.map((a) => (
+          <article class="a-card">
+            <h2><span>{fmtSlot(a.startsAt, 'fr')}</span><span class={`a-pill ${STATUT[a.status]?.[1] ?? ''}`}>{STATUT[a.status]?.[0] ?? a.status}</span></h2>
+            <p><b>{qui(a.contact)}</b></p>
+            <p class="a-faint">{a.sujet} · {a.durationMin} min · {MODE[a.mode] ?? a.mode}{a.lieu && ` · ${a.lieu}`} · fixé par {a.createdBy === 'anima' ? 'ANIMA' : 'vous'}</p>
+            <p class="a-faint">{[...a.contact.emails, ...a.contact.phones].join(' · ') || 'Aucun contact'}</p>
+            <form class="a-form" data-action="anima-appt-update" data-payload={JSON.stringify({ id: a.id })} data-ok="Rendez-vous mis à jour — ANIMA préviendra la personne" data-reset="false">
+              <div class="a-grid cols-2">
+                <label class="a-field"><span>Statut</span><select name="status">{['propose', 'confirme', 'annule', 'effectue'].map((k) => <option value={k} selected={a.status === k}>{STATUT[k][0]}</option>)}</select></label>
+                <label class="a-field"><span>Déplacer au (Lubumbashi)</span><input type="datetime-local" name="quand" value={localInput(a.startsAt)} /></label>
+              </div>
+              <label class="a-field"><span>Lieu ou lien</span><input name="lieu" value={a.lieu} /></label>
+              <label class="a-field"><span>Notes internes</span><textarea name="notes" rows="2">{a.notes}</textarea></label>
+              <label class="a-check"><input type="checkbox" name="mail" checked={a.contact.emails.length > 0} disabled={!a.contact.emails.length} /> Prévenir par e-mail en cas de changement</label>
+              <div class="a-actions"><button class="a-btn small primary" type="submit">Enregistrer</button></div>
+            </form>
+          </article>
+        ))}
+      </div>
+      <article class="a-card" style="margin-top:1.2rem">
+        <h2><span>Ajouter un rendez-vous</span></h2>
+        <form class="a-form" data-action="anima-appt-create" data-ok="Rendez-vous ajouté">
+          <div class="a-grid cols-2">
+            <label class="a-field"><span>Personne connue</span><select name="contactId"><option value="">— nouvelle personne —</option>{contacts.map((c) => <option value={c.id}>{qui(c)}</option>)}</select></label>
+            <label class="a-field"><span>…ou nom d’une nouvelle personne</span><input name="nom" /></label>
+            <label class="a-field"><span>E-mail</span><input type="email" name="email" /></label>
+            <label class="a-field"><span>Téléphone</span><input name="phone" /></label>
+            <label class="a-field"><span>Date et heure (Lubumbashi)</span><input type="datetime-local" name="quand" required /></label>
+            <label class="a-field"><span>Durée (min)</span><input type="number" name="duree" value={dispo.dureeMin} /></label>
+            <label class="a-field"><span>Forme</span><select name="mode">{Object.entries(MODE).map(([k, l]) => <option value={k}>{l}</option>)}</select></label>
+            <label class="a-field"><span>Sujet</span><input name="sujet" placeholder="Présentation AULIA Care" /></label>
+          </div>
+          <div class="a-actions"><button class="a-btn small primary" type="submit">Ajouter</button></div>
+        </form>
+      </article>
+    </>
+  )}
+
+  {vue === 'disponibilites' && (
+    <div class="a-grid cols-2">
+      <article class="a-card">
+        <h2><span>Vos disponibilités</span></h2>
+        <p class="a-faint">ANIMA ne propose et ne réserve que ces plages (heure de Lubumbashi). Exemple : <code>09:00-12:00, 14:00-17:00</code>. Laissez vide un jour non travaillé.</p>
+        <form class="a-form" data-action="anima-dispo-save" data-ok="Disponibilités enregistrées" data-reset="false">
+          {JOURS.map((j, d) => <label class="a-field"><span>{j}</span><input name={`jour${d}`} value={(dispo.jours[String(d)] ?? []).map(([a, b]) => `${a}-${b}`).join(', ')} /></label>)}
+          <div class="a-grid cols-2">
+            <label class="a-field"><span>Durée d’un rendez-vous (min)</span><input type="number" name="dureeMin" value={dispo.dureeMin} /></label>
+            <label class="a-field"><span>Délai minimum (heures)</span><input type="number" name="delaiHeures" value={dispo.delaiHeures} /></label>
+            <label class="a-field"><span>Réserver jusqu’à (jours)</span><input type="number" name="horizonJours" value={dispo.horizonJours} /></label>
+            <label class="a-field"><span>Forme par défaut</span><select name="modeParDefaut">{Object.entries(MODE).map(([k, l]) => <option value={k} selected={k === dispo.modeParDefaut}>{l}</option>)}</select></label>
+          </div>
+          <label class="a-field"><span>Lieu ou lien par défaut (visio)</span><input name="lieu" value={dispo.lieu} /></label>
+          <label class="a-check"><input type="checkbox" name="autoConfirmer" checked={dispo.autoConfirmer} /> ANIMA confirme directement les rendez-vous pris dans ces plages (sinon : « à confirmer » par vous)</label>
+          <div class="a-actions"><button class="a-btn small primary" type="submit">Enregistrer</button></div>
+        </form>
+      </article>
+      <div>
+        <article class="a-card">
+          <h2><span>Indisponibilités</span></h2>
+          <p class="a-faint">Voyage, congé, réunion : ANIMA ne réservera rien sur ces périodes.</p>
+          {indispos.length === 0 && <p class="a-faint">Aucune.</p>}
+          {indispos.map((x, i) => (
+            <p>{fmtDate(x.debut)} → {fmtDate(x.fin)}{x.motif && <span class="a-faint"> · {x.motif}</span>}
+              <button class="a-btn small" type="button" data-action="anima-indispo-remove" data-payload={JSON.stringify({ index: i })} data-confirm="Retirer ?">Retirer</button></p>
+          ))}
+          <form class="a-form" data-action="anima-indispo-add" data-ok="Indisponibilité ajoutée">
+            <div class="a-grid cols-2">
+              <label class="a-field"><span>Début</span><input type="datetime-local" name="debut" required /></label>
+              <label class="a-field"><span>Fin</span><input type="datetime-local" name="fin" required /></label>
+            </div>
+            <label class="a-field"><span>Motif (interne)</span><input name="motif" /></label>
+            <div class="a-actions"><button class="a-btn small" type="submit">Ajouter</button></div>
+          </form>
+        </article>
+        <article class="a-card" style="margin-top:1rem">
+          <h2><span>Ce qu’ANIMA proposera en ce moment</span></h2>
+          {prochains.length ? <ul>{prochains.map((d) => <li>{fmtSlot(d, 'fr')}</li>)}</ul> : <p class="a-faint">Aucun créneau libre : vérifiez vos plages.</p>}
+        </article>
+      </div>
+    </div>
+  )}
+
+  {vue === 'personnes' && (
+    <>
+      {contacts.length === 0 && <p class="a-card a-empty">Personne n’est encore mémorisé. ANIMA crée une fiche dès qu’un visiteur se présente ou laisse un contact.</p>}
+      <div class="a-grid cols-2">
+        {contacts.map((c) => (
+          <article class="a-card">
+            <h2><span>{qui(c)}</span><span class="a-faint">vu {ago(c.lastSeenAt)}</span></h2>
+            <p class="a-faint">{[...c.emails, ...c.phones].join(' · ') || 'Aucun contact'} · {c._count.conversations} conversation(s) · {c._count.requests} demande(s) · {c._count.appointments} rendez-vous · {c.lang === 'en' ? 'anglais' : 'français'}</p>
+            <form class="a-form" data-action="anima-contact-update" data-payload={JSON.stringify({ id: c.id })} data-ok="Mémoire mise à jour" data-reset="false">
+              <div class="a-grid cols-2">
+                <label class="a-field"><span>Nom</span><input name="nom" value={c.nom} /></label>
+                <label class="a-field"><span>Organisation</span><input name="organisation" value={c.organisation} /></label>
+              </div>
+              <label class="a-field"><span>Ce qu’ANIMA retient (connu de l’agent)</span><textarea name="memo" rows="2">{c.memo}</textarea></label>
+              <label class="a-field"><span>Vos consignes à ANIMA pour cette personne (jamais montrées telles quelles)</span><textarea name="notes" rows="2" placeholder="Ex. : client prioritaire, proposer un pilote gratuit de 3 mois">{c.notes}</textarea></label>
+              <div class="a-actions"><button class="a-btn small" type="submit">Enregistrer</button></div>
+            </form>
+            {fil(c.id).length > 0 && (
+              <details><summary class="a-faint" style="cursor:pointer">Derniers échanges</summary>
+                <div style="margin-top:.6rem;display:grid;gap:.4rem">{fil(c.id).map((m) => <p style="margin:0;white-space:pre-wrap"><b>{m.role === 'user' ? 'Visiteur' : 'ANIMA'} :</b> {m.content}</p>)}</div>
+              </details>
+            )}
+          </article>
+        ))}
+      </div>
+    </>
+  )}
+</Admin>

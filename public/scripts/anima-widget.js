@@ -22,6 +22,7 @@
   var CHAT_URL = attr("data-chat") || API + "/api/chat";
   var HEALTH_URL = attr("data-health") || API + "/health";
   var CONTACT = attr("data-contact");
+  var ACCUEIL = attr("data-accueil");
   var PRIVACY = attr("data-privacy");
   var LANG = attr("data-lang") || ((document.documentElement.lang || navigator.language || "fr").slice(0, 2) === "en" ? "en" : "fr");
   var REDUCE = !!(window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches);
@@ -371,10 +372,23 @@
     root.classList.add("anima-open");
     teaserOff();
     checkAnima();
-    if (!state.greeted && !state.veille) { state.greeted = true; addMsg(T.hello, "bot", true, addChips); }
+    if (!state.greeted && !state.veille) { state.greeted = true; greet(); }
     if (withVoice) startVoice(); else setTimeout(function () { input.focus({ preventScroll: true }); }, 350);
   }
   function close() { stopVoice(); root.classList.remove("anima-open"); }
+  // accueil : une personne déjà connue est saluée par son nom, avec les suites données à ses demandes
+  function greet() {
+    if (!ACCUEIL || !state.visitor) { addMsg(T.hello, "bot", true, addChips); return; }
+    setMode("thinking");
+    fetch(ACCUEIL + "?v=" + encodeURIComponent(state.visitor) + "&lang=" + LANG)
+      .then(function (r) { return r.ok ? r.json() : {}; })
+      .then(function (d) {
+        if (state.veille) return;
+        setMode("writing");
+        if (d && d.greeting) addMsg(d.greeting, "bot", true, function () { setMode("idle"); });
+        else addMsg(T.hello, "bot", true, function () { setMode("idle"); addChips(); });
+      }, function () { if (!state.veille) { setMode("idle"); addMsg(T.hello, "bot", true, addChips); } });
+  }
   $(".anima-launch").addEventListener("click", function () { root.classList.contains("anima-open") ? close() : open(false); });
   $(".anima-x").addEventListener("click", close);
   $(".anima-tovoice").addEventListener("click", function () { startVoice(); });
