@@ -13,6 +13,7 @@ import { HttpError } from './db.ts';
 import { audit } from './audit.ts';
 import { can, canPublish, type UserCtx } from './authz.ts';
 import { shapeProblem } from './shape.ts';
+import { applySiteUpdates } from './site-updates.ts';
 
 // ───────────────────────── lecture publique ─────────────────────────
 
@@ -23,6 +24,8 @@ const TTL = 4000;
 /** Contenu en ligne (mis en cache quelques secondes par instance). Ne lève jamais d'erreur. */
 export async function loadLive(minSince = 0): Promise<{ live?: LiveContent; since: number }> {
   if (!db) return { since: 0 };
+  // corrections de contenu livrées avec le code : appliquées une fois, au premier chargement
+  if (await applySiteUpdates().catch(() => false)) cache = null;
   // une page redemandée après un événement doit refléter au moins cet événement
   if (cache && Date.now() - cache.at < TTL && cache.since >= minSince) return cache;
   try {

@@ -4,11 +4,12 @@
  * À mettre à jour dès qu'une filiale change de statut.
  */
 export type Lang = 'fr' | 'en';
-export type Statut = 'disponible' | 'pilote' | 'en_developpement' | 'en_conception' | 'en_exploration' | 'conceptuel';
+export type Statut = 'disponible' | 'pilote' | 'premier_agent' | 'en_developpement' | 'en_conception' | 'en_exploration' | 'conceptuel';
 
 export const STATUTS: Record<Statut, Record<Lang, string>> = {
   disponible: { fr: 'Disponible', en: 'Available' },
   pilote: { fr: 'Couche Core prête, en phase pilote', en: 'Core layer ready, in pilot phase' },
+  premier_agent: { fr: 'En service (premier agent), architecture complète en développement', en: 'In service (first agent), full architecture in development' },
   en_developpement: { fr: 'En développement', en: 'In development' },
   en_conception: { fr: 'En conception', en: 'In design' },
   en_exploration: { fr: 'En exploration', en: 'Exploratory' },
@@ -50,10 +51,10 @@ export const FILIALES: Record<string, Filiale> = {
     note: '',
   },
   ANIMA: {
-    nom: 'ANIMA', slug: 'anima', statut: 'conceptuel',
+    nom: 'ANIMA', slug: 'anima', statut: 'premier_agent',
     domaine: { fr: 'Intelligence transversale du groupe, sous contrôle humain', en: "The group's cross-cutting intelligence, under human control" },
     pourQui: 'toutes les filiales',
-    note: 'Le présent assistant en est le premier agent.',
+    note: "Fonctionnelle : le présent assistant en est le premier agent, en service sur le site (conversation écrite et vocale, mémoire, prise de rendez-vous, gouvernance). La perception multimodale, l'anticipation et la coordination entre filiales sont en développement.",
   },
 };
 
@@ -78,7 +79,7 @@ protéger, transformer. Parcours : Care d'abord (preuve terrain), puis Vigil et 
 ANIMA = intelligence transversale sous contrôle humain ; tu en es le premier agent. \
 Pour avancer : demander une présentation, lancer un partenariat (établissement pilote, partenaire \
 technique, institution, investisseur) ou écrire à l'équipe. Adresse et téléphone ne sont pas publiés. \
-FONDATEUR (information publique, à donner volontiers) : TUMBA NYEMBO Chrinovic, fondateur d'AULIA, né en 2003, \
+FONDATEUR (information publique, à donner volontiers) : Tumba Nyembo Chrinovic, fondateur d'AULIA, né en 2003, \
 congolais. Humanités en biochimie ; génie logiciel à l'ESIS (École Supérieure d'Informatique Salama, \
 aujourd'hui Université Don Bosco de Lubumbashi, UDBL) ; développeur full-stack chez ConnectMe ; puis \
 consultant en IT et programmation interne chez D7 Services. Il construit AULIA pour associer l'intelligence \

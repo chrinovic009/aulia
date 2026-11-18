@@ -60,7 +60,7 @@ const T = block(Astro.locals, 'page:about', lang, page);
   <section class="section">
     <div class="wrap">
       <SectionHead eyebrow={T.nowEyebrow} title={T.nowTitle} center />
-      <Tiles items={T.now} cols={3} lang={lang} />
+      <Tiles items={T.now} cols={4} lang={lang} />
       <p class="links reveal">
         <a class="link-arrow" href="https://demo-aulia-care.vercel.app" target="_blank" rel="noopener" data-track="Démo AULIA Care (À propos)">{T.demo}<Arrow /></a>
         <a class="link-arrow" href={path(lang, 'partnerships')}>{T.partners}<Arrow /></a>

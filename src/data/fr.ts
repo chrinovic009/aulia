@@ -275,7 +275,7 @@ const entities: Entity[] = [
 ];
 
 const anima = {
-  status: 'target' as const,
+  status: 'live' as const,
   motto: ['Percevoir', 'Comprendre', 'Anticiper', 'Coordonner', 'Agir'],
   mottoEn: ['Perceive', 'Understand', 'Anticipate', 'Coordinate', 'Act'],
   capabilities: [
