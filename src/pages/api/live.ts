@@ -12,6 +12,28 @@ import { db } from '../../lib/server/db.ts';
 import { strongEnough, visibleOrgIds } from '../../lib/server/authz.ts';
 
 const LIFETIME = 50_000;
+const PUBLIC_INTERVAL = 5000;
+const INTERNAL_INTERVAL = 2000;
+
+type Row = { id: bigint; topic: string; action: string; orgId: string | null; ref: string | null };
+
+/**
+ * Site public : un seul appel à la base toutes les 5 s pour tous les visiteurs servis par
+ * la même instance, au lieu d'un appel par visiteur. Chaque flux filtre ensuite ce qu'il n'a pas vu.
+ */
+const shared: { at: number; rows: Row[]; pending: Promise<Row[]> | null } = { at: 0, rows: [], pending: null };
+async function recentPublic(): Promise<Row[]> {
+  if (Date.now() - shared.at < PUBLIC_INTERVAL - 200) return shared.rows;
+  shared.pending ??= db!.changeEvent
+    .findMany({ where: { scope: 'public' }, orderBy: { id: 'desc' }, take: 200 })
+    .then((rows) => {
+      shared.rows = rows.reverse();
+      shared.at = Date.now();
+      return shared.rows;
+    })
+    .finally(() => (shared.pending = null));
+  return shared.pending;
+}
 
 export const GET: APIRoute = async (ctx) => {
   const scope = ctx.url.searchParams.get('scope') === 'internal' ? 'internal' : 'public';
@@ -19,7 +41,7 @@ export const GET: APIRoute = async (ctx) => {
   const user = ctx.locals.user;
   if (scope === 'internal' && (!user || !strongEnough(user))) return new Response(null, { status: 401 });
   const orgIds = scope === 'internal' && user ? visibleOrgIds(user) : null;
-  const interval = scope === 'internal' ? 1500 : 3000;
+  const interval = scope === 'internal' ? INTERNAL_INTERVAL : PUBLIC_INTERVAL;
 
   const given = ctx.request.headers.get('last-event-id') ?? ctx.url.searchParams.get('since');
   let last = Number(given ?? 0) || 0;
@@ -35,14 +57,20 @@ export const GET: APIRoute = async (ctx) => {
       const send = (s: string) => {
         try {
           controller.enqueue(enc.encode(s));
-        } catch {}
+        } catch {
+          // le navigateur a fermé la connexion : rien à envoyer, la boucle s'arrête au tour suivant
+        }
       };
       send(`retry: 1500\n: AULIA live\n\n`);
       const started = Date.now();
       let beat = Date.now();
       while (!signal.aborted && Date.now() - started < LIFETIME) {
         try {
-          const rows = await db!.changeEvent.findMany({
+          const cached = scope === 'public' ? await recentPublic() : null;
+          // le cache partagé suffit tant qu'il contient tout ce que ce visiteur n'a pas encore vu
+          const rows = cached && (cached.length < 200 || Number(cached[0]!.id) <= last + 1)
+            ? cached.filter((r) => Number(r.id) > last)
+            : await db!.changeEvent.findMany({
             where: {
               scope,
               id: { gt: BigInt(last) },
@@ -71,15 +99,12 @@ export const GET: APIRoute = async (ctx) => {
         }
         await new Promise((r) => setTimeout(r, interval));
       }
-      // entretien léger : les événements de plus de 2 jours ne servent plus
-      if (Math.random() < 0.02) {
-        db!.changeEvent.deleteMany({ where: { at: { lt: new Date(Date.now() - 2 * 864e5) } } }).catch(() => {});
-        db!.loginAttempt.deleteMany({ where: { at: { lt: new Date(Date.now() - 7 * 864e5) } } }).catch(() => {});
-        db!.otpCode.deleteMany({ where: { createdAt: { lt: new Date(Date.now() - 7 * 864e5) } } }).catch(() => {});
-      }
+      // le nettoyage des anciens événements est fait chaque nuit par /api/cron/cleanup
       try {
         controller.close();
-      } catch {}
+      } catch {
+        // déjà fermé par le navigateur
+      }
     },
   });
 
