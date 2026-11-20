@@ -159,7 +159,7 @@ const T = block(Astro.locals, 'page:contact', lang, page);
     border-color: var(--gold);
   }
   .invalid {
-    border-color: #c96f5c;
+    border-color: var(--danger-border);
   }
   .consent {
     grid-template-columns: auto 1fr;
@@ -197,10 +197,10 @@ const T = block(Astro.locals, 'page:contact', lang, page);
     max-width: 30rem;
   }
   .status.ok {
-    color: #9cc79a;
+    color: var(--ok);
   }
   .status.err {
-    color: #e0a090;
+    color: var(--danger);
   }
   @media (max-width: 900px) {
     .grid {
