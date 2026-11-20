@@ -40,3 +40,15 @@ export function deviceOf(ua: string): string {
   if (/Mobi|Android|iPhone/i.test(ua)) return 'mobile';
   return 'ordinateur';
 }
+
+/**
+ * Nombre de visiteurs uniques depuis `since`, compté par la base (COUNT DISTINCT)
+ * au lieu de rapatrier toutes les empreintes dans le serveur.
+ * `orgIds` : null = toutes les organisations.
+ */
+export async function countVisitors(db: PrismaClient, since: Date, orgIds: string[] | null): Promise<number> {
+  const rows = orgIds === null
+    ? await db.$queryRaw<{ u: number }[]>`SELECT count(DISTINCT visitor_hash)::int AS u FROM site_events WHERE kind = 'VIEW' AND at >= ${since}`
+    : await db.$queryRaw<{ u: number }[]>`SELECT count(DISTINCT visitor_hash)::int AS u FROM site_events WHERE kind = 'VIEW' AND at >= ${since} AND org_id = ANY(${orgIds}::text[])`;
+  return rows[0]?.u ?? 0;
+}

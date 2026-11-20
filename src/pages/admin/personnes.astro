@@ -6,16 +6,22 @@ import { MEMBER_STATUS, ago } from '../../lib/server/admin-view.ts';
 const u = Astro.locals.user!;
 if (!isFounder(u)) return Astro.redirect('/admin');
 const q = (Astro.url.searchParams.get('q') ?? '').trim();
-const [people, orgs, roles] = await Promise.all([
+const PAGE = 50;
+const page = Math.max(1, Math.floor(Number(Astro.url.searchParams.get('page'))) || 1);
+const [found, orgs, roles] = await Promise.all([
   db!.user.findMany({
     where: q ? { OR: [{ name: { contains: q, mode: 'insensitive' } }, { email: { contains: q, mode: 'insensitive' } }] } : {},
     include: { memberships: { include: { org: true, role: true }, orderBy: { role: { rank: 'asc' } } } },
-    orderBy: { name: 'asc' },
-    take: 300,
+    orderBy: [{ name: 'asc' }, { id: 'asc' }],
+    skip: (page - 1) * PAGE,
+    take: PAGE + 1,
   }),
   db!.organization.findMany({ where: { status: { not: 'ARCHIVED' } }, orderBy: [{ kind: 'asc' }, { name: 'asc' }] }),
   db!.role.findMany({ where: { code: { not: 'founder' } }, orderBy: { rank: 'asc' } }),
 ]);
+const hasMore = found.length > PAGE;
+const people = found.slice(0, PAGE);
+const pageLink = (n: number) => `?${new URLSearchParams({ ...(q ? { q } : {}), page: String(n) })}`;
 ---
 <Admin title="Personnes" subtitle="Toutes les personnes du groupe. Vous seul pouvez rattacher une personne à plusieurs organisations." active="people">
   <form method="get" class="a-actions" style="margin-bottom:1rem">
@@ -67,4 +73,10 @@ const [people, orgs, roles] = await Promise.all([
     </form>
     <p class="a-faint" style="margin-top:.6rem">Les rôles « groupe » s’attribuent dans la holding AULIA, les rôles de filiale dans une filiale. Une adresse inconnue reçoit une invitation.</p>
   </section>
+  {(page > 1 || hasMore) && (
+    <nav class="a-actions" style="margin-top:1rem">
+      {page > 1 && <a class="a-btn small" href={pageLink(page - 1)}>← Précédents</a>}
+      {hasMore && <a class="a-btn small" href={pageLink(page + 1)}>Suivants →</a>}
+    </nav>
+  )}
 </Admin>
