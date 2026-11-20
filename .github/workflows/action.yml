@@ -6,8 +6,14 @@ on:
       - 'v*'
 
 jobs:
+  verifier:
+    uses: ./.github/workflows/ci.yml
+
   release:
+    needs: verifier
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - uses: actions/checkout@v4
