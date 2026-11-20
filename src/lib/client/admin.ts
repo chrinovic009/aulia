@@ -124,7 +124,7 @@ function schedule() {
       return;
     }
     pending = false;
-    await refresh().catch(() => {});
+    await refresh().catch((err) => console.warn('[AULIA admin] actualisation impossible', err));
     document.querySelectorAll('.a-feed li[data-new]').forEach((li) => li.classList.add('new'));
   }, 350);
 }

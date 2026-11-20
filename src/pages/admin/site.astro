@@ -4,6 +4,7 @@ import OrgPicker from '../../components/admin/OrgPicker.astro';
 import { db } from '../../lib/server/db.ts';
 import { can } from '../../lib/server/authz.ts';
 import { orgOptions, pickOrg } from '../../lib/server/admin-view.ts';
+import { countVisitors } from '../../lib/server/visitors.ts';
 
 const u = Astro.locals.user!;
 if (!can(u, 'site.view')) return Astro.redirect('/admin');
@@ -25,14 +26,14 @@ const [daily, totals, uniques, pages, countries, refs, devices, langs, clicks, p
     FROM site_events WHERE kind = 'VIEW' AND at >= ${since} AND (${orgId}::text IS NULL OR org_id = ${orgId})
     GROUP BY 1 ORDER BY 1`,
   d.siteEvent.count({ where: { ...where, kind: 'VIEW' } }),
-  d.siteEvent.groupBy({ by: ['visitorHash'], where: { ...where, kind: 'VIEW' } }).then((r) => r.length),
+  countVisitors(d, since, orgId ? [orgId] : null),
   top('path', 'VIEW', 10),
   top('country', 'VIEW'),
   top('referrerHost', 'VIEW'),
   top('device', 'VIEW', 3),
   top('lang', 'VIEW', 2),
   top('label', 'CLICK', 10),
-  d.siteEvent.groupBy({ by: ['visitorHash'], where: { kind: 'VIEW', at: { gte: new Date(Date.now() - 5 * 60_000) }, ...(orgId ? { orgId } : {}) } }).then((r) => r.length),
+  countVisitors(d, new Date(Date.now() - 5 * 60_000), orgId ? [orgId] : null),
 ]);
 const clickTotal = clicks.reduce((s, c) => s + c._count._all, 0);
 

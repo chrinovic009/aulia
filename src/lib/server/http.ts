@@ -21,7 +21,9 @@ export function assertSameOrigin(ctx: APIContext) {
   let host = '';
   try {
     host = new URL(origin).host;
-  } catch {}
+  } catch {
+    // origine illisible : host reste vide et la requête est refusée juste en dessous
+  }
   // derrière Vercel, l'adresse interne de la requête peut différer du domaine public :
   // on accepte le domaine réellement demandé (en-têtes du proxy) et les domaines officiels
   const h = ctx.request.headers;

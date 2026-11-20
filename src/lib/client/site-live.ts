@@ -11,8 +11,10 @@ function beacon(data: Record<string, string>) {
   const body = JSON.stringify(data);
   try {
     if (navigator.sendBeacon && navigator.sendBeacon('/api/track', new Blob([body], { type: 'text/plain' }))) return;
-  } catch {}
-  fetch('/api/track', { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch(() => {});
+  } catch {
+    // sendBeacon indisponible : on passe par fetch ci-dessous
+  }
+  fetch('/api/track', { method: 'POST', body, keepalive: true, headers: { 'Content-Type': 'text/plain' } }).catch((err) => console.debug('[AULIA track]', err));
 }
 
 // ── visites ──
@@ -48,7 +50,10 @@ function apply() {
       await refreshRegions(['header', 'main', 'footer'], String(last));
       document.querySelectorAll('.reveal:not(.is-visible)').forEach((n) => n.classList.add('is-visible'));
       window.dispatchEvent(new CustomEvent('aulia:content-updated'));
-    } catch {}
+    } catch (err) {
+      // la page reste affichée telle quelle ; le prochain événement retentera la mise à jour
+      console.warn('[AULIA live] mise à jour de la page impossible', err);
+    }
   }, 250);
 }
 

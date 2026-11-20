@@ -4,6 +4,7 @@ import Feed from '../../components/admin/Feed.astro';
 import { db } from '../../lib/server/db.ts';
 import { can, canPublish, isFounder, orgsWith, visibleOrgIds } from '../../lib/server/authz.ts';
 import { ago, MESSAGE_STATUS, TOPIC_LABEL, VERSION_STATUS } from '../../lib/server/admin-view.ts';
+import { countVisitors } from '../../lib/server/visitors.ts';
 
 const u = Astro.locals.user!;
 const founder = isFounder(u);
@@ -22,7 +23,7 @@ const [orgCount, peopleCount, pending, newMsgs, visits, visitors, myDrafts, revi
   msgOrgs === null || msgOrgs.length ? d.contactMessage.count({ where: { status: 'NEW', ...(msgOrgs ? { orgId: { in: msgOrgs } } : {}) } }) : Promise.resolve(0),
   siteOrgs === null || siteOrgs.length ? d.siteEvent.count({ where: { kind: 'VIEW', at: { gte: week }, ...(siteOrgs ? { orgId: { in: siteOrgs } } : {}) } }) : Promise.resolve(0),
   siteOrgs === null || siteOrgs.length
-    ? d.siteEvent.groupBy({ by: ['visitorHash'], where: { kind: 'VIEW', at: { gte: week }, ...(siteOrgs ? { orgId: { in: siteOrgs } } : {}) } }).then((r) => r.length)
+    ? countVisitors(d, week, siteOrgs)
     : Promise.resolve(0),
   d.contentVersion.findMany({ where: { authorId: u.id, status: { in: ['DRAFT', 'SUBMITTED', 'REJECTED'] } }, include: { block: true }, orderBy: { updatedAt: 'desc' }, take: 6 }),
   canPublish(u) ? d.contentVersion.findMany({ where: { status: 'SUBMITTED' }, include: { block: true, author: true }, orderBy: { submittedAt: 'asc' }, take: 6 }) : Promise.resolve([]),

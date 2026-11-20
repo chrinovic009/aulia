@@ -33,8 +33,9 @@ l'espace interne indique que la base n'est pas configurée.
    Vercel ajoute automatiquement `DATABASE_URL` et `DATABASE_URL_UNPOOLED` au projet.
 2. **Variables** (Vercel → *Settings* → *Environment Variables*) :
    - `APP_SECRET` : chaîne aléatoire de 32 caractères ou plus (ne jamais la partager ni la changer ensuite) ;
-   - `FOUNDER_EMAIL` : `chrinovicnyembo009@gmail.com` — seule adresse autorisée à créer le premier compte ;
+   - `FOUNDER_EMAIL` : votre adresse personnelle de fondateur (à ne jamais écrire dans le dépôt) — seule adresse autorisée à créer le premier compte ;
    - `RESEND_API_KEY`, `MAIL_FROM`, `CONTACT_INBOX` : envoi des e-mails (voir plus bas) ;
+   - `CRON_SECRET` : chaîne aléatoire ; Vercel l’envoie au nettoyage nocturne (`vercel.json`, `/api/cron/cleanup`) ;
    - facultatif : `GITHUB_CLIENT_ID`, `GITHUB_CLIENT_SECRET`, `APP_TIMEZONE` (par défaut `Africa/Kinshasa`).
 3. **Tables** : depuis votre ordinateur, avec les mêmes valeurs dans `.env` : `npm run db:migrate`.
 4. **Déployer**, puis ouvrir `https://www.aulia-holding.com/admin/rejoindre`, saisir l'adresse du fondateur,

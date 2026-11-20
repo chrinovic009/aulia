@@ -27,6 +27,12 @@
   --ink-rgb: 255, 255, 255;
   --bg-rgb: 17, 16, 13;
   --emblem-letter: #f3f1eb;
+  /* états : succès / erreur */
+  --ok: #9cc79a;
+  --ok-rgb: 156, 199, 154;
+  --ok-strong: #3f8f5a;
+  --danger: #e0a090;
+  --danger-border: #c96f5c;
 
   --font-display: 'Urbanist', 'Inter', 'Segoe UI', system-ui, sans-serif;
   --font-sans: 'Urbanist', 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -67,6 +73,10 @@
   --ink-rgb: 17, 16, 13;
   --bg-rgb: 250, 247, 240;
   --emblem-letter: #17150f;
+  --ok: #2f7d4a;
+  --ok-strong: #2f7d4a;
+  --danger: #a3412c;
+  --danger-border: #c96f5c;
 
   color-scheme: light;
 }
@@ -426,4 +436,10 @@ h4 {
 
 em {
   font-style: normal;
+}
+
+/* enveloppes des pages découpées (src/views/styles) : sans effet sur la mise en page */
+.v-anima,
+.v-home {
+  display: contents;
 }
