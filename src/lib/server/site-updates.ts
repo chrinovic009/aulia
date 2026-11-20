@@ -53,6 +53,22 @@ export const UPDATES: Update[] = [
       { block: 'entity:care', path: ['capabilities', 0, 'status'], from: { en: 'dev', fr: 'dev' } },
     ],
   },
+  {
+    id: '2026-11-20-flow',
+    label: 'Nouvelle fiche AULIA Flow (en pilote dans une usine)',
+    changes: [
+      { block: 'entity:flow', path: ["sector"], from: { en: "Organisational & operational intelligence", fr: "Intelligence organisationnelle & opérationnelle" } },
+      { block: 'entity:flow', path: ["status"], from: { en: "design", fr: "design" } },
+      { block: 'entity:flow', path: ["tagline"], from: { en: "Master the flow of information, resources and operations.", fr: "Maîtriser la circulation des informations, des ressources et des opérations." } },
+      { block: 'entity:flow', path: ["summary"], from: { en: "Helping organisations master their operations, resources, finances, production and information flows.", fr: "Aider les organisations à maîtriser leurs opérations, leurs ressources, leurs finances, leur production et leurs flux d'information." } },
+      { block: 'entity:flow', path: ["presentation"], from: { en: ["AULIA Flow aims to improve how information, resources and operations move within organisations.","It should make it possible to understand how resources and information circulate, where they get stuck and what needs to be anticipated."], fr: ["AULIA Flow vise à améliorer la circulation des informations, des ressources et des opérations au sein des organisations.","Elle doit permettre de comprendre comment les ressources et les informations se déplacent, où elles se bloquent et ce qu'il faut anticiper."] } },
+      { block: 'entity:flow', path: ["problems"], from: { en: ["Information scattered across tools, files and departments.","Stock-outs and delays discovered too late.","Limited visibility over operations and performance.","Difficult coordination between teams and sites."], fr: ["Des informations dispersées entre outils, fichiers et services.","Des ruptures de stock et des retards découverts trop tard.","Une visibilité limitée sur les opérations et les performances.","Une coordination difficile entre équipes et sites."] } },
+      { block: 'entity:flow', path: ["mission"], from: { en: "To give organisations a clear, up-to-date view of their flows so they can decide earlier and coordinate better.", fr: "Donner aux organisations une vision claire et à jour de leurs flux pour décider plus tôt et coordonner mieux." } },
+      { block: 'entity:flow', path: ["capabilities"], from: { en: [{"title":"Resources & procurement","text":"Tracking stock, logistics and supply.","status":"design"},{"title":"Operations & production","text":"Tracking operations and coordinating activities.","status":"design"},{"title":"Finance & performance","text":"Financial tracking and performance indicators.","status":"design"},{"title":"Operational forecasting","text":"Analysing flows and anticipating pressure points.","status":"design"}], fr: [{"title":"Ressources & approvisionnement","text":"Suivi des stocks, de la logistique et des approvisionnements.","status":"design"},{"title":"Opérations & production","text":"Suivi des opérations et coordination des activités.","status":"design"},{"title":"Finances & performance","text":"Suivi financier et indicateurs de performance.","status":"design"},{"title":"Prévisions opérationnelles","text":"Analyse des flux et anticipation des tensions.","status":"design"}] } },
+      { block: 'entity:flow', path: ["architecture"], from: { en: [{"title":"A unified view","text":"Connecting operational data that today lives in separate systems."},{"title":"Visible flows","text":"Visualising processes to spot bottlenecks."},{"title":"Prepared decisions","text":"Proposing actions, always subject to validation."}], fr: [{"title":"Une vue unifiée","text":"Relier les données opérationnelles qui vivent aujourd'hui dans des systèmes séparés."},{"title":"Des flux visibles","text":"Visualiser les processus pour repérer les blocages."},{"title":"Des décisions préparées","text":"Proposer des actions, toujours soumises à validation."}] } },
+      { block: 'entity:flow', path: ["ecosystem"], from: { en: "AULIA Flow carries the organisational dimension of the ecosystem.", fr: "AULIA Flow porte la dimension organisationnelle de l'écosystème." } },
+    ],
+  },
 ];
 
 const getAt = (o: unknown, path: Path): unknown =>
