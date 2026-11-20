@@ -19,7 +19,9 @@ export const POST: APIRoute = async (ctx) => {
     try {
       const h = b.r ? new URL(b.r).host : '';
       referrerHost = h && h !== ctx.url.host ? h.replace(/^www\./, '').slice(0, 100) : null;
-    } catch {}
+    } catch {
+      // provenance mal formée : la visite est enregistrée sans provenance
+    }
     await db.siteEvent.create({
       data: {
         kind: b.k === 'click' ? 'CLICK' : 'VIEW',
