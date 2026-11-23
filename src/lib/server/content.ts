@@ -99,7 +99,7 @@ export async function saveDraft(dbc: PrismaClient, u: UserCtx, blockId: string, 
   const live = await dbc.contentLive.findUnique({ where: { blockId_locale: { blockId, locale } } });
   const problem = shapeProblem(live?.data, data);
   if (problem) throw new HttpError(422, problem);
-  if (JSON.stringify(data).length > 250_000) throw new HttpError(413, 'Contenu trop volumineux.');
+  if (JSON.stringify(data).length > 1_500_000) throw new HttpError(413, 'Contenu trop volumineux (photos trop nombreuses ou trop lourdes).');
 
   const existing = await dbc.contentVersion.findFirst({
     where: { blockId, locale, authorId: u.id, status: { in: ['DRAFT', 'REJECTED', 'SUBMITTED'] } },

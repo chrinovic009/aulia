@@ -16,6 +16,7 @@ import { getContent } from '../data/site.ts';
 import { path, contactPath, type Lang } from '../i18n.ts';
 import partnersPage from '../data/pages/partnerships.ts';
 import PartnerMarquee from '../components/PartnerMarquee.astro';
+import TeamSection from '../components/TeamSection.astro';
 
 interface Props { lang: Lang; }
 const { lang } = Astro.props;
@@ -84,18 +85,8 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
     )}
   </section>
 
-  <!-- FONDATEUR -->
-  <section class="section founder-band">
-    <div class="wrap founder-row reveal">
-      <img class="f-photo" src="/images/team/tumba-nyembo-chrinovic-carre.webp" alt={T.founderName} width="480" height="480" loading="lazy" />
-      <div>
-        <p class="eyebrow">{T.founderEyebrow}</p>
-        <blockquote>« {T.founderQuote} »</blockquote>
-        <p class="f-who"><b>{T.founderName}</b> · {T.founderRole}</p>
-        <a class="link-arrow" href={path(lang, 'about')}>{T.founderLink}<Arrow /></a>
-      </div>
-    </div>
-  </section>
+  <!-- ÉQUIPE (gérée dans l'administration) -->
+  <TeamSection lang={lang} />
 
   <!-- DOCTRINE -->
   <section class="section">
@@ -375,38 +366,6 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
     color: var(--muted);
   }
 
-  /* Fondateur */
-  .founder-row {
-    display: grid;
-    grid-template-columns: auto minmax(0, 1fr);
-    gap: clamp(1.5rem, 4vw, 3.5rem);
-    align-items: center;
-    max-width: 62rem;
-  }
-  .f-photo {
-    width: clamp(9rem, 18vw, 13rem);
-    height: auto;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid var(--gold);
-    box-shadow: 0 0 0 8px rgba(150, 114, 29, 0.12);
-  }
-  .founder-row blockquote {
-    margin: 1rem 0 1.25rem;
-    font-family: var(--font-display);
-    font-size: clamp(1.25rem, 2.4vw, 1.75rem);
-    font-weight: 600;
-    line-height: 1.35;
-    color: var(--text);
-  }
-  .f-who {
-    margin-bottom: 1rem;
-    color: var(--muted);
-  }
-  .f-who b {
-    color: var(--text);
-  }
   .uni-card {
     position: relative;
     display: grid;
@@ -568,11 +527,7 @@ const researchTiles = research.map((r, i) => ({ icon: researchIcons[i], title: r
     .uni.uni-3 {
       grid-template-columns: 1fr;
     }
-    .founder-row {
-      grid-template-columns: 1fr;
-      justify-items: center;
-      text-align: center;
-    }
+
     .uni-top {
       height: 8rem;
     }

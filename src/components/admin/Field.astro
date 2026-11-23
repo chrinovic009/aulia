@@ -17,6 +17,8 @@ const LABELS: Record<string, string> = {
   en: 'Anglais', long: 'Texte long', letters: 'Lettres', latin: 'Origine latine', motto: 'Devise', mottoEn: 'Devise (anglais)',
   modules: 'Modules', scenarios: 'Scénarios', sovereignty: 'Souveraineté', context: 'Contexte', steps: 'Étapes', guard: 'Garde-fou',
   systems: 'Systèmes', role: 'Rôle', partners: 'Partenaires', logo: 'Logo (adresse de l’image)', inset: 'Recadrage du logo (haut, droite, bas, gauche)', ratio: 'Proportion du logo (largeur ÷ hauteur)', pEyebrow: 'Surtitre partenaires', pTitle: 'Titre partenaires', pHint: 'Aide sous les logos', sections: 'Sections', pending: 'En attente de publication', socials: 'Réseaux', key: 'Page',
+  members: 'Membres de l’équipe', photo: 'Photo', expertise: 'Spécialité', bio: 'Présentation courte', quote: 'Citation', featured: 'Mis en avant sur l’accueil (une seule personne)',
+  github: 'GitHub (identifiant ou adresse)', linkedin: 'LinkedIn (identifiant ou adresse)', instagram: 'Instagram (identifiant ou adresse)', whatsapp: 'WhatsApp (numéro au format +243…)', email: 'E-mail (facultatif)', aboutLink: 'Lien vers la page À propos', contactLabel: 'Libellé « Contacter »',
 };
 const STATUS = ['live', 'pilot', 'dev', 'design', 'explore', 'target'];
 const STATUS_LABEL: Record<string, string> = { live: 'Disponible (avec preuve)', pilot: 'En pilote (prêt, phase pilote)', dev: 'En développement', design: 'En conception', explore: 'En exploration', target: 'Architecture cible' };
@@ -26,6 +28,7 @@ const str = kind === 'str' ? String(value ?? '') : '';
 const long = str.length > 70 || str.includes('\n') || /<\w+/.test(str);
 const fixed = ['slug', 'id', 'key'].includes(k);
 const isStatus = k === 'status' && STATUS.includes(str);
+const isPhoto = k === 'photo' && kind === 'str';
 const entries = kind === 'obj' ? Object.entries(value as Record<string, unknown>) : [];
 const items = kind === 'arr' ? (value as unknown[]) : [];
 ---
@@ -49,8 +52,17 @@ const items = kind === 'arr' ? (value as unknown[]) : [];
       {items.length > 0 && <div><button type="button" class="a-btn small" data-ed="add">+ Ajouter un élément</button></div>}
     </div>
   )}
+  {isPhoto && (
+    <div class="f-photo-ed">
+      <img class="f-photo-prev" src={str || undefined} alt="" />
+      <label class="a-btn small">Choisir une photo<input type="file" accept="image/*" data-photo hidden /></label>
+      <span class="a-faint">Recadrée automatiquement en portrait (4:5) et allégée. Vous pouvez aussi coller l’adresse d’une image.</span>
+    </div>
+  )}
   {kind === 'str' && (
-    isStatus ? (
+    isPhoto ? (
+      <input data-val value={str} placeholder="/images/team/… ou https://…" />
+    ) : isStatus ? (
       <select data-val>
         {STATUS.map((s) => <option value={s} selected={s === str}>{STATUS_LABEL[s]}</option>)}
       </select>
@@ -65,3 +77,28 @@ const items = kind === 'arr' ? (value as unknown[]) : [];
   {kind === 'num' && <input data-val type="number" value={String(value)} />}
   {kind === 'bool' && <label class="a-actions"><input data-val type="checkbox" checked={value === true} /> <span class="a-faint">Oui</span></label>}
 </div>
+
+<style>
+  .f-photo-ed {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin: 0.35rem 0 0.5rem;
+  }
+  .f-photo-prev {
+    width: 72px;
+    height: 90px;
+    object-fit: cover;
+    border-radius: 10px;
+    border: 1px solid var(--a-line, rgba(127, 127, 127, 0.35));
+    background: rgba(127, 127, 127, 0.12);
+  }
+  .f-photo-prev:not([src]) {
+    visibility: hidden;
+  }
+  .f-photo-ed .a-faint {
+    flex: 1 1 16rem;
+    font-size: 0.8rem;
+  }
+</style>

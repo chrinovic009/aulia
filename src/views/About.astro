@@ -8,6 +8,7 @@ import Timeline from '../components/Timeline.astro';
 import Tiles from '../components/Tiles.astro';
 import CtaBand from '../components/CtaBand.astro';
 import Arrow from '../components/Arrow.astro';
+import TeamSection from '../components/TeamSection.astro';
 import { path, contactPath, type Lang } from '../i18n.ts';
 
 interface Props { lang: Lang; }
@@ -67,6 +68,8 @@ const T = block(Astro.locals, 'page:about', lang, page);
       </p>
     </div>
   </section>
+
+  <TeamSection lang={lang} mode="about" />
 
   <CtaBand eyebrow={T.ctaEyebrow} title={T.ctaTitle} href={contactPath(lang, 'presentation')} label={T.ctaLabel} />
 </Layout>

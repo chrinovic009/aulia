@@ -149,6 +149,42 @@ async function applyOne(u: Update) {
   });
 }
 
+/**
+ * Blocs ajoutés au site après la création du compte fondateur (ex. « L'équipe », « À propos ») :
+ * ils sont créés dans la base, publiés tels que dans le code, pour devenir modifiables dans
+ * l'administration. Un bloc déjà présent n'est jamais touché.
+ */
+async function importNewBlocks(): Promise<boolean> {
+  const catalog = blockCatalog();
+  const existing = new Set((await db!.contentBlock.findMany({ select: { key: true } })).map((b) => b.key));
+  const missing = catalog.filter((d) => !existing.has(d.key));
+  if (!missing.length) return false;
+  await db!.$transaction(async (tx) => {
+    const founder = await tx.membership.findFirst({ where: { roleCode: 'founder', status: 'ACTIVE' }, select: { userId: true } });
+    if (!founder) return; // compte fondateur pas encore créé : l'import initial s'en chargera
+    const orgs = await tx.organization.findMany({ select: { id: true, slug: true } });
+    const orgId = (slug: string) => orgs.find((o) => o.slug === slug)?.id ?? orgs.find((o) => o.slug === 'aulia')!.id;
+    for (const def of missing) {
+      if (await tx.contentBlock.findUnique({ where: { key: def.key } })) continue;
+      const block = await tx.contentBlock.create({ data: { key: def.key, label: def.label, orgId: orgId(def.org), pages: def.pages, sort: def.sort } });
+      for (const locale of ['en', 'fr'] as const) {
+        const data = def.data[locale] as Prisma.InputJsonValue;
+        const now = new Date();
+        const v = await tx.contentVersion.create({
+          data: {
+            blockId: block.id, orgId: block.orgId, locale, data, status: 'PUBLISHED', note: 'Nouveau bloc ajouté au site',
+            authorId: founder.userId, reviewerId: founder.userId, submittedAt: now, reviewedAt: now, publishedAt: now,
+          },
+        });
+        await tx.contentLive.create({ data: { blockId: block.id, locale, orgId: block.orgId, versionId: v.id, data, publishedById: founder.userId } });
+      }
+      await audit(tx, founder.userId, { orgId: block.orgId, action: 'content.publish', entity: 'content_block', entityId: block.id, summary: `Nouveau bloc ajouté au site : « ${def.label} »` });
+    }
+  });
+  console.info(`[AULIA] nouveaux blocs de contenu : ${missing.map((d) => d.key).join(', ')}`);
+  return true;
+}
+
 let done: Promise<boolean> | null = null;
 let retryAt = 0;
 
@@ -158,6 +194,12 @@ export function applySiteUpdates(): Promise<boolean> {
   done ??= (async () => {
     let applied = false;
     try {
+      try {
+        applied = (await importNewBlocks()) || applied;
+      } catch (err) {
+        // deux instances en même temps : la seconde échoue sur la clé unique, sans conséquence
+        if ((err as { code?: string })?.code !== 'P2002') console.error('[AULIA] import des nouveaux blocs', err);
+      }
       const keys = UPDATES.map((u) => `site:update:${u.id}`);
       const already = new Set((await db!.animaSetting.findMany({ where: { key: { in: keys } }, select: { key: true } })).map((r) => r.key));
       for (const u of UPDATES) {
