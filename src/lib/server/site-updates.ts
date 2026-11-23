@@ -86,6 +86,30 @@ export const UPDATES: Update[] = [
     // ajouté seulement si la 2e place de la liste est encore libre (jamais par-dessus un membre ajouté à la main)
     changes: [{ block: 'team', path: ['members', 1], from: { en: undefined, fr: undefined } }],
   },
+  {
+    id: '2026-11-23-sans-date-de-naissance',
+    label: 'Fondateur : sans date de naissance, « développeur full-stack »',
+    changes: [
+      {
+        block: 'team', path: ['members', 0, 'expertise'],
+        from: { en: 'Software engineer · full-stack developer', fr: 'Ingénieur en génie logiciel · développeur full-stack' },
+      },
+      {
+        block: 'team', path: ['members', 0, 'bio'],
+        from: {
+          en: 'Congolese, born in 2003. He founded AULIA to build, from the DRC, solutions the world can also benefit from.',
+          fr: 'Congolais, né en 2003. Il a fondé AULIA pour construire, depuis la RDC, des solutions dont le monde pourra aussi bénéficier.',
+        },
+      },
+      {
+        block: 'page:about', path: ['fIntro'],
+        from: {
+          en: 'Software engineer, born in 2003, Congolese. He founded AULIA to build, from the DRC, solutions the world can also benefit from.',
+          fr: 'Ingénieur en génie logiciel, né en 2003, congolais. Il a fondé AULIA pour construire, depuis la RDC, des solutions dont le monde pourra aussi bénéficier.',
+        },
+      },
+    ],
+  },
 ];
 
 const getAt = (o: unknown, path: Path): unknown =>
