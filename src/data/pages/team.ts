@@ -36,8 +36,8 @@ const page = {
       {
         name: 'Tumba Nyembo Chrinovic',
         role: 'Founder of AULIA',
-        expertise: 'Software engineer · full-stack developer',
-        bio: 'Congolese, born in 2003. He founded AULIA to build, from the DRC, solutions the world can also benefit from.',
+        expertise: 'Full-stack developer',
+        bio: 'He founded AULIA to build, from the DRC, solutions the world can also benefit from.',
         ...founder,
       },
       {
@@ -60,8 +60,8 @@ const page = {
       {
         name: 'Tumba Nyembo Chrinovic',
         role: 'Fondateur d’AULIA',
-        expertise: 'Ingénieur en génie logiciel · développeur full-stack',
-        bio: 'Congolais, né en 2003. Il a fondé AULIA pour construire, depuis la RDC, des solutions dont le monde pourra aussi bénéficier.',
+        expertise: 'Développeur full-stack',
+        bio: 'Il a fondé AULIA pour construire, depuis la RDC, des solutions dont le monde pourra aussi bénéficier.',
         ...founder,
       },
       {

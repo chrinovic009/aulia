@@ -10,7 +10,7 @@ const page = {
     fEyebrow: 'Founder',
     fName: 'Tumba Nyembo Chrinovic',
     fRole: 'Founder of AULIA',
-    fIntro: 'Software engineer, born in 2003, Congolese. He founded AULIA to build, from the DRC, solutions the world can also benefit from.',
+    fIntro: 'He founded AULIA to build, from the DRC, solutions the world can also benefit from.',
     pathTitle: 'Background',
     path: [
       { icon: 'flask', title: 'Biochemistry', text: 'Secondary studies (humanités)' },
@@ -56,7 +56,7 @@ const page = {
     fEyebrow: 'Fondateur',
     fName: 'Tumba Nyembo Chrinovic',
     fRole: 'Fondateur d’AULIA',
-    fIntro: 'Ingénieur en génie logiciel, né en 2003, congolais. Il a fondé AULIA pour construire, depuis la RDC, des solutions dont le monde pourra aussi bénéficier.',
+    fIntro: 'Il a fondé AULIA pour construire, depuis la RDC, des solutions dont le monde pourra aussi bénéficier.',
     pathTitle: 'Parcours',
     path: [
       { icon: 'flask', title: 'Biochimie', text: 'Humanités' },
