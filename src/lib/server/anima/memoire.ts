@@ -58,7 +58,13 @@ export async function memoryContext(db: PrismaClient, contactId: string, current
   if (past.length) lines.push('Fin de votre dernier échange :\n' + past.reverse().map((m) => `${m.role === 'user' ? 'Visiteur' : 'ANIMA'} : ${m.content.slice(0, 220)}`).join('\n'));
   const newsReq = requests.filter((r) => r.reply && !r.replyDelivered);
   for (const r of requests) {
-    lines.push(`Demande « ${r.sujet} » : ${STATUT_DEMANDE[r.status] ?? r.status}.${r.reply ? ` Réponse du fondateur${r.replyDelivered ? ' (déjà transmise)' : ' — À TRANSMETTRE MAINTENANT'} : « ${r.reply} »` : ''}`);
+    lines.push(`Demande « ${r.sujet} » : ${STATUT_DEMANDE[r.status] ?? r.status}.${r.details ? ` Ce que la personne demandait : ${r.details.slice(0, 400)}` : ''}${r.reply ? `\n  Note du fondateur${r.replyDelivered ? ' (déjà transmise, ne la répète pas sauf si on te le demande)' : ' — À REFORMULER ET TRANSMETTRE MAINTENANT'} : ${r.reply}` : ''}`);
+  }
+  // contexte d'origine des réponses à transmettre : la conversation où la demande a été faite
+  for (const r of newsReq) {
+    if (!r.conversationId || r.conversationId === currentConversationId) continue;
+    const orig = await db.animaMessage.findMany({ where: { conversationId: r.conversationId }, orderBy: { id: 'desc' }, take: 10 });
+    if (orig.length) lines.push(`Échange où « ${r.sujet} » a été demandé :\n` + orig.reverse().map((m) => `${m.role === 'user' ? 'Visiteur' : 'ANIMA'} : ${m.content.slice(0, 300)}`).join('\n'));
   }
   for (const a of appts) {
     lines.push(`Rendez-vous « ${a.sujet || 'présentation'} » : ${fmtSlot(a.startsAt, lang)}, ${a.mode}${a.lieu ? `, ${a.lieu}` : ''} — ${STATUT_RDV[a.status] ?? a.status}${a.newsDelivered ? '' : ' — NOUVEAU : à annoncer'}.`);
@@ -83,7 +89,8 @@ export async function greetingFor(db: PrismaClient, visitorId: string, lang: Lan
   const name = c.nom ? ` ${c.nom.split(' ').slice(0, 2).join(' ')}` : '';
   const parts: string[] = [lang === 'fr' ? `Bon retour${name}. Ravi de vous retrouver.` : `Welcome back${name}. Good to see you again.`];
   const reqs = await db.animaRequest.findMany({ where: { contactId: c.id, reply: { not: '' }, replyDelivered: false }, orderBy: { updatedAt: 'desc' }, take: 2 });
-  for (const r of reqs) parts.push(lang === 'fr' ? `Au sujet de « ${r.sujet} », voici la réponse de l'équipe AULIA : ${r.reply}` : `About “${r.sujet}”, here is the AULIA team's answer: ${r.reply}`);
+  // sans le moteur, on n'affiche jamais la note brute du fondateur : ANIMA la reformulera au prochain message
+  for (const r of reqs) parts.push(lang === 'fr' ? `J'ai du nouveau au sujet de « ${r.sujet} ». Voulez-vous que je vous explique ce que cela change pour vous ?` : `I have news about “${r.sujet}”. Shall I explain what it means for you?`);
   const appts = await db.animaAppointment.findMany({ where: { contactId: c.id, newsDelivered: false }, orderBy: { startsAt: 'asc' }, take: 2 });
   for (const a of appts) {
     const when = fmtSlot(a.startsAt, lang);
@@ -98,7 +105,7 @@ export async function greetingFor(db: PrismaClient, visitorId: string, lang: Lan
     parts.push(next ? (lang === 'fr' ? `Pour rappel, nous avons rendez-vous ${fmtSlot(next.startsAt, lang)}. Que puis-je faire pour vous ?` : `As a reminder, we meet ${fmtSlot(next.startsAt, lang)}. How can I help?`)
       : (lang === 'fr' ? 'Que puis-je faire pour vous aujourd\'hui ?' : 'How can I help you today?'));
   }
-  await markDelivered(db, reqs.map((r) => r.id), appts.map((a) => a.id));
+  await markDelivered(db, [], appts.map((a) => a.id));
   return parts.join('\n\n');
 }
 

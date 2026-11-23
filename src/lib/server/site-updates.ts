@@ -69,6 +69,17 @@ export const UPDATES: Update[] = [
       { block: 'entity:flow', path: ["ecosystem"], from: { en: "AULIA Flow carries the organisational dimension of the ecosystem.", fr: "AULIA Flow porte la dimension organisationnelle de l'écosystème." } },
     ],
   },
+  {
+    id: '2026-11-23-flow-anima',
+    label: 'Légendes ANIMA : premier agent en service',
+    changes: [
+      { block: 'ui', path: ['animaLayer'], from: { en: 'ANIMA — transversal layer, target architecture', fr: 'ANIMA — couche transversale, architecture cible' } },
+      {
+        block: 'ui', path: ['coreCaption'],
+        from: { en: 'Target architecture — conceptual representation, not operational.', fr: 'Architecture cible — représentation conceptuelle, non opérationnelle.' },
+      },
+    ],
+  },
 ];
 
 const getAt = (o: unknown, path: Path): unknown =>

@@ -8,7 +8,7 @@ export type Statut = 'disponible' | 'pilote' | 'premier_agent' | 'en_developpeme
 
 export const STATUTS: Record<Statut, Record<Lang, string>> = {
   disponible: { fr: 'Disponible', en: 'Available' },
-  pilote: { fr: 'Couche Core prête, en phase pilote', en: 'Core layer ready, in pilot phase' },
+  pilote: { fr: 'En fonctionnement, phase pilote', en: 'Operational, pilot phase' },
   premier_agent: { fr: 'En service (premier agent), architecture complète en développement', en: 'In service (first agent), full architecture in development' },
   en_developpement: { fr: 'En développement', en: 'In development' },
   en_conception: { fr: 'En conception', en: 'In design' },
@@ -39,10 +39,10 @@ export const FILIALES: Record<string, Filiale> = {
     note: 'Valeur industrielle, après Care.',
   },
   FLOW: {
-    nom: 'AULIA Flow', slug: 'flow', statut: 'en_conception',
-    domaine: { fr: 'Intelligence organisationnelle et opérationnelle', en: 'Organisational and operational intelligence' },
-    pourQui: 'logistique, dépôts, distribution, organisations multi-sites',
-    note: 'Valeur industrielle, après Care.',
+    nom: 'AULIA Flow', slug: 'flow', statut: 'pilote',
+    domaine: { fr: 'Gestion, coordination et pilotage des opérations (production, finances, logistique, stocks, ventes, marketing)', en: 'Management, coordination and steering of operations (production, finance, logistics, stock, sales, marketing)' },
+    pourQui: 'PME, grandes entreprises, industries, entreprises minières, commerciales et logistiques',
+    note: "En fonctionnement : AULIA Flow fonctionne déjà dans une usine de production (phase pilote).",
   },
   VR: {
     nom: 'AULIA VR', slug: 'vr', statut: 'en_exploration',
@@ -75,8 +75,8 @@ export function catalogueText(lang: Lang): string {
 export const KNOWLEDGE = `Groupe technologique en construction, ancré en RDC : une société mère qui crée des entreprises \
 spécialisées mettant la science, l'IA et la technologie au service des systèmes essentiels. \
 Accroche : « Building Intelligence. Transforming Systems. » Doctrine : comprendre, anticiper, créer, \
-protéger, transformer. Parcours : Care d'abord (preuve terrain), puis Vigil et Flow, puis ANIMA. \
-ANIMA = intelligence transversale sous contrôle humain ; tu en es le premier agent. \
+protéger, transformer. Déjà en fonctionnement : AULIA Care (couche Core, phase pilote) et AULIA Flow (fonctionne dans une usine de production). \
+Vigil et VR suivent. ANIMA = intelligence transversale sous contrôle humain ; tu en es le premier agent, en service. \
 Pour avancer : demander une présentation, lancer un partenariat (établissement pilote, partenaire \
 technique, institution, investisseur) ou écrire à l'équipe. Adresse et téléphone ne sont pas publiés. \
 FONDATEUR (information publique, à donner volontiers) : Tumba Nyembo Chrinovic, fondateur d'AULIA, né en 2003, \

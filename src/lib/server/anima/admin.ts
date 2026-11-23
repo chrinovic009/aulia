@@ -7,6 +7,7 @@ import type { PrismaClient } from '@prisma/client';
 import { HttpError } from '../db.ts';
 import { DISPO_DEFAUT, fmtSlot, getDispo, getIndispos, localToDate, setSetting, type Disponibilites, type Plage } from './agenda.ts';
 import { mailVisitor } from './memoire.ts';
+import { mailReformule } from './suivi.ts';
 
 const s = (v: unknown, max = 500) => String(v ?? '').trim().slice(0, max);
 export const REQUEST_STATUS = ['nouvelle', 'en_cours', 'acceptee', 'refusee', 'traitee'];
@@ -44,7 +45,8 @@ export async function updateRequest(db: PrismaClient, b: Record<string, unknown>
   }
   let mail: { ok: boolean; error?: string } | null = null;
   if (b.mail === true && (reply || appt)) {
-    const parts = [reply, appt ? `Rendez-vous fixé : ${fmtSlot(appt.startsAt, 'fr')} (${appt.durationMin} min)${appt.lieu ? `\n${appt.lieu}` : ''}` : ''].filter(Boolean);
+    const corps = reply ? await mailReformule(db, r.contactId, r.sujet, reply) : '';
+    const parts = [corps, appt ? `Rendez-vous fixé : ${fmtSlot(appt.startsAt, 'fr')} (${appt.durationMin} min)${appt.lieu ? `\n${appt.lieu}` : ''}` : ''].filter(Boolean);
     mail = await mailVisitor(db, r.contactId, `réponse à votre demande « ${r.sujet} »`, parts.join('\n\n'));
   }
   return { ok: true, mailError: mail && !mail.ok ? `E-mail non envoyé : ${mail.error}` : undefined };
