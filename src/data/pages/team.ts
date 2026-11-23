@@ -1,7 +1,8 @@
 // Section « L'équipe » (accueil et page À propos), en anglais et en français.
 // Version de départ et de repli : la version en ligne est gérée dans l'espace d'administration
 // (bloc « team ») et validée par le fondateur. Pour ajouter une personne : « + Ajouter un élément »
-// dans la liste des membres, puis « Choisir une photo ».
+// dans la liste des membres, puis « Choisir une photo ». Toutes les cartes ont le même modèle ;
+// l'ordre des cartes est celui de la liste (flèches ↑ ↓).
 //
 // Réseaux : indiquer l'identifiant (ex. chrinovic009) ou l'adresse complète ; WhatsApp : le numéro
 // au format international (+243…). Un champ laissé vide n'affiche pas l'icône.
@@ -37,8 +38,6 @@ const page = {
         role: 'Founder of AULIA',
         expertise: 'Software engineer · full-stack developer',
         bio: 'Congolese, born in 2003. He founded AULIA to build, from the DRC, solutions the world can also benefit from.',
-        quote: 'I don’t want the DRC to be only a market for foreign innovations.',
-        featured: true,
         ...founder,
       },
       {
@@ -46,8 +45,6 @@ const page = {
         role: 'Supervisor of AULIA Flow',
         expertise: 'Instrumentation engineer',
         bio: 'He helps build AULIA Vigil and supervises AULIA Flow.',
-        quote: '',
-        featured: false,
         ...regal,
       },
     ],
@@ -65,8 +62,6 @@ const page = {
         role: 'Fondateur d’AULIA',
         expertise: 'Ingénieur en génie logiciel · développeur full-stack',
         bio: 'Congolais, né en 2003. Il a fondé AULIA pour construire, depuis la RDC, des solutions dont le monde pourra aussi bénéficier.',
-        quote: 'Je ne veux pas que la RDC soit uniquement un marché pour les innovations étrangères.',
-        featured: true,
         ...founder,
       },
       {
@@ -74,8 +69,6 @@ const page = {
         role: 'Superviseur d’AULIA Flow',
         expertise: 'Ingénieur en instrumentation',
         bio: 'Il contribue à la construction d’AULIA Vigil et supervise AULIA Flow.',
-        quote: '',
-        featured: false,
         ...regal,
       },
     ],
