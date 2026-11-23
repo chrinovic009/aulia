@@ -14,6 +14,15 @@ const founder = {
   email: '',
 };
 
+const regal = {
+  photo: '/images/team/kasompe-kakese-regal.webp',
+  github: 'regal06',
+  linkedin: '', // à compléter dans l'administration dès qu'il sera connu
+  instagram: 'regal_kk6',
+  whatsapp: '+243857221542',
+  email: '',
+};
+
 const page = {
   en: {
     eyebrow: 'The team',
@@ -21,6 +30,7 @@ const page = {
     lead: 'From the DRC, a team that grows with the group — each person in their place, at the service of essential systems.',
     aboutLink: 'Why AULIA, why the DRC',
     contactLabel: 'Contact',
+    soonLabel: 'coming soon',
     members: [
       {
         name: 'Tumba Nyembo Chrinovic',
@@ -31,6 +41,15 @@ const page = {
         featured: true,
         ...founder,
       },
+      {
+        name: 'Kasompe Kakese Régal',
+        role: 'Supervisor of AULIA Flow',
+        expertise: 'Instrumentation engineer',
+        bio: 'He helps build AULIA Vigil and supervises AULIA Flow.',
+        quote: '',
+        featured: false,
+        ...regal,
+      },
     ],
   },
   fr: {
@@ -39,6 +58,7 @@ const page = {
     lead: 'Depuis la RDC, une équipe qui grandit avec le groupe — chacun à sa place, au service des systèmes essentiels.',
     aboutLink: 'Pourquoi AULIA, pourquoi la RDC',
     contactLabel: 'Contacter',
+    soonLabel: 'bientôt',
     members: [
       {
         name: 'Tumba Nyembo Chrinovic',
@@ -48,6 +68,15 @@ const page = {
         quote: 'Je ne veux pas que la RDC soit uniquement un marché pour les innovations étrangères.',
         featured: true,
         ...founder,
+      },
+      {
+        name: 'Kasompe Kakese Régal',
+        role: 'Superviseur d’AULIA Flow',
+        expertise: 'Ingénieur en instrumentation',
+        bio: 'Il contribue à la construction d’AULIA Vigil et supervise AULIA Flow.',
+        quote: '',
+        featured: false,
+        ...regal,
       },
     ],
   },

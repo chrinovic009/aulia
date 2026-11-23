@@ -30,3 +30,14 @@ test('chemin dans un tableau et rien à faire si déjà à jour', () => {
   assert.equal(out.status, 'pilot'); assert.equal(out.capabilities[0].status, 'pilot');
   assert.equal(patchBlock(fr, ch('entity:care'), fr, 'fr'), null);
 });
+
+test('ajout d’un membre : seulement si la place est libre', () => {
+  const c = UPDATES.find((u) => u.id === '2026-11-23-equipe-regal')!.changes;
+  const fr = code('team', 'fr');
+  const seul = { ...fr, members: [fr.members[0]] };
+  const out = patchBlock(seul, c, fr, 'fr') as any;
+  assert.equal(out.members.length, 2);
+  assert.equal(out.members[1].name, 'Kasompe Kakese Régal');
+  const autre = { ...fr, members: [fr.members[0], { ...fr.members[0], name: 'Quelqu’un d’autre' }] };
+  assert.equal(patchBlock(autre, c, fr, 'fr'), null);
+});

@@ -80,6 +80,12 @@ export const UPDATES: Update[] = [
       },
     ],
   },
+  {
+    id: '2026-11-23-equipe-regal',
+    label: 'Équipe : Kasompe Kakese Régal',
+    // ajouté seulement si la 2e place de la liste est encore libre (jamais par-dessus un membre ajouté à la main)
+    changes: [{ block: 'team', path: ['members', 1], from: { en: undefined, fr: undefined } }],
+  },
 ];
 
 const getAt = (o: unknown, path: Path): unknown =>
